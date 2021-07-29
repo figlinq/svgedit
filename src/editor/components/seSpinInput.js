@@ -1,6 +1,6 @@
-import '../dialogs/se-elix/define/NumberSpinBox.js';
+import '../dialogs/se-elix/define/NumberSpinBox.js'
 
-const template = document.createElement('template');
+const template = document.createElement('template')
 template.innerHTML = `
   <style>
   img {
@@ -37,7 +37,7 @@ template.innerHTML = `
   <img src="./images/logo.svg" alt="icon" width="24" height="24" aria-labelledby="label" />
   <span id="label">label</span>
   <elix-number-spin-box min="1" step="1"></elix-number-spin-box>
-`;
+`
 
 /**
  * @class SESpinInput
@@ -47,23 +47,25 @@ export class SESpinInput extends HTMLElement {
     * @function constructor
     */
   constructor () {
-    super();
+    super()
     // create the shadowDom and insert the template
-    this._shadowRoot = this.attachShadow({ mode: 'open' });
-    this._shadowRoot.append(template.content.cloneNode(true));
+    this._shadowRoot = this.attachShadow({ mode: 'open' })
+    this._shadowRoot.append(template.content.cloneNode(true))
     // locate the component
-    this.$img = this._shadowRoot.querySelector('img');
-    this.$label = this.shadowRoot.getElementById('label');
-    this.$event = new CustomEvent('change');
-    this.$input = this._shadowRoot.querySelector('elix-number-spin-box');
+    this.$img = this._shadowRoot.querySelector('img')
+    this.$label = this.shadowRoot.getElementById('label')
+    this.$event = new CustomEvent('change')
+    this.$input = this._shadowRoot.querySelector('elix-number-spin-box')
   }
+
   /**
    * @function observedAttributes
    * @returns {any} observed
    */
   static get observedAttributes () {
-    return [ 'value', 'label', 'src', 'size', 'min', 'max', 'step' ];
+    return ['value', 'label', 'src', 'size', 'min', 'max', 'step']
   }
+
   /**
    * @function attributeChangedCallback
    * @param {string} name
@@ -72,46 +74,47 @@ export class SESpinInput extends HTMLElement {
    * @returns {void}
    */
   attributeChangedCallback (name, oldValue, newValue) {
-    if (oldValue === newValue) return;
+    if (oldValue === newValue) return
     switch (name) {
-    case 'src':
-      this.$img.setAttribute('src', newValue);
-      this.$label.remove();
-      break;
-    case 'size':
+      case 'src':
+        this.$img.setAttribute('src', newValue)
+        this.$label.remove()
+        break
+      case 'size':
       // access to the underlying input box
-      this.$input.shadowRoot.getElementById('input').size = newValue;
-      // below seems mandatory to override the default width style that takes precedence on size
-      this.$input.shadowRoot.getElementById('input').style.width = 'unset';
-      break;
-    case 'step':
-      this.$input.setAttribute('step', newValue);
-      break;
-    case 'min':
-      this.$input.setAttribute('min', newValue);
-      break;
-    case 'max':
-      this.$input.setAttribute('max', newValue);
-      break;
-    case 'label':
-      this.$label.textContent = newValue;
-      this.$img.remove();
-      break;
-    case 'value':
-      this.$input.value = newValue;
-      break;
-    default:
+        this.$input.shadowRoot.getElementById('input').size = newValue
+        // below seems mandatory to override the default width style that takes precedence on size
+        this.$input.shadowRoot.getElementById('input').style.width = 'unset'
+        break
+      case 'step':
+        this.$input.setAttribute('step', newValue)
+        break
+      case 'min':
+        this.$input.setAttribute('min', newValue)
+        break
+      case 'max':
+        this.$input.setAttribute('max', newValue)
+        break
+      case 'label':
+        this.$label.textContent = newValue
+        this.$img.remove()
+        break
+      case 'value':
+        this.$input.value = newValue
+        break
+      default:
       // eslint-disable-next-line no-console
-      console.error(`unknown attribute: ${name}`);
-      break;
+        console.error(`unknown attribute: ${name}`)
+        break
     }
   }
+
   /**
    * @function get
    * @returns {any}
    */
   get label () {
-    return this.getAttribute('label');
+    return this.getAttribute('label')
   }
 
   /**
@@ -119,14 +122,15 @@ export class SESpinInput extends HTMLElement {
    * @returns {void}
    */
   set label (value) {
-    this.setAttribute('label', value);
+    this.setAttribute('label', value)
   }
+
   /**
    * @function get
    * @returns {any}
    */
   get value () {
-    return this.$input.value;
+    return this.$input.value
   }
 
   /**
@@ -134,14 +138,15 @@ export class SESpinInput extends HTMLElement {
    * @returns {void}
    */
   set value (value) {
-    this.$input.value = value;
+    this.$input.value = value
   }
+
   /**
    * @function get
    * @returns {any}
    */
   get src () {
-    return this.getAttribute('src');
+    return this.getAttribute('src')
   }
 
   /**
@@ -149,7 +154,7 @@ export class SESpinInput extends HTMLElement {
    * @returns {void}
    */
   set src (value) {
-    this.setAttribute('src', value);
+    this.setAttribute('src', value)
   }
 
   /**
@@ -157,7 +162,7 @@ export class SESpinInput extends HTMLElement {
    * @returns {any}
    */
   get size () {
-    return this.getAttribute('size');
+    return this.getAttribute('size')
   }
 
   /**
@@ -165,7 +170,7 @@ export class SESpinInput extends HTMLElement {
    * @returns {void}
    */
   set size (value) {
-    this.setAttribute('size', value);
+    this.setAttribute('size', value)
   }
 
   /**
@@ -174,17 +179,17 @@ export class SESpinInput extends HTMLElement {
    */
   connectedCallback () {
     this.$input.addEventListener('change', (e) => {
-      e.preventDefault();
-      this.value = e.target.value;
-      this.dispatchEvent(this.$event);
-    });
+      e.preventDefault()
+      this.value = e.target.value
+      this.dispatchEvent(this.$event)
+    })
     this.$input.addEventListener('click', (e) => {
-      e.preventDefault();
-      this.value = e.target.value;
-      this.dispatchEvent(this.$event);
-    });
+      e.preventDefault()
+      this.value = e.target.value
+      this.dispatchEvent(this.$event)
+    })
   }
 }
 
 // Register
-customElements.define('se-spin-input', SESpinInput);
+customElements.define('se-spin-input', SESpinInput)

@@ -1,7 +1,7 @@
-import SvgCanvas from "../../svgcanvas/svgcanvas.js";
-import { insertChildAtIndex } from '../../svgcanvas/utilities.js';
+import SvgCanvas from '../../svgcanvas/svgcanvas.js'
+import { insertChildAtIndex } from '../../svgcanvas/utilities.js'
 
-const { $id, $qa } = SvgCanvas;
+const { $id, $qa } = SvgCanvas
 
 /*
  * register actions for left panel
@@ -13,9 +13,10 @@ class LeftPanel {
   /**
    * @param {PlainObject} editor svgedit handler
    */
-  constructor(editor) {
-    this.editor = editor;
+  constructor (editor) {
+    this.editor = editor
   }
+
   /**
    * This is a common function used when a tool has been clicked (chosen).
    * It does several common things:
@@ -26,15 +27,15 @@ class LeftPanel {
    * @returns {boolean} Whether the button was disabled or not
    */
   // eslint-disable-next-line class-methods-use-this
-  updateLeftPanel(button) {
-    if (button.disabled) return false;
+  updateLeftPanel (button) {
+    if (button.disabled) return false
     // remove the pressed state on other(s) button(s)
-    $qa("#tools_left *[pressed]").forEach((b) => {
-      b.pressed = false;
-    });
+    $qa('#tools_left *[pressed]').forEach((b) => {
+      b.pressed = false
+    })
     // pressed state for the clicked button
-    $id(button).pressed = true;
-    return true;
+    $id(button).pressed = true
+    return true
   }
 
   /**
@@ -43,10 +44,10 @@ class LeftPanel {
    * @function module:SVGEditor.clickSelect
    * @returns {void}
    */
-  clickSelect() {
-    if (this.updateLeftPanel("tool_select")) {
-      this.editor.workarea.style.cursor = "auto";
-      this.editor.svgCanvas.setMode("select");
+  clickSelect () {
+    if (this.updateLeftPanel('tool_select')) {
+      this.editor.workarea.style.cursor = 'auto'
+      this.editor.svgCanvas.setMode('select')
     }
   }
 
@@ -54,9 +55,9 @@ class LeftPanel {
    *
    * @returns {void}
    */
-  clickFHPath() {
-    if (this.updateLeftPanel("tool_fhpath")) {
-      this.editor.svgCanvas.setMode("fhpath");
+  clickFHPath () {
+    if (this.updateLeftPanel('tool_fhpath')) {
+      this.editor.svgCanvas.setMode('fhpath')
     }
   }
 
@@ -64,9 +65,9 @@ class LeftPanel {
    *
    * @returns {void}
    */
-  clickLine() {
-    if (this.updateLeftPanel("tool_line")) {
-      this.editor.svgCanvas.setMode("line");
+  clickLine () {
+    if (this.updateLeftPanel('tool_line')) {
+      this.editor.svgCanvas.setMode('line')
     }
   }
 
@@ -74,9 +75,9 @@ class LeftPanel {
    *
    * @returns {void}
    */
-  clickSquare() {
-    if (this.updateLeftPanel("tool_square")) {
-      this.editor.svgCanvas.setMode("square");
+  clickSquare () {
+    if (this.updateLeftPanel('tool_square')) {
+      this.editor.svgCanvas.setMode('square')
     }
   }
 
@@ -84,9 +85,9 @@ class LeftPanel {
    *
    * @returns {void}
    */
-  clickRect() {
-    if (this.updateLeftPanel("tool_rect")) {
-      this.editor.svgCanvas.setMode("rect");
+  clickRect () {
+    if (this.updateLeftPanel('tool_rect')) {
+      this.editor.svgCanvas.setMode('rect')
     }
   }
 
@@ -94,9 +95,9 @@ class LeftPanel {
    *
    * @returns {void}
    */
-  clickFHRect() {
-    if (this.updateLeftPanel("tool_fhrect")) {
-      this.editor.svgCanvas.setMode("fhrect");
+  clickFHRect () {
+    if (this.updateLeftPanel('tool_fhrect')) {
+      this.editor.svgCanvas.setMode('fhrect')
     }
   }
 
@@ -104,9 +105,9 @@ class LeftPanel {
    *
    * @returns {void}
    */
-  clickCircle() {
-    if (this.updateLeftPanel("tool_circle")) {
-      this.editor.svgCanvas.setMode("circle");
+  clickCircle () {
+    if (this.updateLeftPanel('tool_circle')) {
+      this.editor.svgCanvas.setMode('circle')
     }
   }
 
@@ -114,9 +115,9 @@ class LeftPanel {
    *
    * @returns {void}
    */
-  clickEllipse() {
-    if (this.updateLeftPanel("tool_ellipse")) {
-      this.editor.svgCanvas.setMode("ellipse");
+  clickEllipse () {
+    if (this.updateLeftPanel('tool_ellipse')) {
+      this.editor.svgCanvas.setMode('ellipse')
     }
   }
 
@@ -124,9 +125,9 @@ class LeftPanel {
    *
    * @returns {void}
    */
-  clickFHEllipse() {
-    if (this.updateLeftPanel("tool_fhellipse")) {
-      this.editor.svgCanvas.setMode("fhellipse");
+  clickFHEllipse () {
+    if (this.updateLeftPanel('tool_fhellipse')) {
+      this.editor.svgCanvas.setMode('fhellipse')
     }
   }
 
@@ -134,9 +135,9 @@ class LeftPanel {
    *
    * @returns {void}
    */
-  clickImage() {
-    if (this.updateLeftPanel("tool_image")) {
-      this.editor.svgCanvas.setMode("image");
+  clickImage () {
+    if (this.updateLeftPanel('tool_image')) {
+      this.editor.svgCanvas.setMode('image')
     }
   }
 
@@ -144,10 +145,10 @@ class LeftPanel {
    *
    * @returns {void}
    */
-  clickZoom() {
-    if (this.updateLeftPanel("tool_zoom")) {
-      this.editor.svgCanvas.setMode("zoom");
-      this.editor.workarea.style.cursor = this.editor.zoomInIcon;
+  clickZoom () {
+    if (this.updateLeftPanel('tool_zoom')) {
+      this.editor.svgCanvas.setMode('zoom')
+      this.editor.workarea.style.cursor = this.editor.zoomInIcon
     }
   }
 
@@ -155,10 +156,10 @@ class LeftPanel {
    *
    * @returns {void}
    */
-  dblclickZoom() {
-    if (this.updateLeftPanel("tool_zoom")) {
-      this.editor.zoomImage();
-      this.clickSelect();
+  dblclickZoom () {
+    if (this.updateLeftPanel('tool_zoom')) {
+      this.editor.zoomImage()
+      this.clickSelect()
     }
   }
 
@@ -166,9 +167,9 @@ class LeftPanel {
    *
    * @returns {void}
    */
-  clickText() {
-    if (this.updateLeftPanel("tool_text")) {
-      this.editor.svgCanvas.setMode("text");
+  clickText () {
+    if (this.updateLeftPanel('tool_text')) {
+      this.editor.svgCanvas.setMode('text')
     }
   }
 
@@ -176,26 +177,28 @@ class LeftPanel {
    *
    * @returns {void}
    */
-  clickPath() {
-    if (this.updateLeftPanel("tool_path")) {
-      this.editor.svgCanvas.setMode("path");
+  clickPath () {
+    if (this.updateLeftPanel('tool_path')) {
+      this.editor.svgCanvas.setMode('path')
     }
   }
+
   /**
    * @type {module}
    */
-  add(id, handler) {
-    $id(id).addEventListener("click", () => {
+  add (id, handler) {
+    $id(id).addEventListener('click', () => {
       if (this.updateLeftPanel(id)) {
-        handler();
+        handler()
       }
-    });
+    })
   }
+
   /**
    * @type {module}
    */
-  init() {
-    const { i18next } = this.editor;
+  init () {
+    const { i18next } = this.editor
     // add Left panel
     const leftMenu = [
       {
@@ -242,36 +245,36 @@ class LeftPanel {
         menu: `<se-button id="tool_image" title="${i18next.t('tools.mode_image')}" src="./images/image.svg"></se-button>`,
         position: 11
       }
-    ];
-    const template = document.createElement("template");
-    template.innerHTML = `<div id="tools_left"></div> <!-- tools_left -->`;
-    this.editor.$svgEditor.append(template.content.cloneNode(true));
-    const leftMenuSort = leftMenu.sort((a, b) => (a.position > b.position) ? 1 : ((b.position > a.position) ? -1 : 0));
-    const parent = $id("tools_left");
+    ]
+    const template = document.createElement('template')
+    template.innerHTML = '<div id="tools_left"></div> <!-- tools_left -->'
+    this.editor.$svgEditor.append(template.content.cloneNode(true))
+    const leftMenuSort = leftMenu.sort((a, b) => (a.position > b.position) ? 1 : ((b.position > a.position) ? -1 : 0))
+    const parent = $id('tools_left')
     leftMenuSort.forEach(function (value) {
-      insertChildAtIndex(parent, value.menu, value.position);
-    });
+      insertChildAtIndex(parent, value.menu, value.position)
+    })
     // register actions for left panel
-    $id("tool_select").addEventListener("click", this.clickSelect.bind(this));
-    $id("tool_fhpath").addEventListener("click", this.clickFHPath.bind(this));
-    $id("tool_text").addEventListener("click", this.clickText.bind(this));
-    $id("tool_image").addEventListener("click", this.clickImage.bind(this));
-    $id("tool_zoom").addEventListener("click", this.clickZoom.bind(this));
-    $id("tool_zoom").addEventListener("dblclick", this.dblclickZoom.bind(this));
-    $id("tool_path").addEventListener("click", this.clickPath.bind(this));
-    $id("tool_line").addEventListener("click", this.clickLine.bind(this));
+    $id('tool_select').addEventListener('click', this.clickSelect.bind(this))
+    $id('tool_fhpath').addEventListener('click', this.clickFHPath.bind(this))
+    $id('tool_text').addEventListener('click', this.clickText.bind(this))
+    $id('tool_image').addEventListener('click', this.clickImage.bind(this))
+    $id('tool_zoom').addEventListener('click', this.clickZoom.bind(this))
+    $id('tool_zoom').addEventListener('dblclick', this.dblclickZoom.bind(this))
+    $id('tool_path').addEventListener('click', this.clickPath.bind(this))
+    $id('tool_line').addEventListener('click', this.clickLine.bind(this))
 
     // flyout
-    $id("tool_rect").addEventListener("click", this.clickRect.bind(this));
-    $id("tool_square").addEventListener("click", this.clickSquare.bind(this));
-    $id("tool_fhrect").addEventListener("click", this.clickFHRect.bind(this));
-    $id("tool_ellipse").addEventListener("click", this.clickEllipse.bind(this));
-    $id("tool_circle").addEventListener("click", this.clickCircle.bind(this));
-    $id("tool_fhellipse").addEventListener(
-      "click",
+    $id('tool_rect').addEventListener('click', this.clickRect.bind(this))
+    $id('tool_square').addEventListener('click', this.clickSquare.bind(this))
+    $id('tool_fhrect').addEventListener('click', this.clickFHRect.bind(this))
+    $id('tool_ellipse').addEventListener('click', this.clickEllipse.bind(this))
+    $id('tool_circle').addEventListener('click', this.clickCircle.bind(this))
+    $id('tool_fhellipse').addEventListener(
+      'click',
       this.clickFHEllipse.bind(this)
-    );
+    )
   }
 }
 
-export default LeftPanel;
+export default LeftPanel

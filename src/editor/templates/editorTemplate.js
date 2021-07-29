@@ -1,4 +1,4 @@
-const editorTemplate = document.createElement('template');
+const editorTemplate = document.createElement('template')
 
 editorTemplate.innerHTML = `
   <style>
@@ -41,6 +41,6 @@ editorTemplate.innerHTML = `
  <div id="svgcanvas" style="position: relative;">
  </div>
 </div>
-`;
+`
 
-export default editorTemplate;
+export default editorTemplate

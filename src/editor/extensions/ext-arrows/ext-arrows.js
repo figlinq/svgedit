@@ -8,32 +8,31 @@
  */
 
 const loadExtensionTranslation = async function (svgEditor) {
-  let translationModule;
-  const lang = svgEditor.configObj.pref('lang');
+  let translationModule
+  const lang = svgEditor.configObj.pref('lang')
   try {
-    // eslint-disable-next-line no-unsanitized/method
-    translationModule = await import(`./locale/${encodeURIComponent(lang)}.js`);
+    translationModule = await import(`./locale/${encodeURIComponent(lang)}.js`)
   } catch (_error) {
     // eslint-disable-next-line no-console
-    console.error(`Missing translation (${lang}) - using 'en'`);
-    translationModule = await import(`./locale/en.js`);
+    console.error(`Missing translation (${lang}) - using 'en'`)
+    translationModule = await import('./locale/en.js')
   }
-  return translationModule.default;
-};
+  return translationModule.default
+}
 
 export default {
   name: 'arrows',
   async init (S) {
-    const svgEditor = this;
-    const strings = await loadExtensionTranslation(svgEditor);
-    const { svgCanvas } = svgEditor;
-    const { $id } = svgCanvas;
+    const svgEditor = this
+    const strings = await loadExtensionTranslation(svgEditor)
+    const { svgCanvas } = svgEditor
+    const { $id } = svgCanvas
     const
-      addElem = svgCanvas.addSVGElementFromJson;
-    const { nonce } = S;
-    const prefix = 'se_arrow_';
+      addElem = svgCanvas.addSVGElementFromJson
+    const { nonce } = S
+    const prefix = 'se_arrow_'
 
-    let selElems; let arrowprefix; let randomizeIds = S.randomize_ids;
+    let selElems; let arrowprefix; let randomizeIds = S.randomize_ids
 
     /**
     * @param {Window} win
@@ -41,10 +40,10 @@ export default {
     * @returns {void}
     */
     function setArrowNonce (win, n) {
-      randomizeIds = true;
-      arrowprefix = prefix + n + '_';
-      pathdata.fw.id = arrowprefix + 'fw';
-      pathdata.bk.id = arrowprefix + 'bk';
+      randomizeIds = true
+      arrowprefix = prefix + n + '_'
+      pathdata.fw.id = arrowprefix + 'fw'
+      pathdata.bk.id = arrowprefix + 'bk'
     }
 
     /**
@@ -52,21 +51,21 @@ export default {
     * @returns {void}
     */
     function unsetArrowNonce (_win) {
-      randomizeIds = false;
-      arrowprefix = prefix;
-      pathdata.fw.id = arrowprefix + 'fw';
-      pathdata.bk.id = arrowprefix + 'bk';
+      randomizeIds = false
+      arrowprefix = prefix
+      pathdata.fw.id = arrowprefix + 'fw'
+      pathdata.bk.id = arrowprefix + 'bk'
     }
 
-    svgCanvas.bind('setnonce', setArrowNonce);
-    svgCanvas.bind('unsetnonce', unsetArrowNonce);
+    svgCanvas.bind('setnonce', setArrowNonce)
+    svgCanvas.bind('unsetnonce', unsetArrowNonce)
 
-    arrowprefix = (randomizeIds) ? `${prefix}${nonce}_` : prefix;
+    arrowprefix = (randomizeIds) ? `${prefix}${nonce}_` : prefix
 
     const pathdata = {
       fw: { d: 'm0,0l10,5l-10,5l5,-5l-5,-5z', refx: 8, id: arrowprefix + 'fw' },
       bk: { d: 'm10,0l-10,5l10,5l-5,-5l5,-5z', refx: 2, id: arrowprefix + 'bk' }
-    };
+    }
 
     /**
      * Gets linked element.
@@ -75,15 +74,15 @@ export default {
      * @returns {Element}
     */
     function getLinked (elem, attr) {
-      const str = elem.getAttribute(attr);
-      if (!str) { return null; }
-      const m = str.match(/\(#(.*)\)/);
+      const str = elem.getAttribute(attr)
+      if (!str) { return null }
+      const m = str.match(/\(#(.*)\)/)
       // const m = str.match(/\(#(?<id>.+)\)/);
       // if (!m || !m.groups.id) {
       if (!m || m.length !== 2) {
-        return null;
+        return null
       }
-      return svgCanvas.getElem(m[1]);
+      return svgCanvas.getElem(m[1])
     }
 
     /**
@@ -91,31 +90,31 @@ export default {
     * @returns {void}
     */
     function showPanel (on) {
-      $id('arrow_panel').style.display = (on) ? 'block' : 'none';
+      $id('arrow_panel').style.display = (on) ? 'block' : 'none'
       if (on) {
-        const el = selElems[0];
-        const end = el.getAttribute('marker-end');
-        const start = el.getAttribute('marker-start');
-        const mid = el.getAttribute('marker-mid');
-        let val;
+        const el = selElems[0]
+        const end = el.getAttribute('marker-end')
+        const start = el.getAttribute('marker-start')
+        const mid = el.getAttribute('marker-mid')
+        let val
         if (end && start) {
-          val = 'both';
+          val = 'both'
         } else if (end) {
-          val = 'end';
+          val = 'end'
         } else if (start) {
-          val = 'start';
+          val = 'start'
         } else if (mid) {
-          val = 'mid';
+          val = 'mid'
           if (mid.includes('bk')) {
-            val = 'mid_bk';
+            val = 'mid_bk'
           }
         }
 
         if (!start && !mid && !end) {
-          val = 'none';
+          val = 'none'
         }
 
-        $id('arrow_list').value = val;
+        $id('arrow_list').value = val
       }
     }
 
@@ -124,10 +123,10 @@ export default {
     * @returns {void}
     */
     function resetMarker () {
-      const el = selElems[0];
-      el.removeAttribute('marker-start');
-      el.removeAttribute('marker-mid');
-      el.removeAttribute('marker-end');
+      const el = selElems[0]
+      el.removeAttribute('marker-start')
+      el.removeAttribute('marker-mid')
+      el.removeAttribute('marker-end')
     }
 
     /**
@@ -138,15 +137,15 @@ export default {
     */
     function addMarker (dir, type, id) {
       // TODO: Make marker (or use?) per arrow type, since refX can be different
-      id = id || arrowprefix + dir;
+      id = id || arrowprefix + dir
 
-      const data = pathdata[dir];
+      const data = pathdata[dir]
 
       if (type === 'mid') {
-        data.refx = 5;
+        data.refx = 5
       }
 
-      let marker = svgCanvas.getElem(id);
+      let marker = svgCanvas.getElem(id)
       if (!marker) {
         marker = addElem({
           element: 'marker',
@@ -160,21 +159,21 @@ export default {
             orient: 'auto',
             style: 'pointer-events:none' // Currently needed for Opera
           }
-        });
+        })
         const arrow = addElem({
           element: 'path',
           attr: {
             d: data.d,
             fill: '#000000'
           }
-        });
-        marker.append(arrow);
-        svgCanvas.findDefs().append(marker);
+        })
+        marker.append(arrow)
+        svgCanvas.findDefs().append(marker)
       }
 
-      marker.setAttribute('refX', data.refx);
+      marker.setAttribute('refX', data.refx)
 
-      return marker;
+      return marker
     }
 
     /**
@@ -182,30 +181,30 @@ export default {
     * @returns {void}
     */
     function setArrow () {
-      resetMarker();
+      resetMarker()
 
-      let type = this.value;
+      let type = this.value
       if (type === 'none') {
-        return;
+        return
       }
 
       // Set marker on element
-      let dir = 'fw';
+      let dir = 'fw'
       if (type === 'mid_bk') {
-        type = 'mid';
-        dir = 'bk';
+        type = 'mid'
+        dir = 'bk'
       } else if (type === 'both') {
-        addMarker('bk', type);
-        svgCanvas.changeSelectedAttribute('marker-start', 'url(#' + pathdata.bk.id + ')');
-        type = 'end';
-        dir = 'fw';
+        addMarker('bk', type)
+        svgCanvas.changeSelectedAttribute('marker-start', 'url(#' + pathdata.bk.id + ')')
+        type = 'end'
+        dir = 'fw'
       } else if (type === 'start') {
-        dir = 'bk';
+        dir = 'bk'
       }
 
-      addMarker(dir, type);
-      svgCanvas.changeSelectedAttribute('marker-' + type, 'url(#' + pathdata[dir].id + ')');
-      svgCanvas.call('changed', selElems);
+      addMarker(dir, type)
+      svgCanvas.changeSelectedAttribute('marker-' + type, 'url(#' + pathdata[dir].id + ')')
+      svgCanvas.call('changed', selElems)
     }
 
     /**
@@ -213,62 +212,62 @@ export default {
     * @returns {void}
     */
     function colorChanged (elem) {
-      const color = elem.getAttribute('stroke');
-      const mtypes = [ 'start', 'mid', 'end' ];
-      const defs = svgCanvas.findDefs();
+      const color = elem.getAttribute('stroke')
+      const mtypes = ['start', 'mid', 'end']
+      const defs = svgCanvas.findDefs()
 
-      mtypes.forEach(function(type){
-        const marker = getLinked(elem, 'marker-' + type);
-        if (!marker) { return; }
+      mtypes.forEach(function (type) {
+        const marker = getLinked(elem, 'marker-' + type)
+        if (!marker) { return }
 
-        const curColor = marker.children.getAttribute('fill');
-        const curD = marker.children.getAttribute('d');
-        if (curColor === color) { return; }
+        const curColor = marker.children.getAttribute('fill')
+        const curD = marker.children.getAttribute('d')
+        if (curColor === color) { return }
 
-        const allMarkers = defs.querySelectorAll('marker');
-        let newMarker = null;
+        const allMarkers = defs.querySelectorAll('marker')
+        let newMarker = null
         // Different color, check if already made
-        Array.from(allMarkers).forEach(function(marker) {
-          const attrsFill = marker.children.getAttribute('fill');
-          const attrsD = marker.children.getAttribute('d');
+        Array.from(allMarkers).forEach(function (marker) {
+          const attrsFill = marker.children.getAttribute('fill')
+          const attrsD = marker.children.getAttribute('d')
           if (attrsFill === color && attrsD === curD) {
             // Found another marker with this color and this path
-            newMarker = marker;
+            newMarker = marker
           }
-        });
+        })
 
         if (!newMarker) {
           // Create a new marker with this color
-          const lastId = marker.id;
-          const dir = lastId.includes('_fw') ? 'fw' : 'bk';
+          const lastId = marker.id
+          const dir = lastId.includes('_fw') ? 'fw' : 'bk'
 
-          newMarker = addMarker(dir, type, arrowprefix + dir + allMarkers.length);
+          newMarker = addMarker(dir, type, arrowprefix + dir + allMarkers.length)
 
-          newMarker.children.setAttribute('fill', color);
+          newMarker.children.setAttribute('fill', color)
         }
 
-        elem.setAttribute('marker-' + type, 'url(#' + newMarker.id + ')');
+        elem.setAttribute('marker-' + type, 'url(#' + newMarker.id + ')')
 
         // Check if last marker can be removed
-        let remove = true;
-        const sElements = S.svgcontent.querySelectorAll('line, polyline, path, polygon');
-        Array.prototype.forEach.call(sElements, function(element){
-          mtypes.forEach(function(mtype){
+        let remove = true
+        const sElements = S.svgcontent.querySelectorAll('line, polyline, path, polygon')
+        Array.prototype.forEach.call(sElements, function (element) {
+          mtypes.forEach(function (mtype) {
             if (element.getAttribute('marker-' + mtype) === 'url(#' + marker.id + ')') {
-              remove = false;
-              return remove;
+              remove = false
+              return remove
             }
-            return undefined;
-          });
-          if (!remove) { return false; }
-          return undefined;
-        });
+            return undefined
+          })
+          if (!remove) { return false }
+          return undefined
+        })
 
         // Not found, so can safely remove
         if (remove) {
-          marker.remove();
+          marker.remove()
         }
-      });
+      })
     }
 
     const contextTools = [
@@ -281,46 +280,46 @@ export default {
           change: setArrow
         }
       }
-    ];
+    ]
 
     return {
       name: strings.name,
       context_tools: strings.contextTools.map((contextTool, i) => {
-        return Object.assign(contextTools[i], contextTool);
+        return Object.assign(contextTools[i], contextTool)
       }),
       callback () {
-        $id("arrow_panel").style.display = 'none';
+        $id('arrow_panel').style.display = 'none'
 
         // Set ID so it can be translated in locale file
-        $id('arrow_list option').setAttribute('id', 'connector_no_arrow');
+        $id('arrow_list option').setAttribute('id', 'connector_no_arrow')
       },
       async addLangData ({ _lang, importLocale }) {
-        const { langList } = await importLocale();
+        const { langList } = await importLocale()
         return {
           data: langList
-        };
+        }
       },
       selectedChanged (opts) {
         // Use this to update the current selected elements
-        selElems = opts.elems;
+        selElems = opts.elems
 
-        const markerElems = [ 'line', 'path', 'polyline', 'polygon' ];
-        let i = selElems.length;
+        const markerElems = ['line', 'path', 'polyline', 'polygon']
+        let i = selElems.length
         while (i--) {
-          const elem = selElems[i];
+          const elem = selElems[i]
           if (elem && markerElems.includes(elem.tagName)) {
             if (opts.selectedElement && !opts.multiselected) {
-              showPanel(true);
+              showPanel(true)
             } else {
-              showPanel(false);
+              showPanel(false)
             }
           } else {
-            showPanel(false);
+            showPanel(false)
           }
         }
       },
       elementChanged (opts) {
-        const elem = opts.elems[0];
+        const elem = opts.elems[0]
         if (elem && (
           elem.getAttribute('marker-start') ||
           elem.getAttribute('marker-mid') ||
@@ -330,9 +329,9 @@ export default {
           // const mid = elem.getAttribute('marker-mid');
           // const end = elem.getAttribute('marker-end');
           // Has marker, so see if it should match color
-          colorChanged(elem);
+          colorChanged(elem)
         }
       }
-    };
+    }
   }
-};
+}

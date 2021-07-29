@@ -5,21 +5,21 @@
  * @copyright 2011 Jeff Schiller
  */
 
-import { NS } from '../common/namespaces.js';
+import { NS } from '../common/namespaces.js'
 import {
   isNullish, getBBox as utilsGetBBox, getStrokedBBoxDefaultVisible
-} from './utilities.js';
-import { transformPoint, transformListToTransform, rectsIntersect } from './math.js';
+} from './utilities.js'
+import { transformPoint, transformListToTransform, rectsIntersect } from './math.js'
 import {
   getTransformList
-} from './svgtransformlist.js';
-import * as hstry from './history.js';
-import { getClosest } from '../editor/components/jgraduate/Util.js';
+} from './svgtransformlist.js'
+import * as hstry from './history.js'
+import { getClosest } from '../editor/components/jgraduate/Util.js'
 
-const { BatchCommand } = hstry;
-let selectionContext_ = null;
-let svgCanvas = null;
-let selectedElements;
+const { BatchCommand } = hstry
+let selectionContext_ = null
+let svgCanvas = null
+let selectedElements
 
 /**
 * @function module:selection.init
@@ -27,10 +27,10 @@ let selectedElements;
 * @returns {void}
 */
 export const init = function (selectionContext) {
-  selectionContext_ = selectionContext;
-  svgCanvas = selectionContext_.getCanvas();
-  selectedElements = selectionContext_.getSelectedElements;
-};
+  selectionContext_ = selectionContext
+  svgCanvas = selectionContext_.getCanvas()
+  selectedElements = selectionContext_.getSelectedElements
+}
 
 /**
 * Clears the selection. The 'selected' handler is then optionally called.
@@ -42,14 +42,14 @@ export const init = function (selectionContext) {
 export const clearSelectionMethod = function (noCall) {
   selectedElements().forEach((elem) => {
     if (isNullish(elem)) {
-      return;
+      return
     }
-    svgCanvas.selectorManager.releaseSelector(elem);
-  });
-  svgCanvas.setEmptySelectedElements();
+    svgCanvas.selectorManager.releaseSelector(elem)
+  })
+  svgCanvas.setEmptySelectedElements()
 
-  if (!noCall) { svgCanvas.call('selected', selectedElements()); }
-};
+  if (!noCall) { svgCanvas.call('selected', selectedElements()) }
+}
 
 /**
 * Adds a list of elements to the selection. The 'selected' handler is then called.
@@ -58,51 +58,51 @@ export const clearSelectionMethod = function (noCall) {
 * @fires module:selection.SvgCanvas#event:selected
 */
 export const addToSelectionMethod = function (elemsToAdd, showGrips) {
-  if (!elemsToAdd.length) { return; }
+  if (!elemsToAdd.length) { return }
   // find the first null in our selectedElements array
 
-  let j = 0;
+  let j = 0
   while (j < selectedElements().length) {
     if (isNullish(selectedElements()[j])) {
-      break;
+      break
     }
-    ++j;
+    ++j
   }
 
   // now add each element consecutively
-  let i = elemsToAdd.length;
+  let i = elemsToAdd.length
   while (i--) {
-    let elem = elemsToAdd[i];
-    if (!elem) { continue; }
-    const bbox = utilsGetBBox(elem);
-    if (!bbox) { continue; }
+    let elem = elemsToAdd[i]
+    if (!elem) { continue }
+    const bbox = utilsGetBBox(elem)
+    if (!bbox) { continue }
 
     if (elem.tagName === 'a' && elem.childNodes.length === 1) {
       // Make "a" element's child be the selected element
-      elem = elem.firstChild;
+      elem = elem.firstChild
     }
 
     // if it's not already there, add it
     if (!selectedElements().includes(elem)) {
-      selectedElements()[j] = elem;
+      selectedElements()[j] = elem
 
       // only the first selectedBBoxes element is ever used in the codebase these days
       // if (j === 0) selectedBBoxes[0] = utilsGetBBox(elem);
-      j++;
-      const sel = svgCanvas.selectorManager.requestSelector(elem, bbox);
+      j++
+      const sel = svgCanvas.selectorManager.requestSelector(elem, bbox)
 
       if (selectedElements().length > 1) {
-        sel.showGrips(false);
+        sel.showGrips(false)
       }
     }
   }
   if (!selectedElements().length) {
-    return;
+    return
   }
-  svgCanvas.call('selected', selectedElements());
+  svgCanvas.call('selected', selectedElements())
 
   if (selectedElements().length === 1) {
-    svgCanvas.selectorManager.requestSelector(selectedElements()[0]).showGrips(showGrips);
+    svgCanvas.selectorManager.requestSelector(selectedElements()[0]).showGrips(showGrips)
   }
 
   // make sure the elements are in the correct order
@@ -110,66 +110,66 @@ export const addToSelectionMethod = function (elemsToAdd, showGrips) {
 
   selectedElements().sort(function (a, b) {
     if (a && b && a.compareDocumentPosition) {
-      return 3 - (b.compareDocumentPosition(a) & 6); // eslint-disable-line no-bitwise
+      return 3 - (b.compareDocumentPosition(a) & 6) // eslint-disable-line no-bitwise
     }
     if (isNullish(a)) {
-      return 1;
+      return 1
     }
-    return 0;
-  });
+    return 0
+  })
 
   // Make sure first elements are not null
   while (isNullish(selectedElements())[0]) {
-    selectedElements().shift(0);
+    selectedElements().shift(0)
   }
-};
+}
 /**
 * @name module:svgcanvas.SvgCanvas#getMouseTarget
 * @type {module:path.EditorContext#getMouseTarget}
 */
 export const getMouseTargetMethod = function (evt) {
   if (isNullish(evt)) {
-    return null;
+    return null
   }
-  let mouseTarget = evt.target;
+  let mouseTarget = evt.target
 
   // if it was a <use>, Opera and WebKit return the SVGElementInstance
-  if (mouseTarget.correspondingUseElement) { mouseTarget = mouseTarget.correspondingUseElement; }
+  if (mouseTarget.correspondingUseElement) { mouseTarget = mouseTarget.correspondingUseElement }
 
   // for foreign content, go up until we find the foreignObject
   // WebKit browsers set the mouse target to the svgcanvas div
-  if ([ NS.MATH, NS.HTML ].includes(mouseTarget.namespaceURI) &&
+  if ([NS.MATH, NS.HTML].includes(mouseTarget.namespaceURI) &&
     mouseTarget.id !== 'svgcanvas'
   ) {
     while (mouseTarget.nodeName !== 'foreignObject') {
-      mouseTarget = mouseTarget.parentNode;
-      if (!mouseTarget) { return selectionContext_.getSVGRoot(); }
+      mouseTarget = mouseTarget.parentNode
+      if (!mouseTarget) { return selectionContext_.getSVGRoot() }
     }
   }
 
   // Get the desired mouseTarget with jQuery selector-fu
   // If it's root-like, select the root
-  const currentLayer = svgCanvas.getCurrentDrawing().getCurrentLayer();
-  const svgRoot = selectionContext_.getSVGRoot();
-  const container = selectionContext_.getDOMContainer();
-  const content = selectionContext_.getSVGContent();
-  if ([ svgRoot, container, content, currentLayer ].includes(mouseTarget)) {
-    return selectionContext_.getSVGRoot();
+  const currentLayer = svgCanvas.getCurrentDrawing().getCurrentLayer()
+  const svgRoot = selectionContext_.getSVGRoot()
+  const container = selectionContext_.getDOMContainer()
+  const content = selectionContext_.getSVGContent()
+  if ([svgRoot, container, content, currentLayer].includes(mouseTarget)) {
+    return selectionContext_.getSVGRoot()
   }
 
   // If it's a selection grip, return the grip parent
   if (getClosest(mouseTarget.parentNode, '#selectorParentGroup')) {
     // While we could instead have just returned mouseTarget,
     // this makes it easier to indentify as being a selector grip
-    return svgCanvas.selectorManager.selectorParentGroup;
+    return svgCanvas.selectorManager.selectorParentGroup
   }
 
   while (!mouseTarget.parentNode?.isSameNode(selectionContext_.getCurrentGroup() || currentLayer)) {
-    mouseTarget = mouseTarget.parentNode;
+    mouseTarget = mouseTarget.parentNode
   }
 
-  return mouseTarget;
-};
+  return mouseTarget
+}
 /**
 * @typedef {module:svgcanvas.ExtensionMouseDownStatus|module:svgcanvas.ExtensionMouseUpStatus|module:svgcanvas.ExtensionIDsUpdatedStatus|module:locale.ExtensionLocaleData[]|void} module:svgcanvas.ExtensionStatus
 * @tutorial ExtensionDocs
@@ -197,24 +197,24 @@ export const getMouseTargetMethod = function (evt) {
 */
 /* eslint-enable max-len */
 export const runExtensionsMethod = function (action, vars, returnArray, nameFilter) {
-  let result = returnArray ? [] : false;
-  for (const [ name, ext ] of Object.entries(selectionContext_.getExtensions())) {
+  let result = returnArray ? [] : false
+  for (const [name, ext] of Object.entries(selectionContext_.getExtensions())) {
     if (nameFilter && !nameFilter(name)) {
-      return;
+      return
     }
     if (ext && action in ext) {
       if (typeof vars === 'function') {
-        vars = vars(name); // ext, action
+        vars = vars(name) // ext, action
       }
       if (returnArray) {
-        result.push(ext[action](vars));
+        result.push(ext[action](vars))
       } else {
-        result = ext[action](vars);
+        result = ext[action](vars)
       }
     }
   }
-  return result;
-};
+  return result
+}
 
 /**
 * Get all elements that have a BBox (excludes `<defs>`, `<title>`, etc).
@@ -226,18 +226,18 @@ export const runExtensionsMethod = function (action, vars, returnArray, nameFilt
 */
 export const getVisibleElementsAndBBoxes = function (parent) {
   if (!parent) {
-    const svgcontent = selectionContext_.getSVGContent();
-    parent = svgcontent.children; // Prevent layers from being included
+    const svgcontent = selectionContext_.getSVGContent()
+    parent = svgcontent.children // Prevent layers from being included
   }
-  const contentElems = [];
-  const elements = parent.children;
+  const contentElems = []
+  const elements = parent.children
   Array.prototype.forEach.call(elements, function (elem) {
     if (elem.getBBox) {
-      contentElems.push({ elem, bbox: getStrokedBBoxDefaultVisible([ elem ]) });
+      contentElems.push({ elem, bbox: getStrokedBBoxDefaultVisible([elem]) })
     }
-  });
-  return contentElems.reverse();
-};
+  })
+  return contentElems.reverse()
+}
 
 /**
 * This method sends back an array or a NodeList full of elements that
@@ -252,43 +252,43 @@ export const getVisibleElementsAndBBoxes = function (parent) {
 * @returns {Element[]|NodeList} Bbox elements
 */
 export const getIntersectionListMethod = function (rect) {
-  const currentZoom = selectionContext_.getCurrentZoom();
-  if (isNullish(selectionContext_.getRubberBox())) { return null; }
+  const currentZoom = selectionContext_.getCurrentZoom()
+  if (isNullish(selectionContext_.getRubberBox())) { return null }
 
-  const parent = selectionContext_.getCurrentGroup() || svgCanvas.getCurrentDrawing().getCurrentLayer();
+  const parent = selectionContext_.getCurrentGroup() || svgCanvas.getCurrentDrawing().getCurrentLayer()
 
-  let rubberBBox;
+  let rubberBBox
   if (!rect) {
-    rubberBBox = selectionContext_.getRubberBox().getBBox();
+    rubberBBox = selectionContext_.getRubberBox().getBBox()
     const bb = selectionContext_.getSVGContent().createSVGRect();
 
-    [ 'x', 'y', 'width', 'height', 'top', 'right', 'bottom', 'left' ].forEach((o) => {
-      bb[o] = rubberBBox[o] / currentZoom;
-    });
-    rubberBBox = bb;
+    ['x', 'y', 'width', 'height', 'top', 'right', 'bottom', 'left'].forEach((o) => {
+      bb[o] = rubberBBox[o] / currentZoom
+    })
+    rubberBBox = bb
   } else {
-    rubberBBox = selectionContext_.getSVGContent().createSVGRect();
-    rubberBBox.x = rect.x;
-    rubberBBox.y = rect.y;
-    rubberBBox.width = rect.width;
-    rubberBBox.height = rect.height;
+    rubberBBox = selectionContext_.getSVGContent().createSVGRect()
+    rubberBBox.x = rect.x
+    rubberBBox.y = rect.y
+    rubberBBox.width = rect.width
+    rubberBBox.height = rect.height
   }
 
-  let resultList = null;
+  let resultList = null
 
   if (isNullish(resultList) || typeof resultList.item !== 'function') {
-    resultList = [];
+    resultList = []
 
     if (!selectionContext_.getCurBBoxes().length) {
       // Cache all bboxes
-      selectionContext_.setCurBBoxes(getVisibleElementsAndBBoxes(parent));
+      selectionContext_.setCurBBoxes(getVisibleElementsAndBBoxes(parent))
     }
-    let i = selectionContext_.getCurBBoxes().length;
+    let i = selectionContext_.getCurBBoxes().length
     while (i--) {
-      const curBBoxes = selectionContext_.getCurBBoxes();
-      if (!rubberBBox.width) { continue; }
+      const curBBoxes = selectionContext_.getCurBBoxes()
+      if (!rubberBBox.width) { continue }
       if (rectsIntersect(rubberBBox, curBBoxes[i].bbox)) {
-        resultList.push(curBBoxes[i].elem);
+        resultList.push(curBBoxes[i].elem)
       }
     }
   }
@@ -296,8 +296,8 @@ export const getIntersectionListMethod = function (rect) {
   // addToSelection expects an array, but it's ok to pass a NodeList
   // because using square-bracket notation is allowed:
   // https://www.w3.org/TR/DOM-Level-2-Core/ecma-script-binding.html
-  return resultList;
-};
+  return resultList
+}
 
 /**
 * @typedef {PlainObject} ElementAndBBox
@@ -312,13 +312,13 @@ export const getIntersectionListMethod = function (rect) {
 * @returns {void}
 */
 export const groupSvgElem = function (elem) {
-  const dataStorage = selectionContext_.getDataStorage();
-  const g = document.createElementNS(NS.SVG, 'g');
-  elem.replaceWith(g);
-  g.appendChild(elem);
-  dataStorage.put(g, 'gsvg', elem);
-  g.id = svgCanvas.getNextId();
-};
+  const dataStorage = selectionContext_.getDataStorage()
+  const g = document.createElementNS(NS.SVG, 'g')
+  elem.replaceWith(g)
+  g.appendChild(elem)
+  dataStorage.put(g, 'gsvg', elem)
+  g.id = svgCanvas.getNextId()
+}
 
 /**
 * Runs the SVG Document through the sanitizer and then updates its paths.
@@ -327,15 +327,15 @@ export const groupSvgElem = function (elem) {
 * @returns {void}
 */
 export const prepareSvg = function (newDoc) {
-  svgCanvas.sanitizeSvg(newDoc.documentElement);
+  svgCanvas.sanitizeSvg(newDoc.documentElement)
 
   // convert paths into absolute commands
-  const paths = [ ...newDoc.getElementsByTagNameNS(NS.SVG, 'path') ];
+  const paths = [...newDoc.getElementsByTagNameNS(NS.SVG, 'path')]
   paths.forEach((path) => {
-    path.setAttribute('d', svgCanvas.pathActions.convertPath(path));
-    svgCanvas.pathActions.fixEnd(path);
-  });
-};
+    path.setAttribute('d', svgCanvas.pathActions.convertPath(path))
+    svgCanvas.pathActions.fixEnd(path)
+  })
+}
 
 /**
 * Removes any old rotations if present, prepends a new rotation at the
@@ -348,54 +348,54 @@ export const prepareSvg = function (newDoc) {
 */
 export const setRotationAngle = function (val, preventUndo) {
   // ensure val is the proper type
-  val = Number.parseFloat(val);
-  const elem = selectedElements()[0];
-  const oldTransform = elem.getAttribute('transform');
-  const bbox = utilsGetBBox(elem);
-  const cx = bbox.x + bbox.width / 2; const cy = bbox.y + bbox.height / 2;
-  const tlist = getTransformList(elem);
+  val = Number.parseFloat(val)
+  const elem = selectedElements()[0]
+  const oldTransform = elem.getAttribute('transform')
+  const bbox = utilsGetBBox(elem)
+  const cx = bbox.x + bbox.width / 2; const cy = bbox.y + bbox.height / 2
+  const tlist = getTransformList(elem)
 
   // only remove the real rotational transform if present (i.e. at index=0)
   if (tlist.numberOfItems > 0) {
-    const xform = tlist.getItem(0);
+    const xform = tlist.getItem(0)
     if (xform.type === 4) {
-      tlist.removeItem(0);
+      tlist.removeItem(0)
     }
   }
   // find Rnc and insert it
   if (val !== 0) {
-    const center = transformPoint(cx, cy, transformListToTransform(tlist).matrix);
-    const Rnc = selectionContext_.getSVGRoot().createSVGTransform();
-    Rnc.setRotate(val, center.x, center.y);
+    const center = transformPoint(cx, cy, transformListToTransform(tlist).matrix)
+    const Rnc = selectionContext_.getSVGRoot().createSVGTransform()
+    Rnc.setRotate(val, center.x, center.y)
     if (tlist.numberOfItems) {
-      tlist.insertItemBefore(Rnc, 0);
+      tlist.insertItemBefore(Rnc, 0)
     } else {
-      tlist.appendItem(Rnc);
+      tlist.appendItem(Rnc)
     }
   } else if (tlist.numberOfItems === 0) {
-    elem.removeAttribute('transform');
+    elem.removeAttribute('transform')
   }
 
   if (!preventUndo) {
     // we need to undo it, then redo it so it can be undo-able! :)
     // TODO: figure out how to make changes to transform list undo-able cross-browser?
-    const newTransform = elem.getAttribute('transform');
+    const newTransform = elem.getAttribute('transform')
     if (oldTransform) {
-      elem.setAttribute('transform', oldTransform);
+      elem.setAttribute('transform', oldTransform)
     } else {
-      elem.removeAttribute('transform');
+      elem.removeAttribute('transform')
     }
-    svgCanvas.changeSelectedAttribute('transform', newTransform, selectedElements());
-    svgCanvas.call('changed', selectedElements());
+    svgCanvas.changeSelectedAttribute('transform', newTransform, selectedElements())
+    svgCanvas.call('changed', selectedElements())
   }
   // const pointGripContainer = getElem('pathpointgrip_container');
   // if (elem.nodeName === 'path' && pointGripContainer) {
   //   pathActions.setPointContainerTransform(elem.getAttribute('transform'));
   // }
-  const selector = svgCanvas.selectorManager.requestSelector(selectedElements()[0]);
-  selector.resize();
-  selectionContext_.getSelector().updateGripCursors(val);
-};
+  const selector = svgCanvas.selectorManager.requestSelector(selectedElements()[0])
+  selector.resize()
+  selectionContext_.getSelector().updateGripCursors(val)
+}
 
 /**
 * Runs `recalculateDimensions` on the selected elements,
@@ -405,21 +405,21 @@ export const setRotationAngle = function (val, preventUndo) {
 * @returns {void}
 */
 export const recalculateAllSelectedDimensions = function () {
-  const text = (selectionContext_.getCurrentResizeMode() === 'none' ? 'position' : 'size');
-  const batchCmd = new BatchCommand(text);
+  const text = (selectionContext_.getCurrentResizeMode() === 'none' ? 'position' : 'size')
+  const batchCmd = new BatchCommand(text)
 
-  let i = selectedElements().length;
+  let i = selectedElements().length
   while (i--) {
-    const elem = selectedElements()[i];
+    const elem = selectedElements()[i]
     // if (getRotationAngle(elem) && !hasMatrixTransform(getTransformList(elem))) { continue; }
-    const cmd = svgCanvas.recalculateDimensions(elem);
+    const cmd = svgCanvas.recalculateDimensions(elem)
     if (cmd) {
-      batchCmd.addSubCommand(cmd);
+      batchCmd.addSubCommand(cmd)
     }
   }
 
   if (!batchCmd.isEmpty()) {
-    selectionContext_.addCommandToHistory(batchCmd);
-    svgCanvas.call('changed', selectedElements());
+    selectionContext_.addCommandToHistory(batchCmd)
+    svgCanvas.call('changed', selectedElements())
   }
-};
+}

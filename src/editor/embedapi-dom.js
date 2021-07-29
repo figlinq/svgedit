@@ -2,10 +2,10 @@
 * Attaches items to DOM for Embedded SVG support.
 * @module EmbeddedSVGEditDOM
 */
-import EmbeddedSVGEdit from './embedapi.js';
-import { isChrome } from '../common/browser.js';
+import EmbeddedSVGEdit from './embedapi.js'
+import { isChrome } from '../common/browser.js'
 
-let svgCanvas = null;
+let svgCanvas = null
 
 /**
 * @param {string} data
@@ -15,10 +15,10 @@ let svgCanvas = null;
 function handleSvgData (data, error) {
   if (error) {
     // Todo: This should be replaced with a general purpose dialog alert library call
-    alert('error ' + error);
+    alert('error ' + error)
   } else {
     // Todo: This should be replaced with a general purpose dialog alert library call
-    alert('Congratulations. Your SVG string is back in the host page, do with it what you will\n\n' + data);
+    alert('Congratulations. Your SVG string is back in the host page, do with it what you will\n\n' + data)
   }
 }
 
@@ -32,8 +32,8 @@ function loadSvg () {
     '<g><title>Layer 1</title><rect stroke-width="5" stroke="#000000" ' +
     'fill="#FF0000" id="svg_1" height="35" width="51" y="35" x="32"/>' +
     '<ellipse ry="15" rx="24" stroke-width="5" stroke="#000000" ' +
-      'fill="#0000ff" id="svg_2" cy="60" cx="66"/></g></svg>';
-  svgCanvas.setSvgString(svgexample);
+      'fill="#0000ff" id="svg_2" cy="60" cx="66"/></g></svg>'
+  svgCanvas.setSvgString(svgexample)
 }
 
 /**
@@ -41,7 +41,7 @@ function loadSvg () {
 * @returns {void}
 */
 function saveSvg () {
-  svgCanvas.getSvgString()(handleSvgData);
+  svgCanvas.getSvgString()(handleSvgData)
 }
 
 /**
@@ -50,16 +50,16 @@ function saveSvg () {
 */
 function exportPNG () {
   svgCanvas.getUIStrings()(function (uiStrings) {
-    const str = uiStrings.notification.loadingImage;
-    let exportWindow;
+    const str = uiStrings.notification.loadingImage
+    let exportWindow
     if (!isChrome()) {
       exportWindow = window.open(
         'data:text/html;charset=utf-8,' + encodeURIComponent('<title>' + str + '</title><h1>' + str + '</h1>'),
         'svg-edit-exportWindow'
-      );
+      )
     }
-    svgCanvas.rasterExport('PNG', null, exportWindow && exportWindow.name)();
-  });
+    svgCanvas.rasterExport('PNG', null, exportWindow && exportWindow.name)()
+  })
 }
 
 /**
@@ -68,7 +68,7 @@ function exportPNG () {
 */
 function exportPDF () {
   svgCanvas.getUIStrings()(function (uiStrings) {
-    const str = uiStrings.notification.loadingImage;
+    const str = uiStrings.notification.loadingImage
 
     /*
     // If you want to handle the PDF blob yourself, do as follows
@@ -81,51 +81,51 @@ function exportPDF () {
 
     if (isChrome()) {
       // Chrome will open an extra window if we follow the approach below
-      svgCanvas.exportPDF();
+      svgCanvas.exportPDF()
     } else {
       const exportWindow = window.open(
         'data:text/html;charset=utf-8,' + encodeURIComponent('<title>' + str + '</title><h1>' + str + '</h1>'),
         'svg-edit-exportWindow'
-      );
-      svgCanvas.exportPDF(exportWindow && exportWindow.name);
+      )
+      svgCanvas.exportPDF(exportWindow && exportWindow.name)
     }
-  });
+  })
 }
 
-const frameBase = 'https://raw.githack.com/SVG-Edit/svgedit/master';
+const frameBase = 'https://raw.githack.com/SVG-Edit/svgedit/master'
 // const frameBase = 'http://localhost:8001';
-const framePath = '/editor/xdomain-svg-editor-es.html?extensions=ext-xdomain-messaging.js';
-const iframe = document.createElement('iframe');
-iframe.id = "svgedit";
-iframe.style.width = "900px";
-iframe.style.width = "600px";
+const framePath = '/editor/xdomain-svg-editor-es.html?extensions=ext-xdomain-messaging.js'
+const iframe = document.createElement('iframe')
+iframe.id = 'svgedit'
+iframe.style.width = '900px'
+iframe.style.width = '600px'
 iframe.src = frameBase + framePath +
   (location.href.includes('?')
     // ? location.href.replace(/\?(?<search>.*)$/, '&$<search>')
     ? location.href.replace(/\?(.*)$/, '&$1')
-    : ''); // Append arguments to this file onto the iframe
+    : '') // Append arguments to this file onto the iframe
 
 iframe.addEventListener('load', function () {
-  svgCanvas = new EmbeddedSVGEdit(frame, [ new URL(frameBase).origin ]);
-  const { $id } = svgCanvas;
+  svgCanvas = new EmbeddedSVGEdit(frame, [new URL(frameBase).origin])
+  const { $id } = svgCanvas
   // Hide main button, as we will be controlling new, load, save, etc. from the host document
-  let doc;
+  let doc
   try {
-    doc = frame.contentDocument || frame.contentWindow.document;
+    doc = frame.contentDocument || frame.contentWindow.document
   } catch (err) {
-    console.error('Blocked from accessing document', err);
+    console.error('Blocked from accessing document', err)
   }
   if (doc) {
     // Todo: Provide a way to get this to occur by `postMessage`
-    const mainButton = doc.getElementById('main_button');
-    mainButton.style.display = 'none';
+    const mainButton = doc.getElementById('main_button')
+    mainButton.style.display = 'none'
   }
 
   // Add event handlers now that `svgCanvas` is ready
-  $id('load').addEventListener('click', loadSvg);
-  $id('save').addEventListener('click', saveSvg);
-  $id('exportPNG').addEventListener('click', exportPNG);
-  $id('exportPDF').addEventListener('click', exportPDF);
-});
-document.body.appendChild(iframe);
-const frame = document.getElementById('svgedit');
+  $id('load').addEventListener('click', loadSvg)
+  $id('save').addEventListener('click', saveSvg)
+  $id('exportPNG').addEventListener('click', exportPNG)
+  $id('exportPDF').addEventListener('click', exportPDF)
+})
+document.body.appendChild(iframe)
+const frame = document.getElementById('svgedit')

@@ -5,4 +5,4 @@ export default {
       title: '添加数学计算'
     }
   ]
-};
+}

@@ -8,4 +8,4 @@ export default {
       title: 'Close path'
     }
   ]
-};
+}

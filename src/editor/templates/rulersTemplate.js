@@ -1,4 +1,4 @@
-const rulersTemplate = document.createElement('template');
+const rulersTemplate = document.createElement('template')
 
 rulersTemplate.innerHTML = `
   <style>
@@ -80,6 +80,6 @@ rulersTemplate.innerHTML = `
    </div>
  </div>
 </div>
-`;
+`
 
-export default rulersTemplate;
+export default rulersTemplate

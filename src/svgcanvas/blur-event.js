@@ -4,13 +4,13 @@
  * @license MIT
  * @copyright 2011 Jeff Schiller
  */
-import * as hstry from './history.js';
+import * as hstry from './history.js'
 
 const {
   InsertElementCommand, ChangeElementCommand, BatchCommand
-} = hstry;
+} = hstry
 
-let blurContext_ = null;
+let blurContext_ = null
 
 /**
 * @function module:blur.init
@@ -18,8 +18,8 @@ let blurContext_ = null;
 * @returns {void}
 */
 export const init = function (blurContext) {
-  blurContext_ = blurContext;
-};
+  blurContext_ = blurContext
+}
 
 /**
 * Sets the `stdDeviation` blur value on the selected element without being undoable.
@@ -28,42 +28,42 @@ export const init = function (blurContext) {
 * @returns {void}
 */
 export const setBlurNoUndo = function (val) {
-  const selectedElements = blurContext_.getSelectedElements();
+  const selectedElements = blurContext_.getSelectedElements()
   if (!blurContext_.getFilter()) {
-    blurContext_.getCanvas().setBlur(val);
-    return;
+    blurContext_.getCanvas().setBlur(val)
+    return
   }
   if (val === 0) {
     // Don't change the StdDev, as that will hide the element.
     // Instead, just remove the value for "filter"
-    blurContext_.changeSelectedAttributeNoUndoMethod('filter', '');
-    blurContext_.setFilterHidden(true);
+    blurContext_.changeSelectedAttributeNoUndoMethod('filter', '')
+    blurContext_.setFilterHidden(true)
   } else {
-    const elem = selectedElements[0];
+    const elem = selectedElements[0]
     if (blurContext_.getFilterHidden()) {
-      blurContext_.changeSelectedAttributeNoUndoMethod('filter', 'url(#' + elem.id + '_blur)');
+      blurContext_.changeSelectedAttributeNoUndoMethod('filter', 'url(#' + elem.id + '_blur)')
     }
     if (blurContext_.isWebkit()) {
       // console.log('e', elem);
-      elem.removeAttribute('filter');
-      elem.setAttribute('filter', 'url(#' + elem.id + '_blur)');
+      elem.removeAttribute('filter')
+      elem.setAttribute('filter', 'url(#' + elem.id + '_blur)')
     }
-    const filter = blurContext_.getFilter();
-    blurContext_.changeSelectedAttributeNoUndoMethod('stdDeviation', val, [ filter.firstChild ]);
-    blurContext_.getCanvas().setBlurOffsets(filter, val);
+    const filter = blurContext_.getFilter()
+    blurContext_.changeSelectedAttributeNoUndoMethod('stdDeviation', val, [filter.firstChild])
+    blurContext_.getCanvas().setBlurOffsets(filter, val)
   }
-};
+}
 
 /**
 *
 * @returns {void}
 */
 function finishChange () {
-  const bCmd = blurContext_.getCanvas().undoMgr.finishUndoableChange();
-  blurContext_.getCurCommand().addSubCommand(bCmd);
-  blurContext_.addCommandToHistory(blurContext_.getCurCommand());
-  blurContext_.setCurCommand(null);
-  blurContext_.setFilter(null);
+  const bCmd = blurContext_.getCanvas().undoMgr.finishUndoableChange()
+  blurContext_.getCurCommand().addSubCommand(bCmd)
+  blurContext_.addCommandToHistory(blurContext_.getCurCommand())
+  blurContext_.setCurCommand(null)
+  blurContext_.setFilter(null)
 }
 
 /**
@@ -82,15 +82,15 @@ export const setBlurOffsets = function (filterElem, stdDev) {
       y: '-50%',
       width: '200%',
       height: '200%'
-    }, 100);
+    }, 100)
     // Removing these attributes hides text in Chrome (see Issue 579)
   } else if (!blurContext_.isWebkit()) {
-    filterElem.removeAttribute('x');
-    filterElem.removeAttribute('y');
-    filterElem.removeAttribute('width');
-    filterElem.removeAttribute('height');
+    filterElem.removeAttribute('x')
+    filterElem.removeAttribute('y')
+    filterElem.removeAttribute('width')
+    filterElem.removeAttribute('height')
   }
-};
+}
 
 /**
 * Adds/updates the blur filter to the selected element.
@@ -100,62 +100,64 @@ export const setBlurOffsets = function (filterElem, stdDev) {
 * @returns {void}
 */
 export const setBlur = function (val, complete) {
-  const selectedElements = blurContext_.getSelectedElements();
+  const selectedElements = blurContext_.getSelectedElements()
   if (blurContext_.getCurCommand()) {
-    finishChange();
-    return;
+    finishChange()
+    return
   }
 
   // Looks for associated blur, creates one if not found
-  const elem = selectedElements[0];
-  const elemId = elem.id;
-  blurContext_.setFilter(blurContext_.getCanvas().getElem(elemId + '_blur'));
+  const elem = selectedElements[0]
+  const elemId = elem.id
+  blurContext_.setFilter(blurContext_.getCanvas().getElem(elemId + '_blur'))
 
-  val -= 0;
+  val -= 0
 
-  const batchCmd = new BatchCommand();
+  const batchCmd = new BatchCommand()
 
   // Blur found!
   if (blurContext_.getFilter()) {
     if (val === 0) {
-      blurContext_.setFilter(null);
+      blurContext_.setFilter(null)
     }
   } else {
     // Not found, so create
-    const newblur = blurContext_.getCanvas().addSVGElementFromJson({ element: 'feGaussianBlur',
+    const newblur = blurContext_.getCanvas().addSVGElementFromJson({
+      element: 'feGaussianBlur',
       attr: {
         in: 'SourceGraphic',
         stdDeviation: val
       }
-    });
+    })
 
-    blurContext_.setFilter(blurContext_.getCanvas().addSVGElementFromJson({ element: 'filter',
+    blurContext_.setFilter(blurContext_.getCanvas().addSVGElementFromJson({
+      element: 'filter',
       attr: {
         id: elemId + '_blur'
       }
-    }));
-    blurContext_.getFilter().append(newblur);
-    blurContext_.getCanvas().findDefs().append(blurContext_.getFilter());
+    }))
+    blurContext_.getFilter().append(newblur)
+    blurContext_.getCanvas().findDefs().append(blurContext_.getFilter())
 
-    batchCmd.addSubCommand(new InsertElementCommand(blurContext_.getFilter()));
+    batchCmd.addSubCommand(new InsertElementCommand(blurContext_.getFilter()))
   }
 
-  const changes = { filter: elem.getAttribute('filter') };
+  const changes = { filter: elem.getAttribute('filter') }
 
   if (val === 0) {
-    elem.removeAttribute('filter');
-    batchCmd.addSubCommand(new ChangeElementCommand(elem, changes));
-    return;
+    elem.removeAttribute('filter')
+    batchCmd.addSubCommand(new ChangeElementCommand(elem, changes))
+    return
   }
 
-  blurContext_.changeSelectedAttributeMethod('filter', 'url(#' + elemId + '_blur)');
-  batchCmd.addSubCommand(new ChangeElementCommand(elem, changes));
-  blurContext_.getCanvas().setBlurOffsets(blurContext_.getFilter(), val);
-  const filter = blurContext_.getFilter();
-  blurContext_.setCurCommand(batchCmd);
-  blurContext_.getCanvas().undoMgr.beginUndoableChange('stdDeviation', [ filter ? filter.firstChild : null ]);
+  blurContext_.changeSelectedAttributeMethod('filter', 'url(#' + elemId + '_blur)')
+  batchCmd.addSubCommand(new ChangeElementCommand(elem, changes))
+  blurContext_.getCanvas().setBlurOffsets(blurContext_.getFilter(), val)
+  const filter = blurContext_.getFilter()
+  blurContext_.setCurCommand(batchCmd)
+  blurContext_.getCanvas().undoMgr.beginUndoableChange('stdDeviation', [filter ? filter.firstChild : null])
   if (complete) {
-    blurContext_.getCanvas().setBlurNoUndo(val);
-    finishChange();
+    blurContext_.getCanvas().setBlurNoUndo(val)
+    finishChange()
   }
-};
+}

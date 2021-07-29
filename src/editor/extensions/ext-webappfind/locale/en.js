@@ -5,4 +5,4 @@ export default {
       title: 'Save Image back to Disk'
     }
   ]
-};
+}

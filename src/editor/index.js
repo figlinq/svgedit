@@ -4,10 +4,10 @@ For default config and extensions (and available options) available to
 `setConfig()`, see the file `docs/tutorials/ConfigOptions.md`
 */
 
-import Editor from './Editor.js';
+import Editor from './Editor.js'
 
-const svgEditor = new Editor();
-svgEditor.init();
+const svgEditor = new Editor()
+svgEditor.init()
 
 // URL OVERRIDE CONFIG
 svgEditor.setConfig({
@@ -21,7 +21,7 @@ svgEditor.setConfig({
   following (note that if `setConfig()` is used in extension code, it will still
   be additive to extensions, however): */
   // lockExtensions: true,
-});
+})
 
 svgEditor.setConfig(
   {
@@ -31,7 +31,7 @@ svgEditor.setConfig(
     //   other)
   },
   { allowInitialUserOverride: true }
-);
+)
 
 // EXTENSION CONFIG
 svgEditor.setConfig({
@@ -41,7 +41,7 @@ svgEditor.setConfig({
   // they behave exactly like all extensions but they can be anywhere
   // so the full relative path needs to specified for each user extensions.
   userExtensions: [/* '../ext-helloworld/ext-helloworld.js' */]
-});
+})
 
 // OTHER CONFIG
 svgEditor.setConfig({
@@ -93,7 +93,7 @@ svgEditor.setConfig({
   // Used by `ext-storage.js`; empty any prior storage if the user
   //  declines to store
   // emptyStorageOnDecline: true,
-});
+})
 
 // PREF CHANGES
 /*
@@ -127,7 +127,7 @@ svgEditor.setConfig({
   // Only shows in UI as far as alert notices
   // save_notice_done: false,
   // export_notice_done: false
-});
+})
 
 // Variable XDOMAIN below is created by Rollup for the Xdomain build (see rollup.config.js)
 /* globals XDOMAIN */
@@ -135,8 +135,8 @@ try { // try clause to avoid js to complain if XDOMAIN undefined
   if (XDOMAIN) {
     svgEditor.setConfig({
       canvasName: 'xdomain', // Namespace this
-      allowedOrigins: [ '*' ]
-    });
-    console.info('xdomain config activated');
+      allowedOrigins: ['*']
+    })
+    console.info('xdomain config activated')
   }
-} catch (error) {/* empty fn */}
+} catch (error) { /* empty fn */ }

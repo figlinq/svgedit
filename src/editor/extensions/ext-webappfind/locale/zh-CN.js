@@ -5,4 +5,4 @@ export default {
       title: '保存图片到磁盘'
     }
   ]
-};
+}

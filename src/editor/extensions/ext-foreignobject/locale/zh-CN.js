@@ -22,4 +22,4 @@ export default {
       label: '文字大小'
     }
   ]
-};
+}

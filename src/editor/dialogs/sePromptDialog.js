@@ -1,4 +1,4 @@
-import SePlainAlertDialog from './SePlainAlertDialog.js';
+import SePlainAlertDialog from './SePlainAlertDialog.js'
 /**
  * @class SePromptDialog
  */
@@ -7,18 +7,20 @@ export class SePromptDialog extends HTMLElement {
     * @function constructor
     */
   constructor () {
-    super();
+    super()
     // create the shadowDom and insert the template
-    this._shadowRoot = this.attachShadow({ mode: 'open' });
-    this.dialog = new SePlainAlertDialog();
+    this._shadowRoot = this.attachShadow({ mode: 'open' })
+    this.dialog = new SePlainAlertDialog()
   }
+
   /**
    * @function observedAttributes
    * @returns {any} observed
    */
   static get observedAttributes () {
-    return [ 'title', 'close' ];
+    return ['title', 'close']
   }
+
   /**
    * @function attributeChangedCallback
    * @param {string} name
@@ -28,31 +30,32 @@ export class SePromptDialog extends HTMLElement {
    */
   attributeChangedCallback (name, oldValue, newValue) {
     switch (name) {
-    case 'title':
-      if (this.dialog.opened) {
-        this.dialog.close();
-      }
-      this.dialog.textContent = newValue;
-      this.dialog.choices = [ 'Cancel' ];
-      this.dialog.open();
-      break;
-    case 'close':
-      if (this.dialog.opened) {
-        this.dialog.close();
-      }
-      break;
-    default:
+      case 'title':
+        if (this.dialog.opened) {
+          this.dialog.close()
+        }
+        this.dialog.textContent = newValue
+        this.dialog.choices = ['Cancel']
+        this.dialog.open()
+        break
+      case 'close':
+        if (this.dialog.opened) {
+          this.dialog.close()
+        }
+        break
+      default:
       // eslint-disable-next-line no-console
-      console.error('unknown attr for:', name, 'newValue =', newValue);
-      break;
+        console.error('unknown attr for:', name, 'newValue =', newValue)
+        break
     }
   }
+
   /**
    * @function get
    * @returns {any}
    */
   get title () {
-    return this.getAttribute('title');
+    return this.getAttribute('title')
   }
 
   /**
@@ -60,14 +63,15 @@ export class SePromptDialog extends HTMLElement {
    * @returns {void}
    */
   set title (value) {
-    this.setAttribute('title', value);
+    this.setAttribute('title', value)
   }
+
   /**
    * @function get
    * @returns {any}
    */
   get close () {
-    return this.getAttribute('close');
+    return this.getAttribute('close')
   }
 
   /**
@@ -75,9 +79,9 @@ export class SePromptDialog extends HTMLElement {
    * @returns {void}
    */
   set close (value) {
-    this.setAttribute('close', value);
+    this.setAttribute('close', value)
   }
 }
 
 // Register
-customElements.define('se-prompt-dialog', SePromptDialog);
+customElements.define('se-prompt-dialog', SePromptDialog)

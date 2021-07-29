@@ -9,25 +9,24 @@
  */
 
 const loadExtensionTranslation = async function (lang) {
-  let translationModule;
+  let translationModule
   try {
-    // eslint-disable-next-line no-unsanitized/method
-    translationModule = await import(`./locale/${encodeURIComponent(lang)}.js`);
+    translationModule = await import(`./locale/${encodeURIComponent(lang)}.js`)
   } catch (_error) {
     // eslint-disable-next-line no-console
-    console.error(`Missing translation (${lang}) - using 'en'`);
-    translationModule = await import(`./locale/en.js`);
+    console.error(`Missing translation (${lang}) - using 'en'`)
+    translationModule = await import('./locale/en.js')
   }
-  return translationModule.default;
-};
+  return translationModule.default
+}
 
 export default {
   name: 'mathjax',
   async init ({ $ }) {
-    const svgEditor = this;
-    const strings = await loadExtensionTranslation(svgEditor.configObj.pref('lang'));
-    const { svgCanvas } = svgEditor;
-    const { $id } = svgCanvas;
+    const svgEditor = this
+    const strings = await loadExtensionTranslation(svgEditor.configObj.pref('lang'))
+    const { svgCanvas } = svgEditor
+    const { $id } = svgCanvas
 
     // Configuration of the MathJax extention.
 
@@ -57,12 +56,12 @@ export default {
       // mathjaxSrc = 'http://cdn.mathjax.org/mathjax/latest/MathJax.js',
       // Had been on https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG.js
       // Obtained Text-AMS-MML_SVG.js from https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.3/config/TeX-AMS-MML_SVG.js
-      { uiStrings } = svgEditor;
+      { uiStrings } = svgEditor
     let
-      math;
-    let locationX;
-    let locationY;
-    let mathjaxLoaded = false;
+      math
+    let locationX
+    let locationY
+    let mathjaxLoaded = false
 
     // TODO: Implement language support. Move these uiStrings to the locale files and
     //   the code to the langReady callback. Also i18nize alert and HTML below
@@ -76,17 +75,17 @@ export default {
         mathml_save_warning: 'Advised. The math will be saved as a figure.',
         title: 'Mathematics code editor'
       }
-    });
+    })
 
     /**
      *
      * @returns {void}
      */
     function saveMath () {
-      const code = $id('mathjax_code_textarea').value;
+      const code = $id('mathjax_code_textarea').value
       // displaystyle to force MathJax NOT to use the inline style. Because it is
       // less fancy!
-      MathJax.Hub.queue.Push([ 'Text', math, '\\displaystyle{' + code + '}' ]);
+      MathJax.Hub.queue.Push(['Text', math, '\\displaystyle{' + code + '}'])
 
       /*
        * The MathJax library doesn't want to bloat your webpage so it creates
@@ -102,52 +101,52 @@ export default {
        */
       MathJax.Hub.queue.Push(
         function () {
-          const mathjaxMath = $('.MathJax_SVG');
-          const svg = $(mathjaxMath.html());
+          const mathjaxMath = $('.MathJax_SVG')
+          const svg = $(mathjaxMath.html())
           svg.find('use').each(function () {
             // TODO: find a less pragmatic and more elegant solution to this.
             const id = $(this).attr('href')
               ? $(this).attr('href').slice(1) // Works in Chrome.
-              : $(this).attr('xlink:href').slice(1); // Works in Firefox.
-            const glymph = $('#' + id).clone().removeAttr('id');
-            const x = $(this).attr('x');
-            const y = $(this).attr('y');
-            const transform = $(this).attr('transform');
+              : $(this).attr('xlink:href').slice(1) // Works in Firefox.
+            const glymph = $('#' + id).clone().removeAttr('id')
+            const x = $(this).attr('x')
+            const y = $(this).attr('y')
+            const transform = $(this).attr('transform')
             if (transform && (x || y)) {
-              glymph.attr('transform', transform + ' translate(' + x + ',' + y + ')');
+              glymph.attr('transform', transform + ' translate(' + x + ',' + y + ')')
             } else if (transform) {
-              glymph.attr('transform', transform);
+              glymph.attr('transform', transform)
             } else if (x || y) {
-              glymph.attr('transform', 'translate(' + x + ',' + y + ')');
+              glymph.attr('transform', 'translate(' + x + ',' + y + ')')
             }
-            $(this).replaceWith(glymph);
-          });
+            $(this).replaceWith(glymph)
+          })
           // Remove the style tag because it interferes with SVG-Edit.
-          svg.removeAttr('style');
-          svg.attr('xmlns', 'http://www.w3.org/2000/svg');
-          svgCanvas.importSvgString($('<div>').append(svg.clone()).html(), true);
-          svgCanvas.ungroupSelectedElement();
+          svg.removeAttr('style')
+          svg.attr('xmlns', 'http://www.w3.org/2000/svg')
+          svgCanvas.importSvgString($('<div>').append(svg.clone()).html(), true)
+          svgCanvas.ungroupSelectedElement()
           // TODO: To undo the adding of the Formula you now have to undo twice.
           // This should only be once!
-          svgCanvas.moveSelectedElements(locationX, locationY, true);
+          svgCanvas.moveSelectedElements(locationX, locationY, true)
         }
-      );
+      )
     }
 
-    const buttons = [ {
+    const buttons = [{
       id: 'tool_mathjax',
       type: 'mode',
       icon: 'mathjax.png',
       events: {
         async click () {
           // Set the mode.
-          svgCanvas.setMode('mathjax');
+          svgCanvas.setMode('mathjax')
 
           // Only load Mathjax when needed, we don't want to strain Svg-Edit any more.
           // From this point on it is very probable that it will be needed, so load it.
           if (mathjaxLoaded === false) {
-            const div = document.createElement('div');
-            div.id = 'mathjax';
+            const div = document.createElement('div')
+            div.id = 'mathjax'
             div.innerHTML = '<!-- Here is where MathJax creates the math -->' +
             '<div id="mathjax_creator" class="tex2jax_process" style="display:none">' +
               '$${}$$' +
@@ -167,72 +166,72 @@ export default {
                     '</span></label>' +
                 '<textarea id="mathjax_code_textarea" spellcheck="false"></textarea>' +
               '</fieldset>' +
-            '</div>';
-            $id('svg_prefs').parentNode.insertBefore(div, $id('svg_prefs').nextSibling);
-            div.style.display = 'none';
+            '</div>'
+            $id('svg_prefs').parentNode.insertBefore(div, $id('svg_prefs').nextSibling)
+            div.style.display = 'none'
             // Add functionality and picture to cancel button.
             $('#tool_mathjax_cancel').prepend($.getSvgIcon('cancel', true))
               .on('click touched', function () {
-                $id("mathjax").style.display = 'none';
-              });
+                $id('mathjax').style.display = 'none'
+              })
 
             // Add functionality and picture to the save button.
             $('#tool_mathjax_save').prepend($.getSvgIcon('ok', true))
               .on('click touched', function () {
-                saveMath();
-                $id("mathjax").style.display = 'none';
-              });
+                saveMath()
+                $id('mathjax').style.display = 'none'
+              })
 
             // MathJax preprocessing has to ignore most of the page.
-            document.body.classList.add("tex2jax_ignore");
+            document.body.classList.add('tex2jax_ignore')
 
             try {
-              await import('./mathjax/MathJax.min.js'); // ?config=TeX-AMS-MML_SVG.js');
+              await import('./mathjax/MathJax.min.js') // ?config=TeX-AMS-MML_SVG.js');
               // When MathJax is loaded get the div where the math will be rendered.
               MathJax.Hub.queue.Push(function () {
-                math = MathJax.Hub.getAllJax('#mathjax_creator')[0];
-                mathjaxLoaded = true;
-                console.info('MathJax Loaded');
-              });
+                math = MathJax.Hub.getAllJax('#mathjax_creator')[0]
+                mathjaxLoaded = true
+                console.info('MathJax Loaded')
+              })
             } catch (e) {
-              console.warn('Failed loading MathJax.');
+              console.warn('Failed loading MathJax.')
               // eslint-disable-next-line no-alert
-              alert('Failed loading MathJax. You will not be able to change the mathematics.');
+              alert('Failed loading MathJax. You will not be able to change the mathematics.')
             }
           }
         }
       }
-    } ];
+    }]
 
     return {
       name: strings.name,
       svgicons: 'mathjax-icons.xml',
       buttons: strings.buttons.map((button, i) => {
-        return Object.assign(buttons[i], button);
+        return Object.assign(buttons[i], button)
       }),
 
       mouseDown () {
         if (svgCanvas.getMode() === 'mathjax') {
-          return { started: true };
+          return { started: true }
         }
-        return undefined;
+        return undefined
       },
       mouseUp (opts) {
         if (svgCanvas.getMode() === 'mathjax') {
           // Get the coordinates from your mouse.
-          const zoom = svgCanvas.getZoom();
+          const zoom = svgCanvas.getZoom()
           // Get the actual coordinate by dividing by the zoom value
-          locationX = opts.mouse_x / zoom;
-          locationY = opts.mouse_y / zoom;
+          locationX = opts.mouse_x / zoom
+          locationY = opts.mouse_y / zoom
 
-          $id("mathjax").style.display = 'block';
-          return { started: false }; // Otherwise the last selected object dissapears.
+          $id('mathjax').style.display = 'block'
+          return { started: false } // Otherwise the last selected object dissapears.
         }
-        return undefined;
+        return undefined
       },
       callback () {
-        const head = document.head || document.getElementsByTagName('head')[0];
-        const style = document.createElement('style');
+        const head = document.head || document.getElementsByTagName('head')[0]
+        const style = document.createElement('style')
         style.textContent = '#mathjax fieldset{' +
           'padding: 5px;' +
           'margin: 5px;' +
@@ -280,9 +279,9 @@ export default {
           'width: 416px;' +
           'display: block;' +
           'height: 100px;' +
-        '}';
-        head.appendChild(style);
+        '}'
+        head.appendChild(style)
       }
-    };
+    }
   }
-};
+}

@@ -8,4 +8,4 @@ export default {
       title: '关闭路径'
     }
   ]
-};
+}

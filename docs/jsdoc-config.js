@@ -1,8 +1,8 @@
 /* eslint-env node */
-'use strict';
+'use strict'
 
 module.exports = {
-  plugins: [ 'plugins/markdown' ],
+  plugins: ['plugins/markdown'],
   markdown: {},
   recurseDepth: 10,
   source: {
@@ -34,4 +34,4 @@ module.exports = {
     destination: 'docs/jsdoc',
     tutorials: 'docs/tutorials'
   }
-};
+}

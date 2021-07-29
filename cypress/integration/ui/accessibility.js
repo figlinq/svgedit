@@ -1,22 +1,22 @@
 import {
   visitAndApproveStorage
-} from '../../support/ui-test-helper.js';
+} from '../../support/ui-test-helper.js'
 
 describe('UI - Accessibility', function () {
   beforeEach(() => {
-    visitAndApproveStorage();
-    cy.injectAxe();
-  });
+    visitAndApproveStorage()
+    cy.injectAxe()
+  })
   // https://www.npmjs.com/package/cypress-axe
   it.skip('Has no detectable a11y violations on load', () => {
     // Configure aXe and test the page at initial load
     cy.configureAxe({
       // Todo: Reenable when have time to fix
       // See https://www.deque.com/axe/axe-for-web/documentation/api-documentation/#user-content-parameters-1
-      rules: [ {
+      rules: [{
         id: 'meta-viewport',
         enabled: false
-      } ]
+      }]
       /*
       branding: {
         brand: String,
@@ -27,7 +27,7 @@ describe('UI - Accessibility', function () {
       rules: [Object],
       locale: Object
       */
-    });
+    })
     cy.checkA11y(
       {},
       {
@@ -38,6 +38,6 @@ describe('UI - Accessibility', function () {
           'scrollable-region-focusable': { enabled: false }
         }
       }
-    );
-  });
-});
+    )
+  })
+})

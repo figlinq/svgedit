@@ -3,41 +3,41 @@
 // This rollup script is run by the command:
 // 'npm run build'
 
-import path from 'path';
-import { lstatSync, readdirSync } from 'fs';
-import rimraf from 'rimraf';
-import babel from '@rollup/plugin-babel';
-import copy from 'rollup-plugin-copy';
-import { nodeResolve } from '@rollup/plugin-node-resolve';
-import commonjs from '@rollup/plugin-commonjs';
-import nodePolyfills from 'rollup-plugin-node-polyfills';
-import url from '@rollup/plugin-url'; // for XML/SVG files
-import dynamicImportVars from '@rollup/plugin-dynamic-import-vars';
-import { terser } from 'rollup-plugin-terser';
+import path from 'path'
+import { lstatSync, readdirSync } from 'fs'
+import rimraf from 'rimraf'
+import babel from '@rollup/plugin-babel'
+import copy from 'rollup-plugin-copy'
+import { nodeResolve } from '@rollup/plugin-node-resolve'
+import commonjs from '@rollup/plugin-commonjs'
+import nodePolyfills from 'rollup-plugin-node-polyfills'
+import url from '@rollup/plugin-url' // for XML/SVG files
+import dynamicImportVars from '@rollup/plugin-dynamic-import-vars'
+import { terser } from 'rollup-plugin-terser'
 // import progress from 'rollup-plugin-progress';
-import filesize from 'rollup-plugin-filesize';
+import filesize from 'rollup-plugin-filesize'
 
 // utility function
 const getDirectories = (source) => {
   const isDirectory = (dir) => {
-    return lstatSync(dir).isDirectory();
-  };
-  return readdirSync(source).map((nme) => path.join(source, nme)).filter((i) => isDirectory(i));
-};
+    return lstatSync(dir).isDirectory()
+  }
+  return readdirSync(source).map((nme) => path.join(source, nme)).filter((i) => isDirectory(i))
+}
 
 // capture the list of files to build for extensions and ext-locales
-const extensionDirs = getDirectories('src/editor/extensions');
+const extensionDirs = getDirectories('src/editor/extensions')
 
 /** @todo should we support systemjs? */
-const dest = [ 'dist/editor' ];
+const dest = ['dist/editor']
 
 // remove existing distribution
 // eslint-disable-next-line no-console
-rimraf('./dist', () => console.info('recreating dist'));
+rimraf('./dist', () => console.info('recreating dist'))
 
 // config for svgedit core module
-const config = [ {
-  input: [ 'src/editor/index.js' ],
+const config = [{
+  input: ['src/editor/index.js'],
   output: [
     {
       format: 'es',
@@ -81,17 +81,17 @@ const config = [ {
       preferBuiltins: false
     }),
     commonjs(),
-    dynamicImportVars({ include: `src/editor/locale.js` }),
-    babel({ babelHelpers: 'bundled', exclude: [ /\/core-js\// ] }), // exclude core-js to avoid circular dependencies.
+    dynamicImportVars({ include: 'src/editor/locale.js' }),
+    babel({ babelHelpers: 'bundled', exclude: [/\/core-js\//] }), // exclude core-js to avoid circular dependencies.
     nodePolyfills(),
     terser({ keep_fnames: true }), // keep_fnames is needed to avoid an error when calling extensions.
     filesize()
   ]
-} ];
+}]
 
 // config for dynamic extensions
 extensionDirs.forEach((extensionDir) => {
-  const extensionName = path.basename(extensionDir);
+  const extensionName = path.basename(extensionDir)
   extensionName && config.push(
     {
       input: `./src/editor/extensions/${extensionName}/${extensionName}.js`,
@@ -113,7 +113,7 @@ extensionDirs.forEach((extensionDir) => {
       ],
       plugins: [
         url({
-          include: [ '**/*.svg', '**/*.png', '**/*.jpg', '**/*.gif', '**/*.xml' ],
+          include: ['**/*.svg', '**/*.png', '**/*.jpg', '**/*.gif', '**/*.xml'],
           limit: 0,
           fileName: '[name][extname]'
         }),
@@ -123,12 +123,12 @@ extensionDirs.forEach((extensionDir) => {
         }),
         commonjs({ exclude: `src/editor/extensions/${extensionName}/${extensionName}.js` }),
         dynamicImportVars({ include: `src/editor/extensions/${extensionName}/${extensionName}.js` }),
-        babel({ babelHelpers: 'bundled', exclude: [ /\/core-js\// ] }),
+        babel({ babelHelpers: 'bundled', exclude: [/\/core-js\//] }),
         nodePolyfills(),
         terser({ keep_fnames: true })
       ]
     }
-  );
-});
+  )
+})
 
-export default config;
+export default config
