@@ -288,7 +288,7 @@ class LayersPanel {
     let i = 0
     do {
       i++
-    } while (el == el.previousElementSibling)
+    } while (el === el.previousElementSibling)
     return i
   }
 

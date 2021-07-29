@@ -12,6 +12,10 @@
   "engines": {
     "node": ">=10"
   },
+  "standard": {
+    "globals": [ "cy", "Cypress", "chai", "assert" ],
+    "envs": ["mocha", "browser" ]
+  },
   "scripts": {
     "lint": "standard --ext js,html,md .",
     "test": "run-s cypress:instrument cypress:test",

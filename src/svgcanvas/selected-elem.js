@@ -225,7 +225,7 @@ export const cloneSelectedElements = function (x, y) {
     let i = 0
     do {
       i++
-    } while (el == el.previousElementSibling)
+    } while (el === el.previousElementSibling)
     return i
   }
 

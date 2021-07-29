@@ -671,7 +671,7 @@ export const embedImage = function (src) {
       resolve(svgContext_.getEncodableImages(src))
     })
     imgI.addEventListener('error', (e) => {
-      reject(`error loading image: ${e.currentTarget.attributes.src.value}`)
+      reject(new Error(`error loading image: ${e.currentTarget.attributes.src.value}`))
     })
     imgI.setAttribute('src', src)
   })
@@ -874,7 +874,7 @@ export const exportPDF = async (
       // eslint-disable-next-line promise/catch-or-return
       html2canvas(iframedoc.body, { useCORS: true, allowTaint: true }).then((canvas) => {
         const imgData = canvas.toDataURL('image/png')
-        const doc = new jsPDF({
+        const doc = new jsPDF({ /* eslint-disable-line */
           orientation: orientation,
           unit: unit,
           format: [res.w, res.h]
