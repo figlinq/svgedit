@@ -18,7 +18,6 @@ const REVERSE_NS = getReverseNS()
  * don't remove).
  * @type {PlainObject}
  */
-/* eslint-disable max-len */
 const svgWhiteList_ = {
   // SVG Elements
   a: ['class', 'clip-path', 'clip-rule', 'fill', 'fill-opacity', 'fill-rule', 'filter', 'id', 'mask', 'opacity', 'stroke', 'stroke-dasharray', 'stroke-dashoffset', 'stroke-linecap', 'stroke-linejoin', 'stroke-miterlimit', 'stroke-opacity', 'stroke-width', 'style', 'systemLanguage', 'transform', 'xlink:href', 'xlink:title'],

@@ -926,7 +926,6 @@ class Editor extends EditorStartup {
   *
   * @returns {void}
   */
-  // eslint-disable-next-line class-methods-use-this
   hideSourceEditor () {
     const $editorDialog = document.getElementById('se-svg-editor-dialog')
     $editorDialog.setAttribute('dialog', 'closed')
