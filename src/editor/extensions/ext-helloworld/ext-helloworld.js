@@ -8,16 +8,16 @@
  */
 
 /**
-* This is a very basic SVG-Edit extension. It adds a "Hello World" button in
-*  the left ("mode") panel. Clicking on the button, and then the canvas
-*  will show the user the point on the canvas that was clicked on.
-*/
+ * This is a very basic SVG-Edit extension. It adds a "Hello World" button in
+ *  the left ("mode") panel. Clicking on the button, and then the canvas
+ *  will show the user the point on the canvas that was clicked on.
+ */
 
 const name = "helloworld";
 
-const loadExtensionTranslation = async function (svgEditor) {
+const loadExtensionTranslation = async function(svgEditor) {
   let translationModule;
-  const lang = svgEditor.configObj.pref('lang');
+  const lang = svgEditor.configObj.pref("lang");
   try {
     // eslint-disable-next-line no-unsanitized/method
     translationModule = await import(`./locale/${lang}.js`);
@@ -32,7 +32,7 @@ const loadExtensionTranslation = async function (svgEditor) {
 
 export default {
   name,
-  async init ({ _importLocale }) {
+  async init({ _importLocale }) {
     const svgEditor = this;
     await loadExtensionTranslation(svgEditor);
     const { svgCanvas } = svgEditor;
@@ -47,16 +47,20 @@ export default {
         buttonTemplate.innerHTML = `
         <se-button id="hello_world" title="${title}" src="./images/hello_world.svg"></se-button>
         `;
-        $id('tools_left').append(buttonTemplate.content.cloneNode(true));
-        $id('hello_world').addEventListener("click", () => {
-          svgCanvas.setMode('hello_world');
+        $id("tools_left").append(buttonTemplate.content.cloneNode(true));
+        $id("hello_world").addEventListener("click", () => {
+          if (svgCanvas.getMode() === "hello_world") {
+            svgCanvas.setMode(undefined);
+          } else {
+            svgCanvas.setMode("hello_world");
+          }
         });
       },
       // This is triggered when the main mouse button is pressed down
       // on the editor canvas (not the tool panels)
-      mouseDown () {
+      mouseDown() {
         // Check the mode on mousedown
-        if (svgCanvas.getMode() === 'hello_world') {
+        if (svgCanvas.getMode() === "hello_world") {
           // The returned object must include "started" with
           // a value of true in order for mouseUp to be triggered
           return { started: true };
@@ -66,9 +70,9 @@ export default {
 
       // This is triggered from anywhere, but "started" must have been set
       // to true (see above). Note that "opts" is an object with event info
-      mouseUp (opts) {
+      mouseUp(opts) {
         // Check the mode on mouseup
-        if (svgCanvas.getMode() === 'hello_world') {
+        if (svgCanvas.getMode() === "hello_world") {
           const zoom = svgCanvas.getZoom();
 
           // Get the actual coordinate by dividing by the zoom value
