@@ -1310,7 +1310,8 @@ export const DOMMouseScrollEvent = function (e) {
   if (!e.shiftKey) { return; }
 
   e.preventDefault();
-  const evt = e.originalEvent;
+  const evt = e;
+  console.log(e);
 
   eventContext_.setRootSctm($id('svgcontent').querySelector('g').getScreenCTM().inverse());
 
