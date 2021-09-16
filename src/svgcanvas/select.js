@@ -325,14 +325,15 @@ export class SelectorManager {
         element: 'circle',
         attr: {
           id: ('selectorGrip_resize_' + dir),
-          fill: '#22C',
+          fill: 'white',
           r: gripRadius,
+          stroke: "#22C",
           style: ('cursor:' + dir + '-resize'),
           // This expands the mouse-able area of the grips making them
           // easier to grab with the mouse.
           // This works in Opera and WebKit, but does not work in Firefox
           // see https://bugzilla.mozilla.org/show_bug.cgi?id=500174
-          'stroke-width': 2,
+          'stroke-width': 1,
           'pointer-events': 'all'
         }
       });
