@@ -99,6 +99,13 @@ export default {
     const updateGrid = (zoom) => {
       // TODO: Try this with <line> elements, then compare performance difference
       const unit = units[svgEditor.configObj.curConfig.baseUnit]; // 1 = 1px
+      var snappingStep = svgEditor.configObj.curConfig.snappingStep;
+      // if ("snappingStep" in svgEditor.configObj.curConfig) {
+      //   snappingStep = svgEditor.configObj.curConfig.snappingStep;
+      // } else {
+      //   snappingStep = 10;
+      // }
+
       const uMulti = unit * zoom;
       // Calculate the main number interval
       const rawM = 100 / uMulti;
@@ -108,7 +115,6 @@ export default {
         return rawM <= num;
       });
       const bigInt = multi * uMulti;
-
       // Set the canvas size to the width of the container
       hcanvas.width = bigInt;
       hcanvas.height = bigInt;
@@ -116,7 +122,7 @@ export default {
       const curD = 0.5;
       const part = bigInt / 10;
 
-      ctx.globalAlpha = 0.2;
+      ctx.globalAlpha = 0.05;
       ctx.strokeStyle = svgEditor.configObj.curConfig.gridColor;
       for (let i = 1; i < 10; i++) {
         const subD = Math.round(part * i) + 0.5;
@@ -129,7 +135,7 @@ export default {
       }
       ctx.stroke();
       ctx.beginPath();
-      ctx.globalAlpha = 0.5;
+      ctx.globalAlpha = 0.05;
       ctx.moveTo(curD, bigInt);
       ctx.lineTo(curD, 0);
 

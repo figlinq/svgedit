@@ -609,4 +609,6 @@ ul li.current {
   width: 24px;
 }
 
-
+#elem_id, #elem_class{
+  display: none;
+}
