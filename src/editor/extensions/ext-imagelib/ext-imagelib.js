@@ -525,10 +525,10 @@ export default {
         buttonTemplate.innerHTML = `
         <se-menu-item id="tool_imagelib" label="Image library" src="${imgPath}/library.svg"></se-menu-item>
         `;
-        insertAfter($id('tool_export'), buttonTemplate.content.cloneNode(true));
-        $id('tool_imagelib').addEventListener("click", () => {
-          showBrowser();
-        });
+        // insertAfter($id('tool_export'), buttonTemplate.content.cloneNode(true));
+        // $id('tool_imagelib').addEventListener("click", () => {
+        //   showBrowser();
+        // });
 
         const style = document.createElement('style');
         style.textContent = '#imgbrowse_holder {' +

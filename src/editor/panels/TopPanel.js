@@ -828,6 +828,7 @@ class TopPanel {
     const { imgPath } = this.editor.configObj.curConfig;
     // eslint-disable-next-line no-unsanitized/property
     template.innerHTML = `
+      <div id="tools_top_placeholder"></div>
       <div id="tools_top">
         <div id="editor_panel">
           <div class="tool_sep"></div>

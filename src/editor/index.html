@@ -12,9 +12,11 @@
 
   <!-- STYLESHEETS (others loaded dynamically) -->
   <style id="styleoverrides" media="screen"></style>
-  <link href="./svgedit.css" rel="stylesheet" media="all">
-  </link>
-
+  <link href="./svgedit.css" rel="stylesheet" media="all"></link>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script> 
   <!-- SCRIPTS -->
 
   <!-- Lacking browser support -->
@@ -31,7 +33,7 @@
       allowInitialUserOverride: true,
       extensions: [],
       noDefaultExtensions: false,
-      // userExtensions: ['./extensions/ext-helloworld/ext-helloworld.js'],
+      userExtensions: ['./extensions/ext-figlinq/ext-figlinq.js'],
     });
 
     // Variable XDOMAIN below is created by Rollup for the Xdomain build (see rollup.config.js)
@@ -51,14 +53,110 @@
 </head>
 
 <body style="margin:0">
-  <!-- svgedit container can be positionned anywhere in the DOM
-       but it must have a width and a height -->
-  <!-- 
-  <h1>SVGEdit</h1>
-  <div id="container" style="width:100%;height:550px"></div>
-  <h1>End</h1>
-  -->      
-  <div id="container" style="width:100vw;height:100vh; overflow:hidden;"></div>
+  <nav class="navbar is-info" role="navigation" aria-label="main navigation" style="background-color: rgb(8, 84, 125);">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://bulma.io">
+        <img src="images/figlinq/logo_text_dark.svg" width="80">
+      </a>
+  
+      <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </a>
+    </div>
+  
+    <div id="navbar" class="navbar-menu">
+      <div class="navbar-start">
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link">
+            Menu
+          </a>  
+          <div class="navbar-dropdown">
+            <a id="tool_clear" class="navbar-item">
+              New figure (N)
+            </a>
+            <a id="tool_open" class="navbar-item">
+              Open figure
+            </a>
+            <a id="tool_save" class="navbar-item">
+              Save figure (S)
+            </a>
+            <a id="tool_import" class="navbar-item">
+              Import figure
+            </a>
+            <a id="tool_export" class="navbar-item">
+              Export figure
+            </a>
+            <a id="tool_add_chart" class="navbar-item">
+              Add chart
+            </a>
+            <hr class="navbar-divider">
+            <a id="tool_docprops" class="navbar-item">
+              Document properties
+            </a>
+            <a id="tool_editor_prefs" class="navbar-item">
+              Preferences
+            </a>
+          </div>
+        </div>
+        <div class="navbar-item">
+            <a id="add_chart" class="button is-light is-outlined is-small">
+              Add chart
+            </a>
+          </div>
+        </div>
+      </div>
+  
+      <div class="navbar-end">
+        <div class="navbar-item">
+          <div class="buttons">
+            <a class="button is-light is-small">
+              <strong>Sign up</strong>
+            </a>
+            <a class="button is-light is-small">
+              Log in
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+  <div id="container" style="width:100vw;height:calc(100vh - 52px); overflow:hidden;"></div>
+  <div id="modal_add_chart" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-content">
+      <div class="box">
+        <nav class="panel">
+          <p class="panel-heading">
+            Select chart(s)
+          </p>
+          <div class="panel-block">
+            <p class="control has-icons-left">
+              <input class="input" type="text" placeholder="Search">
+              <span class="icon is-left">
+                <i class="fas fa-search" aria-hidden="true"></i>
+              </span>
+            </p>
+          </div>
+          <p id="panel_tabs" class="panel-tabs">
+            <a class="is-active">My files</a>
+            <a>Shared with me</a>
+          </p>
+          <div class="panel-block">
+            <div class="buttons">
+              <button id="confirm_add_chart" class="button is-link" disabled>
+                Add chart(s)
+              </button>
+              <button id="cancel_add_chart" class="button is-link is-outlined">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>

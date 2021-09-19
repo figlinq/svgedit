@@ -192,6 +192,7 @@ hr {
   padding-block: 2px;
   padding-left: 3px;
   height: 34px;
+  display:none;
 }
 
 #main_icon {
@@ -302,6 +303,15 @@ hr {
   flex-wrap: wrap;
   align-items: flex-start;
   background-color: var(--main-bg-color);
+  position: absolute;
+}
+
+#tools_top_placeholder{
+  grid-area: top;
+  position:relative;
+  height: 40px;
+  display: block;
+  width: 20px;
 }
 
 #tools_top>* {
@@ -340,7 +350,7 @@ hr {
 #tools_left {
   grid-area: left;
   border-right: none;
-  overflow-y: scroll;
+  overflow-y: auto;
   /* Works on Firefox */
   scrollbar-width: 3px;
   scrollbar-color: rgb(70, 70, 70) auto;
@@ -611,4 +621,13 @@ ul li.current {
 
 #elem_id, #elem_class{
   display: none;
+}
+
+#tool_position se-list-item{
+  display: block;
+  width:30px;
+}
+
+.panel-block.is-active{
+  background-color: #eef8ff;
 }
