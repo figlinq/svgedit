@@ -55,7 +55,7 @@
 <body style="margin:0">
   <nav class="navbar is-info" role="navigation" aria-label="main navigation" style="background-color: rgb(8, 84, 125);">
     <div class="navbar-brand">
-      <a class="navbar-item" href="https://bulma.io">
+      <a class="navbar-item" href="https://figlinq.com">
         <img src="images/figlinq/logo_text_dark.svg" width="80">
       </a>
   
@@ -129,24 +129,24 @@
       <div class="box">
         <nav class="panel">
           <p class="panel-heading">
-            Select chart(s)
+            Select chart
           </p>
-          <div class="panel-block">
+          <!-- <div class="panel-block">
             <p class="control has-icons-left">
               <input class="input" type="text" placeholder="Search">
               <span class="icon is-left">
                 <i class="fas fa-search" aria-hidden="true"></i>
               </span>
             </p>
-          </div>
+          </div> -->
           <p id="panel_tabs" class="panel-tabs">
             <a class="is-active">My files</a>
-            <a>Shared with me</a>
+            <!-- <a>Shared with me</a> -->
           </p>
           <div id="panel_breadcrumb" class="panel-block">
             <div class="breadcrumb" aria-label="breadcrumbs">
               <ul>
-                <li>
+                <li class="breadcrumb-item" data-fid="-1">
                   <a href="#" class="folder-item" data-fid="-1">&nbsp;
                     <span class="icon is-small mx-0">
                       <i class="fas fa-home"></i>
@@ -154,12 +154,12 @@
                   </a>
                 </li>
               </ul>
-            </div>          
+            </div>
           </div>
           <div class="panel-block">
             <div class="buttons">
               <button id="confirm_add_chart" class="button is-link" disabled>
-                Add chart(s)
+                Add chart
               </button>
               <button id="cancel_add_chart" class="button is-link is-outlined">
                 Cancel

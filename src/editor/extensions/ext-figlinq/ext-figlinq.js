@@ -14,7 +14,7 @@ import {folderItem, plotItem, parentItem, breadcrumb} from "./elements";
  *  the left ("mode") panel. Clicking on the button, and then the canvas
  *  will show the user the point on the canvas that was clicked on.
  */
-jQuery.fn.reverse = [].reverse;
+// jQuery.fn.reverse = [].reverse;
 const name = "figlinq";
 
 const loadExtensionTranslation = async function(svgEditor) {
@@ -43,7 +43,7 @@ export default {
     return {
       name: svgEditor.i18next.t(`${name}:name`),
       callback() {
-        var itemList, figlinqUserId;
+        var itemListFolder, itemListChart, figlinqUserId;
 
         // Get user ID 
         var urlInit = location.hostname == "localhost" ?
@@ -62,43 +62,44 @@ export default {
               jQuery("#add_chart").removeClass("is-hidden");
               jQuery("#log_in").addClass("is-hidden");
               jQuery("#sign_up").addClass("is-hidden");
+              figlinqUserId = dataJSON.username;
             }
           });
 
         const updateBreadcrumb = (fid, fname) => {
-
           var fidPresent = false;
-          jQuery('.breadcrumb-item').each(function (index) {
-            console.log(jQuery(this).data("fid"))
-
+          jQuery('.breadcrumb-item').each(function () {
             if(jQuery(this).data("fid") == fid) fidPresent = true;
           });
 
           if (fidPresent) {
-            jQuery('.breadcrumb-item').reverse().each(function (index) {
-              if(jQuery(this).data("fid") != fid) {
-                jQuery(this).remove();
+            jQuery(jQuery(".breadcrumb-item").get().reverse()).each(function (index) {
+              if(jQuery(this).data("fid") == fid) {
                 return false;
+              } else {
+                jQuery(this).remove();
               }
-            });        
+              
+              // if(index && jQuery(this).data("fid") != fid && jQuery(this).data("fid") != "-1") {
+              //   jQuery(this).remove();
+              //   return false;
+              // }
+            });
           } else {
             jQuery(breadcrumb(fid, fname)).insertAfter( ".breadcrumb-item:last" );
           }
-
         }
 
         const updateItemList = (fid, page) => {
 
           var url = location.hostname == "localhost" ?
           "https://5d5eeb2c-b0b5-4b6b-b52e-0d009d067b36.mock.pstmn.io/v2/folders/home" :
-          "https://create.figlinq.com/v2/folders/" + figlinqUserId + ":" + fid + "?page=" + page + "&order_by=filename&filetype=plot&filetype=fold";
+          "https://create.figlinq.com/v2/folders/" + figlinqUserId + ":" + fid + "?page=" + page + "&filetype=plot&filetype=fold&order_by=filename";
           
           var withCredentials = location.hostname == "localhost" ? false: true;
           
-          // var children = [];
           jQuery.ajax({
             url: url,
-            async: false,
             xhrFields: {
               withCredentials: withCredentials
            }})
@@ -108,16 +109,15 @@ export default {
 
             results.forEach((result) => {
               const currentFid = result.fid.includes(":") ? result.fid.substring(result.fid.indexOf(':') + 1) : result.fid;
-              if(result.filetype === 'fold'){
-                itemList += folderItem(result.filename, currentFid);
-              } else if (result.filetype === 'plot'){
-                itemList += plotItem(result.filename, currentFid);
+              if(result.filetype === 'fold' && !result.deleted){
+                itemListFolder += folderItem(result.filename, currentFid);
+              } else if (result.filetype === 'plot' && !result.deleted){
+                itemListChart += plotItem(result.filename, currentFid);
               }
             })
-
             if (dataJSON.children.next == null) {
               jQuery( ".panel-list-item" ).remove();
-              jQuery( itemList ).insertAfter( "#panel_breadcrumb" );
+              jQuery( itemListFolder + itemListChart ).insertAfter( "#panel_breadcrumb" );
               jQuery("#modal_add_chart").addClass("is-active");
             } else {
               page = page + 1;
@@ -149,7 +149,8 @@ export default {
           
           updateBreadcrumb(fid, fname);
           
-          itemList = "";
+          itemListFolder = "";
+          itemListChart = "";
           updateItemList(fid, 1);
           jQuery("#confirm_add_chart").prop( "disabled", true );
         });
@@ -207,9 +208,9 @@ export default {
           } else {
             var fid = "-1";
             jQuery("#modal_add_chart").data("lastFid", fid);
-
-            itemList = "";
-            updateItemList(fid, 1);
+              itemListFolder = "";
+              itemListChart = "";
+              updateItemList(fid, 1);
           }
 
           // if (svgCanvas.getMode() === "hello_world") {

@@ -631,3 +631,7 @@ ul li.current {
 .panel-block.is-active{
   background-color: #eef8ff;
 }
+
+.panel-block.is-active:hover{
+  background-color: #eef8ff;
+}
