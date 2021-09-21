@@ -24,3 +24,18 @@ export function parentItem(fid){
             <i class="fas fa-level-up-alt" aria-hidden="true"></i>
         </span>..</a>`;
 }
+
+export function breadcrumb(fid, fname){
+    if (fid == -1) {
+        return `<li>
+                <div class="folder-item" data-fid="-1">
+                    <span class="icon is-small">
+                        <i class="fas fa-home"></i>
+                    </span>&nbsp;
+                </div>
+            </li>`;
+    } else {
+        return `<li class="breadcrumb-item" data-fid="` + fid + `"><a href="#" class="folder-item" data-fid="` + fid + `">
+        ` + fname + `</a></li>`;
+    }
+}

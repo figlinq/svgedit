@@ -1,5 +1,5 @@
 import testData from "./testData";
-import {folderItem, plotItem, parentItem} from "./elements";
+import {folderItem, plotItem, parentItem, breadcrumb} from "./elements";
 /**
  * @file ext-figlinq.js
  *
@@ -14,7 +14,7 @@ import {folderItem, plotItem, parentItem} from "./elements";
  *  the left ("mode") panel. Clicking on the button, and then the canvas
  *  will show the user the point on the canvas that was clicked on.
  */
-
+jQuery.fn.reverse = [].reverse;
 const name = "figlinq";
 
 const loadExtensionTranslation = async function(svgEditor) {
@@ -43,6 +43,7 @@ export default {
     return {
       name: svgEditor.i18next.t(`${name}:name`),
       callback() {
+        var itemList, figlinqUserId;
 
         // Get user ID 
         var urlInit = location.hostname == "localhost" ?
@@ -61,38 +62,67 @@ export default {
               jQuery("#add_chart").removeClass("is-hidden");
               jQuery("#log_in").addClass("is-hidden");
               jQuery("#sign_up").addClass("is-hidden");
-              jQuery("#modal_add_chart").data("owner", dataJSON.username);
             }
           });
 
-        const updateItemList = (fid, ownerId) => {
+        const updateBreadcrumb = (fid, fname) => {
+
+          var fidPresent = false;
+          jQuery('.breadcrumb-item').each(function (index) {
+            console.log(jQuery(this).data("fid"))
+
+            if(jQuery(this).data("fid") == fid) fidPresent = true;
+          });
+
+          if (fidPresent) {
+            jQuery('.breadcrumb-item').reverse().each(function (index) {
+              if(jQuery(this).data("fid") != fid) {
+                jQuery(this).remove();
+                return false;
+              }
+            });        
+          } else {
+            jQuery(breadcrumb(fid, fname)).insertAfter( ".breadcrumb-item:last" );
+          }
+
+        }
+
+        const updateItemList = (fid, page) => {
 
           var url = location.hostname == "localhost" ?
-            "https://5d5eeb2c-b0b5-4b6b-b52e-0d009d067b36.mock.pstmn.io/v2/folders/home" :
-            "https://create.figlinq.com/v2/folders/" + ownerId + ":" + fid;
-            var withCredentials = location.hostname == "localhost" ? false: true;
-
+          "https://5d5eeb2c-b0b5-4b6b-b52e-0d009d067b36.mock.pstmn.io/v2/folders/home" :
+          "https://create.figlinq.com/v2/folders/" + figlinqUserId + ":" + fid + "?page=" + page + "&order_by=filename&filetype=plot&filetype=fold";
+          
+          var withCredentials = location.hostname == "localhost" ? false: true;
+          
+          // var children = [];
           jQuery.ajax({
             url: url,
+            async: false,
             xhrFields: {
               withCredentials: withCredentials
            }})
           .done(function(data) {
             var dataJSON = typeof data !== 'object' ? JSON.parse(data) : data;
-            var children = dataJSON.children.results;
-            var itemlist = dataJSON.parent == "-2" ? "" : parentItem(dataJSON.parent);
+            var results = dataJSON.children.results;
 
-            children.forEach((child) => {
-              if(child.filetype === 'fold'){
-                itemlist += folderItem(child.filename, child.fid, child.parent);
-              } else if (child.filetype === 'plot'){
-                itemlist += plotItem(child.filename, child.fid);
+            results.forEach((result) => {
+              const currentFid = result.fid.includes(":") ? result.fid.substring(result.fid.indexOf(':') + 1) : result.fid;
+              if(result.filetype === 'fold'){
+                itemList += folderItem(result.filename, currentFid);
+              } else if (result.filetype === 'plot'){
+                itemList += plotItem(result.filename, currentFid);
               }
             })
 
-            jQuery( ".panel-list-item" ).remove();
-            jQuery( itemlist ).insertAfter( "#panel_tabs" );
-            jQuery("#modal_add_chart").addClass("is-active");
+            if (dataJSON.children.next == null) {
+              jQuery( ".panel-list-item" ).remove();
+              jQuery( itemList ).insertAfter( "#panel_breadcrumb" );
+              jQuery("#modal_add_chart").addClass("is-active");
+            } else {
+              page = page + 1;
+              updateItemList(fid, page);
+            }
           })
           .fail(function() {})
           .always(function() {});
@@ -112,11 +142,15 @@ export default {
         });
 
         jQuery(document).on("click", ".folder-item", (e) => {
-          const dataFid = jQuery(e.target).data("fid").toString();
+          const dataFid = jQuery(e.currentTarget).data("fid").toString();
           const fid = dataFid.includes(":") ? dataFid.substring(dataFid.indexOf(':') + 1) : dataFid;
-          const owner = jQuery("#modal_add_chart").data("owner");
+          const fname = jQuery(e.target).text().trim();
           jQuery("#modal_add_chart").data("lastFid", fid);
-          updateItemList(fid, owner);
+          
+          updateBreadcrumb(fid, fname);
+          
+          itemList = "";
+          updateItemList(fid, 1);
           jQuery("#confirm_add_chart").prop( "disabled", true );
         });
 
@@ -140,14 +174,13 @@ export default {
         jQuery(document).on("click", "#confirm_add_chart", (e) => {
           jQuery(e.target).addClass("is-loading");
           const selectedFid = jQuery(e.target).data("selectedFid");
-          const ownerId = jQuery("#modal_add_chart").data("owner");
          
           var imgDataUrl = location.hostname == "localhost" ?
             "https://da6da301-9466-42ab-8b66-50ca1b2dc96b.mock.pstmn.io/plotinfo" :
-            "https://create.figlinq.com/v2/plots/" + ownerId + ":" + selectedFid;
+            "https://create.figlinq.com/v2/plots/" + figlinqUserId + ":" + selectedFid;
           var withCredentials = location.hostname == "localhost" ? false: true;
             
-          const importUrl = "https://create.figlinq.com/~" + ownerId + "/" + selectedFid + ".svg";
+          const importUrl = "https://create.figlinq.com/~" + figlinqUserId + "/" + selectedFid + ".svg";
           
           jQuery.ajax({
             url: imgDataUrl,
@@ -168,14 +201,15 @@ export default {
         });
 
         jQuery(document).on("click", "#add_chart", () => {          
-          const owner = jQuery("#modal_add_chart").data("owner");
           var lastFid = jQuery("#modal_add_chart").data("lastFid");
           if(lastFid){
             jQuery("#modal_add_chart").addClass("is-active");
           } else {
-            const fid = "-1";
+            var fid = "-1";
             jQuery("#modal_add_chart").data("lastFid", fid);
-            updateItemList(fid, owner);
+
+            itemList = "";
+            updateItemList(fid, 1);
           }
 
           // if (svgCanvas.getMode() === "hello_world") {
