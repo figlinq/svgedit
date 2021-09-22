@@ -365,7 +365,8 @@ class Editor extends EditorStartup {
     const { workarea } = this;
     const cnvs = $id("svgcanvas");
 
-    let w = parseFloat(getComputedStyle(workarea, null).width.replace("px", "")); let h = parseFloat(getComputedStyle(workarea, null).height.replace("px", ""));
+    let w = parseFloat(getComputedStyle(workarea, null).width.replace("px", ""));
+    let h = parseFloat(getComputedStyle(workarea, null).height.replace("px", ""));
     const wOrig = w; const hOrig = h;
     const oldCtr = {
       x: workarea.scrollLeft + wOrig / 2,
@@ -651,7 +652,7 @@ class Editor extends EditorStartup {
     if (context) {
       let str = '';
       linkStr = '<a href="#" data-root="y">' + this.svgCanvas.getCurrentDrawing().getCurrentLayerName() + '</a>';
-      const parentsUntil = getParentsUntil(context, '#svgcontent > g');
+      const parentsUntil = getParentsUntil(context, '#svgcontent');
       parentsUntil.forEach(function (parent) {
         if (parent.id) {
           str += ' > ' + parent.id;
