@@ -129,7 +129,7 @@
       <div class="box">
         <nav class="panel">
           <p class="panel-heading">
-            Select chart
+            Select chart(s)
           </p>
           <!-- <div class="panel-block">
             <p class="control has-icons-left">
@@ -156,14 +156,30 @@
               </ul>
             </div>
           </div>
+          <div id="item_list_container">            
+          </div>
           <div class="panel-block">
-            <div class="buttons">
-              <button id="confirm_add_chart" class="button is-link" disabled>
-                Add chart
-              </button>
-              <button id="cancel_add_chart" class="button is-link is-outlined">
-                Cancel
-              </button>
+            <div class="field is-grouped">
+              <p class="control">
+                <button id="confirm_add_chart" class="button is-link" disabled>
+                  Add chart(s)
+                </button>
+              </p>
+              <p class="control">
+                <button id="cancel_add_chart" class="button is-link is-outlined">
+                  Cancel
+                </button>
+              </p>
+              <p class="control">
+                <div class="select">
+                  <select id="col_select" disabled>
+                    <option value="1">1 column</option>
+                    <option value="2">2 columns</option>
+                    <option value="3">3 columns</option>
+                    <option value="4">4 columns</option>
+                  </select>
+                </div>
+              </p>
             </div>
           </div>
         </nav>
