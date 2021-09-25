@@ -653,3 +653,11 @@ ul li.current {
   max-height: calc(100vh - 270px);
   overflow-y: auto;
 }
+
+.switch[type=checkbox]+label::before, .switch[type=checkbox]+label:before {
+  top:2px !important;
+}
+
+.switch[type=checkbox]+label::after, .switch[type=checkbox]+label:after{
+  top:6px !important;
+}

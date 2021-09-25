@@ -1,6 +1,6 @@
 import testData from "./testData";
 import { folderItem, plotItem, parentItem, breadcrumb } from "./elements";
-import { NS } from '../../../common/namespaces.js';
+import { NS } from "../../../common/namespaces.js";
 
 /**
  * @file ext-figlinq.js
@@ -218,17 +218,105 @@ export default {
               width: width,
               height: height,
               id: svgEditor.svgCanvas.getNextId(),
-              style: "pointer-events:inherit"
+              style: "pointer-events:inherit",
+              class: "figlinq-image"
             }
           });
-          // svgCanvas.clearSelection();
-          // svgCanvas.addToSelection([newImage], true);
-          newImage.setAttributeNS(NS.XLINK, 'xlink:href', url);
-          // setHref(elem, val);
-          
-          // svgCanvas.setImageURL(url);
-          // svgCanvas.clearSelection();
+          newImage.setAttributeNS(NS.XLINK, "xlink:href", url);
         };
+
+        jQuery(document).on("click", "#inter_switch", e => {
+          var checked = jQuery("#inter_switch").is(":checked");
+          if (checked) {
+            const images = jQuery(".figlinq-image");
+
+            var currentUrl, src, id, className, height, width, x, y, style;
+            var newForeignObj, newBody, newIframe, newG;
+
+            images.each(function() {
+              currentUrl = jQuery(this).attr("xlink:href");
+              src = currentUrl.replace(".svg", ".embed");
+              height = jQuery(this).attr("height");
+              width = jQuery(this).attr("width");
+              x = jQuery(this).attr("x");
+              y = jQuery(this).attr("y");
+              id = jQuery(this).attr("id");
+              className = jQuery(this).attr("className");
+              style = jQuery(this).attr("style");
+
+              newIframe = {
+                element: "iframe",
+                attr: {
+                  x: x,
+                  y: y,
+                  width: width,
+                  height: height,
+                  id: id + "_iframe",
+                  src: src
+                }
+              };
+
+              newBody = {
+                element: "body",
+                attr: {
+                  id: id + "_body",
+                  xmlns: "http://www.w3.org/1999/xhtml"
+                },
+                children: [newIframe]
+              };
+
+              newForeignObj = {
+                element: "foreignObject",
+                attr: {
+                  x: x,
+                  y: y,
+                  width: width,
+                  height: height,
+                  id: id + "_fobject"
+                },
+                children: [newBody]
+              };
+
+              svgCanvas.addSVGElementFromJson(newForeignObj);
+              this.remove();
+              
+              // Ugly hack, but works!
+              var str = svgCanvas.getSvgString();
+              str = str.replace('BODY', 'body');
+              str = str.replace('IFRAME', 'iframe');
+              svgEditor.loadSvgString(str);
+
+            });
+          } else {
+            const fObjects = jQuery("foreignObject[id$=_fobject]");
+            fObjects.each(function() {
+              var url, height, width, x, y;
+              
+              url = jQuery(this).find("iframe").attr("src");
+              url = url.replace(".embed", ".svg");
+              height = jQuery(this).attr("height");
+              width = jQuery(this).attr("width");
+              x = jQuery(this).attr("x");
+              y = jQuery(this).attr("y");
+
+              this.remove();
+
+              const newImage = svgEditor.svgCanvas.addSVGElementFromJson({
+                element: "image",
+                attr: {
+                  x: x,
+                  y: y,
+                  width: width,
+                  height: height,
+                  id: svgCanvas.getNextId(),
+                  style: "pointer-events:inherit",
+                  class: "figlinq-image"
+                },
+              });
+              newImage.setAttributeNS(NS.XLINK, "xlink:href", url);
+            });
+          }
+        });
 
         jQuery(document).on("click", "#confirm_add_chart", e => {
           jQuery(e.target).addClass("is-loading");
@@ -268,8 +356,12 @@ export default {
               .done(function(data) {
                 var dataJSON =
                   typeof data !== "object" ? JSON.parse(data) : data;
-                var width = dataJSON.figure.layout.width;
-                var height = dataJSON.figure.layout.height;
+                var width = dataJSON.figure.layout.width
+                  ? dataJSON.figure.layout.width
+                  : 400;
+                var height = dataJSON.figure.layout.height
+                  ? dataJSON.figure.layout.height
+                  : 400;
                 importImage(importUrl, width, height, x, y);
                 x += width;
                 curCol += 1;
