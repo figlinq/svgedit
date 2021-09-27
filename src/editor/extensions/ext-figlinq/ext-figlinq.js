@@ -1,4 +1,4 @@
-import testData from "./testData";
+import { testData, userData, plotData } from "./testData";
 import { folderItem, plotItem, parentItem, breadcrumb } from "./elements";
 import { NS } from "../../../common/namespaces.js";
 
@@ -48,12 +48,9 @@ export default {
         var itemListFolder, itemListChart, figlinqUserId;
 
         // Get user ID
-        var urlInit =
-          location.hostname == "localhost"
-            ? "https://755a6c50-f66a-452b-8141-90ea5218e958.mock.pstmn.io/users/current"
-            : "https://create.figlinq.com/v2/users/current";
+        var urlInit = "https://create.figlinq.com/v2/users/current";
         var withCredentials = location.hostname == "localhost" ? false : true;
-
+        var dataJSON;
         jQuery
           .ajax({
             url: urlInit,
@@ -62,8 +59,17 @@ export default {
             }
           })
           .done(function(data) {
-            var dataJSON = typeof data !== "object" ? JSON.parse(data) : data;
+            dataJSON = typeof data !== "object" ? JSON.parse(data) : data;
             if (dataJSON.username != "") {
+              jQuery("#add_chart").removeClass("is-hidden");
+              jQuery("#log_in").addClass("is-hidden");
+              jQuery("#sign_up").addClass("is-hidden");
+              figlinqUserId = dataJSON.username;
+            }
+          })
+          .fail(function() {
+            dataJSON = userData;
+            if (location.hostname == "localhost") {
               jQuery("#add_chart").removeClass("is-hidden");
               jQuery("#log_in").addClass("is-hidden");
               jQuery("#sign_up").addClass("is-hidden");
@@ -100,24 +106,26 @@ export default {
         };
 
         const getSortedElems = (selector, attrName) => {
-          return jQuery(jQuery(selector).toArray().sort((a, b) => {
-              var aVal = parseInt(a.getAttribute(attrName)),
+          return jQuery(
+            jQuery(selector)
+              .toArray()
+              .sort((a, b) => {
+                var aVal = parseInt(a.getAttribute(attrName)),
                   bVal = parseInt(b.getAttribute(attrName));
-              return aVal - bVal;
-          }));
-        }
+                return aVal - bVal;
+              })
+          );
+        };
 
         const updateItemList = (fid, page) => {
           var url =
-            location.hostname == "localhost"
-              ? "https://5d5eeb2c-b0b5-4b6b-b52e-0d009d067b36.mock.pstmn.io/v2/folders/home"
-              : "https://create.figlinq.com/v2/folders/" +
-                figlinqUserId +
-                ":" +
-                fid +
-                "?page=" +
-                page +
-                "&filetype=plot&filetype=fold&order_by=filename";
+            "https://create.figlinq.com/v2/folders/" +
+            figlinqUserId +
+            ":" +
+            fid +
+            "?page=" +
+            page +
+            "&filetype=plot&filetype=fold&order_by=filename";
 
           var withCredentials = location.hostname == "localhost" ? false : true;
 
@@ -140,9 +148,10 @@ export default {
                   itemListFolder += folderItem(result.filename, currentFid);
                 } else if (result.filetype === "plot" && !result.deleted) {
                   itemListChart += plotItem(result.filename, currentFid, index);
-                  index =+ 1;
+                  index = +1;
                 }
               });
+
               if (dataJSON.children.next == null) {
                 jQuery(".panel-list-item").remove();
                 jQuery("#item_list_container").html(
@@ -154,7 +163,39 @@ export default {
                 updateItemList(fid, page);
               }
             })
-            .fail(function() {})
+            .fail(function() {
+              if (location.hostname == "localhost") {
+                var dataJSON = testData;
+                var results = dataJSON.children.results;
+                var index = 0;
+                results.forEach(result => {
+                  const currentFid = result.fid.includes(":")
+                    ? result.fid.substring(result.fid.indexOf(":") + 1)
+                    : result.fid;
+                  if (result.filetype === "fold" && !result.deleted) {
+                    itemListFolder += folderItem(result.filename, currentFid);
+                  } else if (result.filetype === "plot" && !result.deleted) {
+                    itemListChart += plotItem(
+                      result.filename,
+                      currentFid,
+                      index
+                    );
+                    index = +1;
+                  }
+                });
+
+                if (dataJSON.children.next == null) {
+                  jQuery(".panel-list-item").remove();
+                  jQuery("#item_list_container").html(
+                    itemListFolder + itemListChart
+                  );
+                  jQuery("#modal_add_chart").addClass("is-active");
+                } else {
+                  page = page + 1;
+                  updateItemList(fid, page);
+                }
+              }
+            })
             .always(function() {});
         };
 
@@ -249,9 +290,6 @@ export default {
               width = jQuery(this).attr("width");
               x = jQuery(this).attr("x");
               y = jQuery(this).attr("y");
-              id = jQuery(this).attr("id");
-              className = jQuery(this).attr("className");
-              style = jQuery(this).attr("style");
 
               newIframe = {
                 element: "iframe",
@@ -260,7 +298,7 @@ export default {
                   y: y,
                   width: width,
                   height: height,
-                  id: id + "_iframe",
+                  id: svgEditor.svgCanvas.getNextId(),
                   src: src
                 }
               };
@@ -268,7 +306,7 @@ export default {
               newBody = {
                 element: "body",
                 attr: {
-                  id: id + "_body",
+                  id: svgEditor.svgCanvas.getNextId(),
                   xmlns: "http://www.w3.org/1999/xhtml"
                 },
                 children: [newIframe]
@@ -281,34 +319,33 @@ export default {
                   y: y,
                   width: width,
                   height: height,
-                  id: id + "_fobject"
+                  id: svgEditor.svgCanvas.getNextId(),
+                  class: "figlinq-fobject"
                 },
                 children: [newBody]
               };
 
-              svgCanvas.addSVGElementFromJson(newForeignObj);
-              this.remove();
-              
-              // Ugly hack, but works!
-              var str = svgCanvas.getSvgString();
-              str = str.replace('BODY', 'body');
-              str = str.replace('IFRAME', 'iframe');
-              svgEditor.loadSvgString(str);
-
+              var newElem = svgCanvas.addSVGElementFromJson(newForeignObj);
+              this.replaceWith(newElem);
             });
+            // Ugly hack to reload iframes, but it works!
+            var str = svgCanvas.getSvgString();
+            str = str.replace("BODY", "body");
+            str = str.replace("IFRAME", "iframe");
+            svgEditor.loadSvgString(str);
           } else {
-            const fObjects = jQuery("foreignObject[id$=_fobject]");
+            const fObjects = jQuery("foreignObject[class='figlinq-fobject']");
             fObjects.each(function() {
               var url, height, width, x, y;
-              
-              url = jQuery(this).find("iframe").attr("src");
+
+              url = jQuery(this)
+                .find("iframe")
+                .attr("src");
               url = url.replace(".embed", ".svg");
               height = jQuery(this).attr("height");
               width = jQuery(this).attr("width");
               x = jQuery(this).attr("x");
               y = jQuery(this).attr("y");
-
-              this.remove();
 
               const newImage = svgEditor.svgCanvas.addSVGElementFromJson({
                 element: "image",
@@ -320,9 +357,10 @@ export default {
                   id: svgCanvas.getNextId(),
                   style: "pointer-events:inherit",
                   class: "figlinq-image"
-                },
+                }
               });
               newImage.setAttributeNS(NS.XLINK, "xlink:href", url);
+              this.replaceWith(newImage);
             });
           }
         });
@@ -330,26 +368,24 @@ export default {
         jQuery(document).on("click", "#confirm_add_chart", e => {
           jQuery(e.target).addClass("is-loading");
           // const selectedFids = jQuery(e.target).data("selectedFid");
-          const selector = '.plot-item.is-active';
+          const selector = ".plot-item.is-active";
           const selectedPlots = getSortedElems(selector, "data-index");
-
           var x = 0,
             y = 0,
             colNumber = jQuery("#col_select").val(),
-            curCol = 1;
+            curCol = 1,
+            selectedFid;
 
-            selectedPlots.each(() => {
-            selectedFid = jQuery(this).data("fid");
+          jQuery.each(selectedPlots, index => {
+            selectedFid = jQuery(selectedPlots[index]).data("fid");
             var imgDataUrl =
-              location.hostname == "localhost"
-                ? "https://da6da301-9466-42ab-8b66-50ca1b2dc96b.mock.pstmn.io/plotinfo"
-                : "https://create.figlinq.com/v2/plots/" +
-                  figlinqUserId +
-                  ":" +
-                  selectedFid;
+              "https://create.figlinq.com/v2/plots/" +
+              figlinqUserId +
+              ":" +
+              selectedFid;
             var withCredentials =
               location.hostname == "localhost" ? false : true;
-
+            var dataJSON;
             const importUrl =
               "https://create.figlinq.com/~" +
               figlinqUserId +
@@ -366,8 +402,7 @@ export default {
                 }
               })
               .done(function(data) {
-                var dataJSON =
-                  typeof data !== "object" ? JSON.parse(data) : data;
+                dataJSON = typeof data !== "object" ? JSON.parse(data) : data;
                 var width = dataJSON.figure.layout.width
                   ? dataJSON.figure.layout.width
                   : 400;
@@ -384,6 +419,27 @@ export default {
                 }
                 jQuery(e.target).removeClass("is-loading");
                 jQuery("#modal_add_chart").removeClass("is-active");
+              })
+              .fail(function() {
+                if (location.hostname == "localhost") {
+                  dataJSON = plotData;
+                  var width = dataJSON.figure.layout.width
+                    ? dataJSON.figure.layout.width
+                    : 400;
+                  var height = dataJSON.figure.layout.height
+                    ? dataJSON.figure.layout.height
+                    : 400;
+                  importImage(importUrl, width, height, x, y);
+                  x += width;
+                  curCol += 1;
+                  if (curCol > colNumber) {
+                    curCol = 1;
+                    y += height;
+                    x = 0;
+                  }
+                  jQuery(e.target).removeClass("is-loading");
+                  jQuery("#modal_add_chart").removeClass("is-active");
+                }
               });
           });
         });
