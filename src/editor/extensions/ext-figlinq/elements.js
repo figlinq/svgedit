@@ -7,9 +7,9 @@ export function folderItem(name, id){
         + name +
     `</a>`;
 }
-export function plotItem(name, id){
+export function plotItem(name, id, index){
     return `
-    <a class="panel-block panel-list-item plot-item" data-fid="` + id + `">
+    <a class="panel-block panel-list-item plot-item" data-fid="` + id + `" data-index="` + index + `">
         <span class="panel-icon">
             <i class="fas fa-chart-bar" aria-hidden="true"></i>
         </span>` 

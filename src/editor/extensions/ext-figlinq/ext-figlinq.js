@@ -99,6 +99,14 @@ export default {
           }
         };
 
+        const getSortedElems = (selector, attrName) => {
+          return jQuery(jQuery(selector).toArray().sort((a, b) => {
+              var aVal = parseInt(a.getAttribute(attrName)),
+                  bVal = parseInt(b.getAttribute(attrName));
+              return aVal - bVal;
+          }));
+        }
+
         const updateItemList = (fid, page) => {
           var url =
             location.hostname == "localhost"
@@ -123,7 +131,7 @@ export default {
             .done(function(data) {
               var dataJSON = typeof data !== "object" ? JSON.parse(data) : data;
               var results = dataJSON.children.results;
-
+              var index = 0;
               results.forEach(result => {
                 const currentFid = result.fid.includes(":")
                   ? result.fid.substring(result.fid.indexOf(":") + 1)
@@ -131,7 +139,8 @@ export default {
                 if (result.filetype === "fold" && !result.deleted) {
                   itemListFolder += folderItem(result.filename, currentFid);
                 } else if (result.filetype === "plot" && !result.deleted) {
-                  itemListChart += plotItem(result.filename, currentFid);
+                  itemListChart += plotItem(result.filename, currentFid, index);
+                  index =+ 1;
                 }
               });
               if (dataJSON.children.next == null) {
@@ -320,14 +329,17 @@ export default {
 
         jQuery(document).on("click", "#confirm_add_chart", e => {
           jQuery(e.target).addClass("is-loading");
-          const selectedFids = jQuery(e.target).data("selectedFid");
+          // const selectedFids = jQuery(e.target).data("selectedFid");
+          const selector = '.plot-item.is-active';
+          const selectedPlots = getSortedElems(selector, "data-index");
 
           var x = 0,
             y = 0,
             colNumber = jQuery("#col_select").val(),
             curCol = 1;
 
-          selectedFids.forEach(selectedFid => {
+            selectedPlots.each(() => {
+            selectedFid = jQuery(this).data("fid");
             var imgDataUrl =
               location.hostname == "localhost"
                 ? "https://da6da301-9466-42ab-8b66-50ca1b2dc96b.mock.pstmn.io/plotinfo"
