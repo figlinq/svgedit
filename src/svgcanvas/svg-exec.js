@@ -65,7 +65,6 @@ export const svgCanvasToString = function () {
       svgContext_.getSVGContent().firstChild.before(node);
     }
   });
-
   // Move out of in-group editing mode
   if (svgContext_.getCurrentGroup()) {
     draw.leaveContext();
@@ -92,7 +91,6 @@ export const svgCanvasToString = function () {
     }
   });
   const output = svgCanvas.svgToString(svgContext_.getSVGContent(), 0);
-
   // Rewrap gsvg
   if (nakedSvgs.length) {
     Array.prototype.forEach.call(nakedSvgs, function (el) {

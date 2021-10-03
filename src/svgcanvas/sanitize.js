@@ -94,7 +94,21 @@ const svgWhiteList_ = {
   munder: [],
   munderover: [],
   none: [],
-  semantics: []
+  semantics: [],
+  
+  // FiglinQ
+  IFRAME: [ 'width', 'height', 'frameborder', 'scrolling', 'src', 'x', 'y' ],
+  BODY: ['xmlns'],
+  foreignObject: [ 'xmlns', 'height', 'width', 'y', 'x' ],
+  iframe: [ 'title', 'width', 'height', 'frameborder', 'scrolling', 'src', 'x', 'y' ],
+  body: ['xmlns'],
+  SCRIPT: [],
+  NOSCRIPT: [],
+  META: [],
+  TITLE: [],
+  LINK: [],
+  DIV: [],
+  A: [],
 };
 /* eslint-enable max-len */
 // add generic attributes to all elements of the whitelist
