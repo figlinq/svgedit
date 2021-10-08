@@ -47,16 +47,12 @@ export default {
       name: svgEditor.i18next.t(`${name}:name`),
       callback() {
         var itemListFolder, itemListFile, figlinqUserId;
-
-        // Get user ID
-        var urlInit = baseUrl + "v2/users/current";
-        var withCredentials = location.hostname == "localhost1" ? false : true;
         var dataJSON;
         jQuery
           .ajax({
-            url: urlInit,
+            url: baseUrl + "v2/users/current",
             xhrFields: {
-              withCredentials: withCredentials
+              withCredentials: true
             }
           })
           .done(function(data) {
@@ -68,15 +64,16 @@ export default {
               figlinqUserId = dataJSON.username;
             }
           })
-          .fail(function() {
-            dataJSON = userData;
-            if (location.hostname == "localhost1") {
-              jQuery(".add_figlinq_content").removeClass("is-hidden");
-              jQuery("#log_in").addClass("is-hidden");
-              jQuery("#sign_up").addClass("is-hidden");
-              figlinqUserId = dataJSON.username;
-            }
-          });
+          .fail(function() {});
+        
+        // To use this function we need to get content_type field into the "children" object returned from v2 
+        const getExt = (contentType) => {
+          if (contentType == "image/jpeg" || contentType == "image/jpg") return "jpg";
+          if (contentType == "image/svg" || contentType == "image/svg+xml") return "svg";
+          if (contentType == "image/png") return "png";
+          if (contentType == "image/bmp") return "bmp";
+          if (contentType == "image/gif") return "gif";
+        }
 
         const updateBreadcrumb = (fid, fname) => {
           var fidPresent = false;
@@ -95,11 +92,6 @@ export default {
               } else {
                 jQuery(this).remove();
               }
-
-              // if(index && jQuery(this).data("fid") != fid && jQuery(this).data("fid") != "-1") {
-              //   jQuery(this).remove();
-              //   return false;
-              // }
             });
           } else {
             jQuery(breadcrumb(fid, fname)).insertAfter(".breadcrumb-item:last");
@@ -128,13 +120,11 @@ export default {
             page +
             "&filetype=plot&filetype=fold&filetype=external_image&order_by=filename";
 
-          var withCredentials = location.hostname == "localhost1" ? false : true;
-
           jQuery
             .ajax({
               url: url,
               xhrFields: {
-                withCredentials: withCredentials
+                withCredentials: true
               }
             })
             .done(function(data) {
@@ -163,47 +153,13 @@ export default {
                   itemListFolder + itemListFile
                 );
                 jQuery("#modal_add_chart").addClass("is-active");
+                jQuery("#refresh_item_list").removeClass("is-loading");
               } else {
                 page = page + 1;
                 updateItemList(fid, page);
               }
             })
-            .fail(function() {
-              if (location.hostname == "localhost1") {
-                var dataJSON = testData2;
-                var results = dataJSON.children.results;
-                var index = 0;
-                results.forEach(result => {
-                  const currentFid = result.fid.includes(":")
-                    ? result.fid.substring(result.fid.indexOf(":") + 1)
-                    : result.fid;
-                  if (result.filetype === "fold" && !result.deleted) {
-                    itemListFolder += folderItem(result.filename, currentFid);
-                  } else if (result.filetype === "external_image" && !result.deleted) {
-                    itemListFile += imageItem(result.filename, currentFid, index);
-                    index = +1;
-                  } else if (result.filetype === "plot" && !result.deleted) {
-                    itemListFile += plotItem(
-                      result.filename,
-                      currentFid,
-                      index
-                    );
-                    index = +1;
-                  }
-                });
-
-                if (dataJSON.children.next == null) {
-                  jQuery(".panel-list-item").remove();
-                  jQuery("#item_list_container").html(
-                    itemListFolder + itemListFile
-                  );
-                  jQuery("#modal_add_chart").addClass("is-active");
-                } else {
-                  page = page + 1;
-                  updateItemList(fid, page);
-                }
-              }
-            })
+            .fail(function() {})
             .always(function() {});
         };
 
@@ -211,7 +167,15 @@ export default {
           jQuery("#modal_add_chart").removeClass("is-active");
         });
 
-        jQuery(document).on("click", ".plot-item", e => {
+        jQuery(document).on("click", "#refresh_item_list", () => {
+          jQuery("#refresh_item_list").addClass("is-loading");
+          itemListFolder = "";
+          itemListFile = "";
+          const lastFid = jQuery("#modal_add_chart").data("lastFid");
+          updateItemList(lastFid, 1);
+        });
+
+        jQuery(document).on("click", ".plot-item, .image-item", e => {
           const dataFid = jQuery(e.target)
             .data("fid")
             .toString();
@@ -220,7 +184,6 @@ export default {
             : dataFid;
 
           if (jQuery(e.target).hasClass("is-active")) {
-            // jQuery(".plot-item").removeClass("is-active");
             jQuery(e.target).removeClass("is-active");
           } else {
             jQuery(e.target).addClass("is-active");
@@ -228,22 +191,23 @@ export default {
 
           var activePresent = false;
           var activeList = [];
-          jQuery(".plot-item").each(function(index) {
+          jQuery(".plot-item, .image-item").each(function() {
             if (jQuery(this).hasClass("is-active")) {
               activePresent = true;
               activeList.push(jQuery(this).data("fid"));
             }
           });
+
           if (activePresent) {
-            jQuery("#confirm_add_chart").prop("disabled", false);
-            jQuery("#confirm_add_chart").data("selectedFid", activeList);
+            jQuery("#confirm_add_content").prop("disabled", false);
+            jQuery("#confirm_add_content").data("selectedFid", activeList);
             if (activeList.length > 1) {
               jQuery("#col_select").prop("disabled", false);
             } else {
               jQuery("#col_select").prop("disabled", true);
             }
           } else {
-            jQuery("#confirm_add_chart").prop("disabled", true);
+            jQuery("#confirm_add_content").prop("disabled", true);
           }
         });
 
@@ -264,7 +228,8 @@ export default {
           itemListFolder = "";
           itemListFile = "";
           updateItemList(fid, 1);
-          jQuery("#confirm_add_chart").prop("disabled", true);
+          jQuery("#confirm_add_content").prop("disabled", true);
+          jQuery("#refresh_item_list").addClass("is-loading");
         });
 
         const importImage = (url, width = 0, height = 0, x, y) => {
@@ -373,50 +338,51 @@ export default {
           }
         });
 
-        jQuery(document).on("click", "#confirm_add_chart", e => {
+        jQuery(document).on("click", "#confirm_add_content", e => {
           jQuery(e.target).addClass("is-loading");
-          // const selectedFids = jQuery(e.target).data("selectedFid");
           const selector = ".plot-item.is-active";
           const selectedPlots = getSortedElems(selector, "data-index");
           var x = 0,
             y = 0,
             colNumber = jQuery("#col_select").val(),
             curCol = 1,
-            selectedFid;
+            selectedFid, ext;
 
           jQuery.each(selectedPlots, index => {
             selectedFid = jQuery(selectedPlots[index]).data("fid");
+            selectedType = jQuery(selectedPlots[index]).data("ftype");
+            
             var imgDataUrl =
               baseUrl + "v2/plots/" +
               figlinqUserId +
               ":" +
               selectedFid;
-            var withCredentials =
-              location.hostname == "localhost1" ? false : true;
+            
             var dataJSON;
-            const importUrl =
+            ext = selectedType === "plot" ? ".svg" : ".src";
+            const importUrl = 
               baseUrl + "~" +
               figlinqUserId +
               "/" +
-              selectedFid +
-              ".svg";
+              selectedFid + ext;
 
             jQuery
               .ajax({
                 url: imgDataUrl,
-                // async: false,
                 xhrFields: {
-                  withCredentials: withCredentials
+                  withCredentials: true
                 }
               })
-              .done(function(data) {
-                dataJSON = typeof data !== "object" ? JSON.parse(data) : data;
+              .done(function(dataJSON) {
+                // dataJSON = typeof data !== "object" ? JSON.parse(data) : data;
+
                 var width = dataJSON.figure.layout.width
                   ? dataJSON.figure.layout.width
                   : 400;
                 var height = dataJSON.figure.layout.height
                   ? dataJSON.figure.layout.height
                   : 400;
+
                 importImage(importUrl, width, height, x, y);
                 x += width;
                 curCol += 1;
@@ -428,27 +394,7 @@ export default {
                 jQuery(e.target).removeClass("is-loading");
                 jQuery("#modal_add_chart").removeClass("is-active");
               })
-              .fail(function() {
-                if (location.hostname == "localhost1") {
-                  dataJSON = plotData;
-                  var width = dataJSON.figure.layout.width
-                    ? dataJSON.figure.layout.width
-                    : 400;
-                  var height = dataJSON.figure.layout.height
-                    ? dataJSON.figure.layout.height
-                    : 400;
-                  importImage(importUrl, width, height, x, y);
-                  x += width;
-                  curCol += 1;
-                  if (curCol > colNumber) {
-                    curCol = 1;
-                    y += height;
-                    x = 0;
-                  }
-                  jQuery(e.target).removeClass("is-loading");
-                  jQuery("#modal_add_chart").removeClass("is-active");
-                }
-              });
+              .fail(function() {});
           });
         });
 

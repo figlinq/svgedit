@@ -1,6 +1,6 @@
 export function folderItem(name, id){
     return `
-    <a class="panel-block panel-list-item folder-item" data-fid="` + id + `">
+    <a class="panel-block panel-list-item folder-item noselect" data-fid="` + id + `">
         <span class="panel-icon">
             <i class="fas fa-folder-open" aria-hidden="true"></i>
         </span>` 
@@ -9,7 +9,7 @@ export function folderItem(name, id){
 }
 export function plotItem(name, id, index){
     return `
-    <a class="panel-block panel-list-item plot-item" data-fid="` + id + `" data-index="` + index + `">
+    <a class="panel-block panel-list-item plot-item noselect" data-ftype="plot" data-fid="` + id + `" data-index="` + index + `">
         <span class="panel-icon">
             <i class="fas fa-chart-bar" aria-hidden="true"></i>
         </span>` 
@@ -19,7 +19,7 @@ export function plotItem(name, id, index){
 
 export function imageItem(name, id, index){
     return `
-    <a class="panel-block panel-list-item image-item" data-fid="` + id + `" data-index="` + index + `">
+    <a class="panel-block panel-list-item image-item noselect" data-ftype="image" data-fid="` + id + `" data-index="` + index + `">
         <span class="panel-icon">
             <i class="fas fa-image" aria-hidden="true"></i>
         </span>` 

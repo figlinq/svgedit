@@ -149,11 +149,6 @@
           <p id="panel_tabs" class="panel-tabs">
             <a class="is-active">My files</a>
             <!-- <a>Shared with me</a> -->
-            <a><a class="button">
-              <span class="icon is-small">
-                <i class="fas fa-sync-alt"></i>
-              </span>
-            </a></a>
           </p>
           <div id="panel_breadcrumb" class="panel-block">
             <div class="breadcrumb" aria-label="breadcrumbs">
@@ -172,17 +167,17 @@
           </div>
           <div class="panel-block">
             <div class="field is-grouped">
-              <p class="control">
-                <button id="confirm_add_chart" class="button is-link" disabled>
+              <div class="control">
+                <button id="confirm_add_content" class="button is-link" disabled>
                   Add item(s)
                 </button>
-              </p>
-              <p class="control">
+              </div>
+              <div class="control">
                 <button id="cancel_add_chart" class="button is-link is-outlined">
                   Cancel
                 </button>
-              </p>
-              <p class="control">
+              </div>
+              <div class="control">
                 <div class="select">
                   <select id="col_select" disabled>
                     <option value="1">1 column</option>
@@ -191,7 +186,14 @@
                     <option value="4">4 columns</option>
                   </select>
                 </div>
-              </p>
+              </div>
+              <div class="control">
+                <button id="refresh_item_list" class="button">
+                  <span class="icon is-small">
+                    <i class="fas fa-sync-alt"></i>
+                  </span>
+                </button>              
+              </div>
             </div>
           </div>
         </nav>
