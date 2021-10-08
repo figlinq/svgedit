@@ -232,7 +232,7 @@ export default {
           jQuery("#refresh_item_list").addClass("is-loading");
         });
 
-        const importImage = (url, width = 0, height = 0, x, y) => {
+        const importImage = (url, width = "auto", height = "auto", x, y) => {
           const newImage = svgEditor.svgCanvas.addSVGElementFromJson({
             element: "image",
             attr: {
@@ -340,25 +340,24 @@ export default {
 
         jQuery(document).on("click", "#confirm_add_content", e => {
           jQuery(e.target).addClass("is-loading");
-          const selector = ".plot-item.is-active";
+          const selector = ".plot-item.is-active, .image-item.is-active";
           const selectedPlots = getSortedElems(selector, "data-index");
           var x = 0,
             y = 0,
             colNumber = jQuery("#col_select").val(),
             curCol = 1,
-            selectedFid, ext;
+            selectedFid, selectedType, ext;
 
           jQuery.each(selectedPlots, index => {
             selectedFid = jQuery(selectedPlots[index]).data("fid");
             selectedType = jQuery(selectedPlots[index]).data("ftype");
-            
+
             var imgDataUrl =
               baseUrl + "v2/plots/" +
               figlinqUserId +
               ":" +
               selectedFid;
             
-            var dataJSON;
             ext = selectedType === "plot" ? ".svg" : ".src";
             const importUrl = 
               baseUrl + "~" +
@@ -366,35 +365,46 @@ export default {
               "/" +
               selectedFid + ext;
 
-            jQuery
-              .ajax({
-                url: imgDataUrl,
-                xhrFields: {
-                  withCredentials: true
-                }
-              })
-              .done(function(dataJSON) {
-                // dataJSON = typeof data !== "object" ? JSON.parse(data) : data;
+            if (selectedType === "plot"){
+              jQuery
+                .ajax({
+                  url: imgDataUrl,
+                  xhrFields: {
+                    withCredentials: true
+                  }
+                })
+                .done(function(dataJSON) {
+                  var width = dataJSON.figure.layout.width
+                    ? dataJSON.figure.layout.width
+                    : 400;
+                  var height = dataJSON.figure.layout.height
+                    ? dataJSON.figure.layout.height
+                    : 400;
 
-                var width = dataJSON.figure.layout.width
-                  ? dataJSON.figure.layout.width
-                  : 400;
-                var height = dataJSON.figure.layout.height
-                  ? dataJSON.figure.layout.height
-                  : 400;
-
-                importImage(importUrl, width, height, x, y);
-                x += width;
-                curCol += 1;
-                if (curCol > colNumber) {
-                  curCol = 1;
-                  y += height;
-                  x = 0;
-                }
-                jQuery(e.target).removeClass("is-loading");
-                jQuery("#modal_add_chart").removeClass("is-active");
-              })
-              .fail(function() {});
+                  importImage(importUrl, width, height, x, y);
+                  x += width;
+                  curCol += 1;
+                  if (curCol > colNumber) {
+                    curCol = 1;
+                    y += height;
+                    x = 0;
+                  }
+                  jQuery(e.target).removeClass("is-loading");
+                  jQuery("#modal_add_chart").removeClass("is-active");
+                })
+            } else if (selectedType === "image"){
+              // Add width and height fields in v2
+              importImage(importUrl, "auto", 400, x, y);
+              x += 600;
+              curCol += 1;
+              if (curCol > colNumber) {
+                curCol = 1;
+                y += 400;
+                x = 0;
+              }
+              jQuery(e.target).removeClass("is-loading");
+              jQuery("#modal_add_chart").removeClass("is-active");
+            }
           });
         });
 
