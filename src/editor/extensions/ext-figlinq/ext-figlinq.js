@@ -1,5 +1,5 @@
-import { testData, userData, plotData } from "./testData";
-import { folderItem, plotItem, parentItem, breadcrumb } from "./elements";
+import { testData, testData2, userData, plotData } from "./testData";
+import { folderItem, plotItem, imageItem, breadcrumb } from "./elements";
 import { NS } from "../../../common/namespaces.js";
 
 /**
@@ -18,6 +18,7 @@ import { NS } from "../../../common/namespaces.js";
  */
 // jQuery.fn.reverse = [].reverse;
 const name = "figlinq";
+const baseUrl = location.hostname == "localhost" ? "https://plotly.local/" : "https://create.figlinq.com/";
 
 const loadExtensionTranslation = async function(svgEditor) {
   let translationModule;
@@ -45,11 +46,11 @@ export default {
     return {
       name: svgEditor.i18next.t(`${name}:name`),
       callback() {
-        var itemListFolder, itemListChart, figlinqUserId;
+        var itemListFolder, itemListFile, figlinqUserId;
 
         // Get user ID
-        var urlInit = "https://create.figlinq.com/v2/users/current";
-        var withCredentials = location.hostname == "localhost" ? false : true;
+        var urlInit = baseUrl + "v2/users/current";
+        var withCredentials = location.hostname == "localhost1" ? false : true;
         var dataJSON;
         jQuery
           .ajax({
@@ -61,7 +62,7 @@ export default {
           .done(function(data) {
             dataJSON = typeof data !== "object" ? JSON.parse(data) : data;
             if (dataJSON.username != "") {
-              jQuery("#add_chart").removeClass("is-hidden");
+              jQuery(".add_figlinq_content").removeClass("is-hidden");
               jQuery("#log_in").addClass("is-hidden");
               jQuery("#sign_up").addClass("is-hidden");
               figlinqUserId = dataJSON.username;
@@ -69,8 +70,8 @@ export default {
           })
           .fail(function() {
             dataJSON = userData;
-            if (location.hostname == "localhost") {
-              jQuery("#add_chart").removeClass("is-hidden");
+            if (location.hostname == "localhost1") {
+              jQuery(".add_figlinq_content").removeClass("is-hidden");
               jQuery("#log_in").addClass("is-hidden");
               jQuery("#sign_up").addClass("is-hidden");
               figlinqUserId = dataJSON.username;
@@ -119,15 +120,15 @@ export default {
 
         const updateItemList = (fid, page) => {
           var url =
-            "https://create.figlinq.com/v2/folders/" +
+          baseUrl + "v2/folders/" +
             figlinqUserId +
             ":" +
             fid +
             "?page=" +
             page +
-            "&filetype=plot&filetype=fold&order_by=filename";
+            "&filetype=plot&filetype=fold&filetype=external_image&order_by=filename";
 
-          var withCredentials = location.hostname == "localhost" ? false : true;
+          var withCredentials = location.hostname == "localhost1" ? false : true;
 
           jQuery
             .ajax({
@@ -144,10 +145,14 @@ export default {
                 const currentFid = result.fid.includes(":")
                   ? result.fid.substring(result.fid.indexOf(":") + 1)
                   : result.fid;
+
                 if (result.filetype === "fold" && !result.deleted) {
                   itemListFolder += folderItem(result.filename, currentFid);
+                } else if (result.filetype === "external_image" && !result.deleted) {
+                  itemListFile += imageItem(result.filename, currentFid, index);
+                  index = +1;
                 } else if (result.filetype === "plot" && !result.deleted) {
-                  itemListChart += plotItem(result.filename, currentFid, index);
+                  itemListFile += plotItem(result.filename, currentFid, index);
                   index = +1;
                 }
               });
@@ -155,7 +160,7 @@ export default {
               if (dataJSON.children.next == null) {
                 jQuery(".panel-list-item").remove();
                 jQuery("#item_list_container").html(
-                  itemListFolder + itemListChart
+                  itemListFolder + itemListFile
                 );
                 jQuery("#modal_add_chart").addClass("is-active");
               } else {
@@ -164,8 +169,8 @@ export default {
               }
             })
             .fail(function() {
-              if (location.hostname == "localhost") {
-                var dataJSON = testData;
+              if (location.hostname == "localhost1") {
+                var dataJSON = testData2;
                 var results = dataJSON.children.results;
                 var index = 0;
                 results.forEach(result => {
@@ -174,8 +179,11 @@ export default {
                     : result.fid;
                   if (result.filetype === "fold" && !result.deleted) {
                     itemListFolder += folderItem(result.filename, currentFid);
+                  } else if (result.filetype === "external_image" && !result.deleted) {
+                    itemListFile += imageItem(result.filename, currentFid, index);
+                    index = +1;
                   } else if (result.filetype === "plot" && !result.deleted) {
-                    itemListChart += plotItem(
+                    itemListFile += plotItem(
                       result.filename,
                       currentFid,
                       index
@@ -187,7 +195,7 @@ export default {
                 if (dataJSON.children.next == null) {
                   jQuery(".panel-list-item").remove();
                   jQuery("#item_list_container").html(
-                    itemListFolder + itemListChart
+                    itemListFolder + itemListFile
                   );
                   jQuery("#modal_add_chart").addClass("is-active");
                 } else {
@@ -254,7 +262,7 @@ export default {
           updateBreadcrumb(fid, fname);
 
           itemListFolder = "";
-          itemListChart = "";
+          itemListFile = "";
           updateItemList(fid, 1);
           jQuery("#confirm_add_chart").prop("disabled", true);
         });
@@ -379,15 +387,15 @@ export default {
           jQuery.each(selectedPlots, index => {
             selectedFid = jQuery(selectedPlots[index]).data("fid");
             var imgDataUrl =
-              "https://create.figlinq.com/v2/plots/" +
+              baseUrl + "v2/plots/" +
               figlinqUserId +
               ":" +
               selectedFid;
             var withCredentials =
-              location.hostname == "localhost" ? false : true;
+              location.hostname == "localhost1" ? false : true;
             var dataJSON;
             const importUrl =
-              "https://create.figlinq.com/~" +
+              baseUrl + "~" +
               figlinqUserId +
               "/" +
               selectedFid +
@@ -421,7 +429,7 @@ export default {
                 jQuery("#modal_add_chart").removeClass("is-active");
               })
               .fail(function() {
-                if (location.hostname == "localhost") {
+                if (location.hostname == "localhost1") {
                   dataJSON = plotData;
                   var width = dataJSON.figure.layout.width
                     ? dataJSON.figure.layout.width
@@ -444,7 +452,7 @@ export default {
           });
         });
 
-        jQuery(document).on("click", "#add_chart", () => {
+        jQuery(document).on("click", ".add_figlinq_content", () => {
           var lastFid = jQuery("#modal_add_chart").data("lastFid");
           if (lastFid) {
             jQuery("#modal_add_chart").addClass("is-active");
@@ -452,7 +460,7 @@ export default {
             var fid = "-1";
             jQuery("#modal_add_chart").data("lastFid", fid);
             itemListFolder = "";
-            itemListChart = "";
+            itemListFile = "";
             updateItemList(fid, 1);
           }
 

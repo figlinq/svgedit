@@ -875,3 +875,303 @@ export const userData = {
   kerberos_ticket_cache: null,
   kerberos_ticket_expiry: null
 };
+
+export const testData2 = {
+  "filename": "home",
+  "children": {
+      "count": 5,
+      "first": "https://plotly.local/v2/folders/home?page=1",
+      "previous": null,
+      "next": null,
+      "last": "https://plotly.local/v2/folders/home?page=1",
+      "results": [
+          {
+              "creation_time": "2021-10-03T19:26:09.587871Z",
+              "comments": {
+                  "results": [],
+                  "count": 0
+              },
+              "deleted": false,
+              "parented": true,
+              "embed_url": "https://plotly.local/~graphlinq/2.embed",
+              "fid": "graphlinq:2",
+              "filename": "Grid 2",
+              "filetype": "grid",
+              "img_url": "",
+              "image_urls": {},
+              "api_urls": {
+                  "files": "https://plotly.local/v2/files/graphlinq:2",
+                  "grids": "https://plotly.local/v2/grids/graphlinq:2",
+                  "parent": "https://plotly.local/v2/folders/home?user=graphlinq"
+              },
+              "owner": "graphlinq",
+              "parent": -1,
+              "preview": {
+                  "A": [
+                      "94",
+                      "96",
+                      "112",
+                      "92",
+                      "90",
+                      "78",
+                      "94",
+                      "76",
+                      "79",
+                      "86"
+                  ],
+                  "B": [
+                      "152",
+                      "151",
+                      "165",
+                      "141",
+                      "137",
+                      "118",
+                      "131",
+                      "112",
+                      "114",
+                      "119"
+                  ],
+                  "C": [
+                      "MIT",
+                      "Stanford",
+                      "Harvard",
+                      "U.Penn",
+                      "Princeton",
+                      "Chicago",
+                      "Georgetown",
+                      "Tufts",
+                      "Yale",
+                      "Columbia"
+                  ],
+                  "D": [
+                      "58",
+                      "55",
+                      "53",
+                      "49",
+                      "47",
+                      "40",
+                      "37",
+                      "36",
+                      "35",
+                      "33"
+                  ],
+                  "E": [
+                      "58",
+                      "55",
+                      "53",
+                      "49",
+                      "47",
+                      "40",
+                      "37",
+                      "36",
+                      "35",
+                      "33"
+                  ]
+              },
+              "referencers": null,
+              "references": null,
+              "share_key": "QiX8rtaxrWxKBeXAWggaMC",
+              "share_key_enabled": false,
+              "title": "",
+              "views": 0,
+              "web_url": "https://plotly.local/~graphlinq/2/",
+              "world_readable": false,
+              "date_modified": "2021-10-03T19:26:09.598Z",
+              "stars": {
+                  "results": [],
+                  "count": 0
+              },
+              "collaborators": {
+                  "results": [],
+                  "count": 0
+              },
+              "subfolder_count": null,
+              "refresh_interval": null,
+              "organize_view_url": "https://plotly.local/~graphlinq/2/",
+              "current_user_permission": "admin",
+              "is_theme": null,
+              "is_template": null
+          },
+          {
+              "creation_time": "2021-10-03T19:26:10.135535Z",
+              "comments": {
+                  "results": [],
+                  "count": 0
+              },
+              "deleted": false,
+              "parented": true,
+              "embed_url": "https://plotly.local/~graphlinq/3.embed",
+              "fid": "graphlinq:3",
+              "filename": "Plot 3",
+              "filetype": "plot",
+              "img_url": "/_filestore/g/r/graphlinq/3/image/2021-10-04 13:22:25.183014|9_HVNG8774RYJQ3EJRZG52G04MGNLDYH.png",
+              "image_urls": {
+                  "default": "/_filestore/g/r/graphlinq/3/image/2021-10-04 14:25:15.824217|2_3Z8OKC60XX1EHL3L7EN0IDBCX3W6OZ.png",
+                  "block-thumb": "/_filestore/g/r/graphlinq/3/image/2021-10-04 14:25:09.083627|8_2FY4QDYY1DDALZYNH1IOF3T28QLRK5.png",
+                  "list-thumb": "/_filestore/g/r/graphlinq/3/image/2021-10-04 13:22:25.183014|9_HVNG8774RYJQ3EJRZG52G04MGNLDYH.png"
+              },
+              "api_urls": {
+                  "files": "https://plotly.local/v2/files/graphlinq:3",
+                  "plots": "https://plotly.local/v2/plots/graphlinq:3",
+                  "parent": "https://plotly.local/v2/folders/home?user=graphlinq"
+              },
+              "owner": "graphlinq",
+              "parent": -1,
+              "preview": "",
+              "referencers": null,
+              "references": null,
+              "share_key": "MuJYAa035PLBogDuIj2qtp",
+              "share_key_enabled": false,
+              "title": "",
+              "views": 0,
+              "web_url": "https://plotly.local/~graphlinq/3/",
+              "world_readable": false,
+              "date_modified": "2021-10-03T19:26:10.144Z",
+              "stars": {
+                  "results": [],
+                  "count": 0
+              },
+              "collaborators": {
+                  "results": [],
+                  "count": 0
+              },
+              "subfolder_count": null,
+              "refresh_interval": null,
+              "organize_view_url": "https://plotly.local/~graphlinq/3/",
+              "current_user_permission": "admin",
+              "is_theme": null,
+              "is_template": false
+          },
+          {
+              "creation_time": "2021-10-05T20:43:38.082552Z",
+              "comments": null,
+              "deleted": false,
+              "parented": true,
+              "embed_url": "https://plotly.local/~graphlinq/4.embed",
+              "fid": "graphlinq:4",
+              "filename": "External_Image 4",
+              "filetype": "external_image",
+              "img_url": "",
+              "image_urls": {},
+              "api_urls": {
+                  "files": "https://plotly.local/v2/files/graphlinq:4",
+                  "external-images": "https://plotly.local/v2/external-images/graphlinq:4",
+                  "parent": "https://plotly.local/v2/folders/home?user=graphlinq"
+              },
+              "owner": "graphlinq",
+              "parent": -1,
+              "preview": "",
+              "referencers": null,
+              "references": null,
+              "share_key": "BTIWK12LRrKGzZ6cZ3XCDS",
+              "share_key_enabled": false,
+              "title": "",
+              "views": 0,
+              "web_url": "https://plotly.local/~graphlinq/4/",
+              "world_readable": false,
+              "date_modified": "2021-10-05T20:43:38.117Z",
+              "stars": {
+                  "results": [],
+                  "count": 0
+              },
+              "collaborators": {
+                  "results": [],
+                  "count": 0
+              },
+              "subfolder_count": null,
+              "refresh_interval": null,
+              "organize_view_url": "https://plotly.local/~graphlinq/4/",
+              "current_user_permission": "admin",
+              "is_theme": null,
+              "is_template": null
+          },
+          {
+              "creation_time": "2021-10-06T08:00:44.704188Z",
+              "comments": null,
+              "deleted": false,
+              "parented": true,
+              "embed_url": "https://plotly.local/~graphlinq/7.embed",
+              "fid": "graphlinq:7",
+              "filename": "External_Image 7",
+              "filetype": "external_image",
+              "img_url": "",
+              "image_urls": {},
+              "api_urls": {
+                  "files": "https://plotly.local/v2/files/graphlinq:7",
+                  "external-images": "https://plotly.local/v2/external-images/graphlinq:7",
+                  "parent": "https://plotly.local/v2/folders/home?user=graphlinq"
+              },
+              "owner": "graphlinq",
+              "parent": -1,
+              "preview": "",
+              "referencers": null,
+              "references": null,
+              "share_key": "HR7Jtvfxb5mCMUJgVx1f7K",
+              "share_key_enabled": false,
+              "title": "",
+              "views": 0,
+              "web_url": "https://plotly.local/~graphlinq/7/",
+              "world_readable": false,
+              "date_modified": "2021-10-06T08:00:44.748Z",
+              "stars": {
+                  "results": [],
+                  "count": 0
+              },
+              "collaborators": {
+                  "results": [],
+                  "count": 0
+              },
+              "subfolder_count": null,
+              "refresh_interval": null,
+              "organize_view_url": "https://plotly.local/~graphlinq/7/",
+              "current_user_permission": "admin",
+              "is_theme": null,
+              "is_template": null
+          },
+          {
+              "creation_time": "2021-10-06T08:28:30.641516Z",
+              "comments": null,
+              "deleted": false,
+              "parented": true,
+              "embed_url": "https://plotly.local/~graphlinq/8.embed",
+              "fid": "graphlinq:8",
+              "filename": "External_Image 8",
+              "filetype": "external_image",
+              "img_url": "",
+              "image_urls": {},
+              "api_urls": {
+                  "files": "https://plotly.local/v2/files/graphlinq:8",
+                  "external-images": "https://plotly.local/v2/external-images/graphlinq:8",
+                  "parent": "https://plotly.local/v2/folders/home?user=graphlinq"
+              },
+              "owner": "graphlinq",
+              "parent": -1,
+              "preview": "",
+              "referencers": null,
+              "references": null,
+              "share_key": "Lhz3zVXmzuYr31qoSnh14y",
+              "share_key_enabled": false,
+              "title": "",
+              "views": 0,
+              "web_url": "https://plotly.local/~graphlinq/8/",
+              "world_readable": false,
+              "date_modified": "2021-10-06T08:28:30.690Z",
+              "stars": {
+                  "results": [],
+                  "count": 0
+              },
+              "collaborators": {
+                  "results": [],
+                  "count": 0
+              },
+              "subfolder_count": null,
+              "refresh_interval": null,
+              "organize_view_url": "https://plotly.local/~graphlinq/8/",
+              "current_user_permission": "admin",
+              "is_theme": null,
+              "is_template": null
+          }
+      ]
+  },
+  "subfolder_count": 0
+}

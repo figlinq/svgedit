@@ -89,8 +89,8 @@
             <a id="tool_export" class="navbar-item">
               Export figure
             </a>
-            <a id="tool_add_chart" class="navbar-item">
-              Add chart
+            <a id="add_figlinq_content_menu" class="navbar-item add_figlinq_content is-hidden">
+              Add FiglinQ content
             </a>
             <hr class="navbar-divider">
             <a id="tool_docprops" class="navbar-item">
@@ -112,11 +112,11 @@
       <div class="navbar-end">
         <div class="navbar-item">
           <div class="buttons">
-            <a id="add_chart" class="button is-light is-small is-hidden">
+            <a id="add_figlinq_content_btn" class="button is-light is-small is-hidden add_figlinq_content">
               <span class="icon">
                 <i class="fas fa-plus"></i>
               </span>
-              <span>Add chart</span>
+              <span>Add FiglinQ content</span>
             </a>
             <a href="https://figlinq.com/sign-up" id="sign_up" class="button is-light is-small">
               <strong>Sign up</strong>
@@ -136,7 +136,7 @@
       <div class="box">
         <nav class="panel">
           <p class="panel-heading">
-            Select chart(s)
+            Select item(s) to be added
           </p>
           <!-- <div class="panel-block">
             <p class="control has-icons-left">
@@ -149,6 +149,11 @@
           <p id="panel_tabs" class="panel-tabs">
             <a class="is-active">My files</a>
             <!-- <a>Shared with me</a> -->
+            <a><a class="button">
+              <span class="icon is-small">
+                <i class="fas fa-sync-alt"></i>
+              </span>
+            </a></a>
           </p>
           <div id="panel_breadcrumb" class="panel-block">
             <div class="breadcrumb" aria-label="breadcrumbs">
@@ -169,7 +174,7 @@
             <div class="field is-grouped">
               <p class="control">
                 <button id="confirm_add_chart" class="button is-link" disabled>
-                  Add chart(s)
+                  Add item(s)
                 </button>
               </p>
               <p class="control">

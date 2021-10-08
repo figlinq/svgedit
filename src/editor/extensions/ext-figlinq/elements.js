@@ -17,12 +17,14 @@ export function plotItem(name, id, index){
     `</a>`;
 }
 
-export function parentItem(fid){
+export function imageItem(name, id, index){
     return `
-    <a class="panel-block panel-list-item folder-item" data-fid="` + fid + `">
+    <a class="panel-block panel-list-item image-item" data-fid="` + id + `" data-index="` + index + `">
         <span class="panel-icon">
-            <i class="fas fa-level-up-alt" aria-hidden="true"></i>
-        </span>..</a>`;
+            <i class="fas fa-image" aria-hidden="true"></i>
+        </span>` 
+        + name +
+    `</a>`;
 }
 
 export function breadcrumb(fid, fname){
