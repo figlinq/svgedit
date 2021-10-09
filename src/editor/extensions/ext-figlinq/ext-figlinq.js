@@ -163,6 +163,43 @@ export default {
             .always(function() {});
         };
 
+        const generateFObject = (x, y, width, height, src) => {
+          let newIframe = {
+            element: "iframe",
+            attr: {
+              x: x,
+              y: y,
+              width: width,
+              height: height,
+              id: svgEditor.svgCanvas.getNextId(),
+              src: src
+            }
+          };
+
+          let newBody = {
+            element: "body",
+            attr: {
+              id: svgEditor.svgCanvas.getNextId(),
+              xmlns: "http://www.w3.org/1999/xhtml"
+            },
+            children: [newIframe]
+          };
+
+          let newForeignObj = {
+            element: "foreignObject",
+            attr: {
+              x: x,
+              y: y,
+              width: width,
+              height: height,
+              id: svgEditor.svgCanvas.getNextId(),
+              class: "figlinq-fobject"
+            },
+            children: [newBody]
+          };
+          return newForeignObj;
+        }
+
         jQuery(document).on("click", "#cancel_add_chart", () => {
           jQuery("#modal_add_chart").removeClass("is-active");
         });
@@ -232,7 +269,7 @@ export default {
           jQuery("#refresh_item_list").addClass("is-loading");
         });
 
-        const importImage = (url, width = "auto", height = "auto", x, y) => {
+        const importImage = (url, width = "auto", height = "auto", x, y, selectedType) => {
           const newImage = svgEditor.svgCanvas.addSVGElementFromJson({
             element: "image",
             attr: {
@@ -246,17 +283,16 @@ export default {
             }
           });
           newImage.setAttributeNS(NS.XLINK, "xlink:href", url);
+          newImage.setAttribute('data-ftype', selectedType);
         };
 
-        jQuery(document).on("click", "#inter_switch", e => {
+        jQuery(document).on("click", "#inter_switch", () => {
           var checked = jQuery("#inter_switch").is(":checked");
           if (checked) {
-            const images = jQuery(".figlinq-image");
+            var currentUrl, src, height, width, x, y, newForeignObj, newElem;
+            const plotImages = jQuery('.figlinq-image[data-ftype="plot"]');
 
-            var currentUrl, src, id, className, height, width, x, y, style;
-            var newForeignObj, newBody, newIframe, newG;
-
-            images.each(function() {
+            plotImages.each(function(){
               currentUrl = jQuery(this).attr("xlink:href");
               src = currentUrl.replace(".svg", ".embed");
               height = jQuery(this).attr("height");
@@ -264,41 +300,8 @@ export default {
               x = jQuery(this).attr("x");
               y = jQuery(this).attr("y");
 
-              newIframe = {
-                element: "iframe",
-                attr: {
-                  x: x,
-                  y: y,
-                  width: width,
-                  height: height,
-                  id: svgEditor.svgCanvas.getNextId(),
-                  src: src
-                }
-              };
-
-              newBody = {
-                element: "body",
-                attr: {
-                  id: svgEditor.svgCanvas.getNextId(),
-                  xmlns: "http://www.w3.org/1999/xhtml"
-                },
-                children: [newIframe]
-              };
-
-              newForeignObj = {
-                element: "foreignObject",
-                attr: {
-                  x: x,
-                  y: y,
-                  width: width,
-                  height: height,
-                  id: svgEditor.svgCanvas.getNextId(),
-                  class: "figlinq-fobject"
-                },
-                children: [newBody]
-              };
-
-              var newElem = svgCanvas.addSVGElementFromJson(newForeignObj);
+              newForeignObj = generateFObject(x, y, width, height, src);
+              newElem = svgCanvas.addSVGElementFromJson(newForeignObj);
               this.replaceWith(newElem);
             });
             // Ugly hack to reload iframes, but it works!
@@ -333,6 +336,7 @@ export default {
                 }
               });
               newImage.setAttributeNS(NS.XLINK, "xlink:href", url);
+              newImage.setAttribute('data-ftype', 'plot');
               this.replaceWith(newImage);
             });
           }
@@ -381,7 +385,7 @@ export default {
                     ? dataJSON.figure.layout.height
                     : 400;
 
-                  importImage(importUrl, width, height, x, y);
+                  importImage(importUrl, width, height, x, y, selectedType);
                   x += width;
                   curCol += 1;
                   if (curCol > colNumber) {
@@ -394,14 +398,20 @@ export default {
                 })
             } else if (selectedType === "image"){
               // Add width and height fields in v2
-              importImage(importUrl, "auto", 400, x, y);
-              x += 600;
-              curCol += 1;
-              if (curCol > colNumber) {
-                curCol = 1;
-                y += 400;
-                x = 0;
+              const img = new Image();
+              img.onload = function() {
+                // alert(this.width + 'x' + this.height);
+                importImage(importUrl, this.width, this.height, x, y, selectedType);
+                x += 600;
+                curCol += 1;
+                if (curCol > colNumber) {
+                  curCol = 1;
+                  y += 400;
+                  x = 0;
+                }
               }
+              img.src = importUrl;
+              
               jQuery(e.target).removeClass("is-loading");
               jQuery("#modal_add_chart").removeClass("is-active");
             }
