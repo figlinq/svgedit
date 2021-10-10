@@ -286,6 +286,40 @@ export default {
           newImage.setAttribute('data-ftype', selectedType);
         };
 
+        const saveSvgToFiglinq = () => {
+          svgCanvas.clearSelection();
+          const saveOpts = {
+            images: svgEditor.configObj.pref("img_save"),
+            round_digits: 6,
+            apply: true,
+          };
+          const saveOptions = svgCanvas.mergeDeep(svgCanvas.getSvgOption(), saveOpts);
+          for (const [ key, value ] of Object.entries(saveOptions)) {
+            svgCanvas.setSvgOption(key, value);
+          }
+  
+          const svg = '<?xml version="1.0"?>' + svgCanvas.svgCanvasToString();
+          // const b64Data = svgCanvas.encode64(svg);
+          // const blob = b64toBlob(b64Data, 'image/svg+xml');
+          return svg;
+        };
+
+        const b64toBlob = (b64Data, contentType='', sliceSize=512) => {
+          const byteCharacters = atob(b64Data);
+          const byteArrays = [];
+          for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+            const slice = byteCharacters.slice(offset, offset + sliceSize);
+            const byteNumbers = new Array(slice.length);
+            for (let i = 0; i < slice.length; i++) {
+              byteNumbers[i] = slice.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            byteArrays.push(byteArray);
+          }
+          const blob = new Blob(byteArrays, { type: contentType });
+          return blob;
+        };    
+    
         jQuery(document).on("click", "#inter_switch", () => {
           var checked = jQuery("#inter_switch").is(":checked");
           if (checked) {
@@ -342,7 +376,8 @@ export default {
           }
         });
 
-        jQuery(document).on("click", "#confirm_add_content", e => {
+        jQuery(document).on("click", "#confirm_add_content", e => {          
+       
           jQuery(e.target).addClass("is-loading");
           const selector = ".plot-item.is-active, .image-item.is-active";
           const selectedPlots = getSortedElems(selector, "data-index");
@@ -418,8 +453,85 @@ export default {
           });
         });
 
+        jQuery(document).on("keyup", "#file-save-name-input", () => {
+          let val = jQuery("#file-save-name-input").val();
+          
+          if(val.length) {
+            jQuery("#confirm-save-figure").prop("disabled", false);
+          } else {
+            jQuery("#confirm-save-figure").prop("disabled", true);
+          }
+        });
+
+        jQuery(document).on("click", "#save_figlinq_content", () => {
+         
+          jQuery(".file-save-panel").removeClass("is-hidden");
+          jQuery(".content-add-panel").addClass("is-hidden");
+          jQuery("#file-panel-heading").html("Save figure");
+          jQuery("#modal_add_chart").addClass("is-active");
+          jQuery("#confirm-save-figure").prop("disabled", true);
+          jQuery("#file-save-name-input").val("");
+
+          loadHomeDirContents();
+
+        });
+
+        jQuery(document).on("click", "#confirm-save-figure", () => {
+
+          const world_readable = jQuery("#world_readable").val();
+          const fname = jQuery("#file-save-name-input").val();
+          const lastFid = jQuery("#modal_add_chart").data("lastFid");
+          
+          const svg = saveSvgToFiglinq();
+          
+          var blob = new Blob([svg], {type:'image/svg+xml'});
+          var file = new File([blob], fname + ".svg");
+
+          var formData = new FormData();
+          formData.append("file", file);
+
+          // TODO: move figure editor to the same subdomain, so that all cookies can be accessed
+          // var csrf_token = Cookies.get('plotly_csrf_on');
+          csrf_token = "b1j5w6wRbxbDi14KbmRqVCGUybehGIStm9MgEbTiqqUJeorocKHBU9NlEbafkL2M";
+
+          jQuery.ajax({
+            method: "POST",
+            url: baseUrl + "v2/external-images/upload",
+            xhrFields: {
+              withCredentials: true
+            },
+            headers: {
+              'X-File-Name': fname, 
+              'Plotly-World-Readable': world_readable,
+              'Plotly-Parent': lastFid,
+              'X-CSRFToken': csrf_token,
+            },
+            data: formData,
+            processData: false,
+            contentType: false,
+          })
+          .done(function(data) {
+            console.log(data);
+          })
+          .fail(function(data) {
+            console.log(data);
+          });
+        });
+
         jQuery(document).on("click", ".add_figlinq_content", () => {
+          
+          var checked = jQuery("#inter_switch").is(":checked");
+          if(checked) jQuery("#inter_switch").click();
+
+          jQuery(".file-save-panel").addClass("is-hidden");
+          jQuery(".content-add-panel").removeClass("is-hidden");
+          jQuery("#file-panel-heading").html("Select content");
+          loadHomeDirContents();
+        });
+
+        const loadHomeDirContents = () => {
           var lastFid = jQuery("#modal_add_chart").data("lastFid");
+        
           if (lastFid) {
             jQuery("#modal_add_chart").addClass("is-active");
           } else {
@@ -429,13 +541,7 @@ export default {
             itemListFile = "";
             updateItemList(fid, 1);
           }
-
-          // if (svgCanvas.getMode() === "hello_world") {
-          //   svgCanvas.setMode(undefined);
-          // } else {
-          //   svgCanvas.setMode("hello_world");
-          // }
-        });
+        }
       },
 
       // This is triggered when the main mouse button is pressed down

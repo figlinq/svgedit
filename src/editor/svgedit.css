@@ -419,7 +419,7 @@ hr {
 }
 
 input[type="text"] {
-  padding: 2px;
+  /* padding: 2px; */
 }
 
 .dropdown {
