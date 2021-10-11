@@ -492,7 +492,7 @@ export default {
 
           // TODO: move figure editor to the same subdomain, so that all cookies can be accessed
           // var csrf_token = Cookies.get('plotly_csrf_on');
-          csrf_token = "b1j5w6wRbxbDi14KbmRqVCGUybehGIStm9MgEbTiqqUJeorocKHBU9NlEbafkL2M";
+          var csrf_token = "b1j5w6wRbxbDi14KbmRqVCGUybehGIStm9MgEbTiqqUJeorocKHBU9NlEbafkL2M";
 
           jQuery.ajax({
             method: "POST",
