@@ -12,8 +12,17 @@
 
   <!-- STYLESHEETS (others loaded dynamically) -->
   <style id="styleoverrides" media="screen"></style>
-  <link href="./svgedit.css" rel="stylesheet" media="all">
-  </link>
+  <link href="./svgedit.css" rel="stylesheet" media="all"></link>
+  
+  <!-- FiglinQ -->
+  <link href="./extensions/ext-figlinq/ext-figlinq.css" rel="stylesheet" media="all"></link>
+  <link href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bulma-switch@2.0.0/dist/css/bulma-switch.min.css" rel="stylesheet" media="all"></link>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script> 
+
 
   <!-- SCRIPTS -->
 
@@ -31,7 +40,7 @@
       allowInitialUserOverride: true,
       extensions: [],
       noDefaultExtensions: false,
-      // userExtensions: ['./extensions/ext-helloworld/ext-helloworld.js'],
+      userExtensions: ['./extensions/ext-figlinq/ext-figlinq.js'],
     });
 
     // Variable XDOMAIN below is created by Rollup for the Xdomain build (see rollup.config.js)
@@ -51,14 +60,206 @@
 </head>
 
 <body style="margin:0">
-  <!-- svgedit container can be positionned anywhere in the DOM
-       but it must have a width and a height -->
-  <!-- 
-  <h1>SVGEdit</h1>
-  <div id="container" style="width:100%;height:550px"></div>
-  <h1>End</h1>
-  -->      
-  <div id="container" style="width:100vw;height:100vh; overflow:hidden;"></div>
+  <div id="fq-spinner">
+    <image src="./images/figlinq/spinner.gif" width="60" height="60" style="max-height:60px;"/>
+  </div>
+  <a href="https://github.com/SVG-Edit/svgedit" target="_blank" id="fq-powered-by-svgedit">
+    <image style="margin-right:10px;" src="./images/logo.svg" width="20"/>
+    <div>Powered by<br />
+      <strong>SVG-edit</strong>
+    </div>
+  </a>
+  <nav class="navbar is-info" role="navigation" aria-label="main navigation" style="background-color: rgb(8, 84, 125);">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://figlinq.com">
+        <img src="images/figlinq/logo_text_dark.svg" width="80">
+      </a>
+  
+      <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </a>
+    </div>
+  
+    <div id="navbar" class="navbar-menu">
+      <div class="navbar-start">
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link">
+            Menu
+          </a>  
+          <div class="navbar-dropdown">
+            <a id="tool_clear" class="navbar-item">
+              New figure (N)
+            </a>
+            <a id="tool_open" class="navbar-item">
+              Open figure
+            </a>
+            <a id="save_figlinq_content" class="navbar-item">
+              Save figure (S)
+            </a>
+            <a id="tool_import" class="navbar-item">
+              Import figure
+            </a>
+            <a id="tool_export_figlinq" class="navbar-item">
+              Export figure
+            </a>
+            <a id="add_figlinq_content_menu" class="navbar-item add_figlinq_content is-hidden">
+              Add FiglinQ content
+            </a>
+            <hr class="navbar-divider">
+            <a id="tool_docprops" class="navbar-item">
+              Document properties
+            </a>
+            <a id="tool_editor_prefs" class="navbar-item">
+              Preferences
+            </a>
+          </div>
+        </div>
+        <div class="navbar-item">
+          <div class="field">
+            <input id="inter_switch" type="checkbox" name="inter_switch" class="switch is-success">
+            <label for="inter_switch">Figure interactivity</label>
+          </div>
+        </div>
+      </div>
+  
+      <div class="navbar-end">
+        <div class="navbar-item">
+          <div class="buttons">
+            <a id="add_figlinq_content_btn" class="button is-light is-small is-hidden add_figlinq_content">
+              <span class="icon">
+                <i class="fas fa-plus"></i>
+              </span>
+              <span>Add FiglinQ content</span>
+            </a>
+            <a href="https://figlinq.com/sign-up" id="sign_up" class="button is-light is-small">
+              <strong>Sign up</strong>
+            </a>
+            <a href="https://create.figlinq.com/organize/home/" id="log_in" class="button is-light is-small">
+              Log in
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+  <div id="container" style="width:100vw;height:calc(100vh - 52px); overflow:hidden;"></div>
+  <div id="fq-modal-content" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-content">
+      <div class="box">
+        <nav class="panel">
+          <p id="file-panel-heading" class="panel-heading">
+            Select content
+          </p>
+          <!-- <div class="panel-block">
+            <p class="control has-icons-left">
+              <input class="input" type="text" placeholder="Search">
+              <span class="icon is-left">
+                <i class="fas fa-search" aria-hidden="true"></i>
+              </span>
+            </p>
+          </div> -->
+          <p id="panel_tabs" class="panel-tabs">
+            <a class="is-active">My files</a>
+            <!-- <a>Shared with me</a> -->
+          </p>
+          <div id="panel_breadcrumb" class="panel-block">
+            <div class="breadcrumb" aria-label="breadcrumbs">
+              <ul>
+                <li class="breadcrumb-item" data-fid="-1">
+                  <a href="#" class="folder-item" data-fid="-1">&nbsp;
+                    <span class="icon is-small mx-0">
+                      <i class="fas fa-home"></i>
+                    </span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div id="item_list_container" style="border-bottom: 1px solid #ededed; max-height: calc(100vh - 400px); overflow: scroll; ">            
+          </div>
+          <div class="panel-block content-add-panel is-hidden">
+            <div class="field is-grouped">
+              <div class="control">
+                <button id="confirm_add_content" class="button is-link" disabled>
+                  Add item(s)
+                </button>
+              </div>
+              <div class="control">
+                <button id="cancel_add_chart" class="button is-link is-outlined">
+                  Cancel
+                </button>
+              </div>
+              <div class="control">
+                <div class="select">
+                  <select id="col_select">
+                    <option value="1">1 column</option>
+                    <option value="2">2 columns</option>
+                    <option value="3">3 columns</option>
+                    <option value="4">4 columns</option>
+                  </select>
+                </div>
+              </div>
+              <div class="control">
+                <button id="refresh_item_list" class="button">
+                  <span class="icon is-small">
+                    <i class="fas fa-sync-alt"></i>
+                  </span>
+                </button>              
+              </div>
+            </div>
+          </div>
+          <div class="panel-block file-save-panel is-hidden">
+            <div class="control">
+              <div class="field is-horizontal">
+                <div class="field-label is-normal" style="padding-top: .5em;">
+                  <label class="label">File name:</label>
+                </div>
+                <div class="field-body">
+                  <div class="field">
+                    <p class="control">
+                      <input id="fq-file-save-name-input" class="input" type="text">
+                    </p>
+                  </div>
+                </div>
+              </div>              
+            </div>
+          </div>
+          <div class="panel-block file-save-panel is-hidden">
+            <div class="field is-grouped">
+              <div class="control">
+                <div class="select">
+                  <select id="world_readable">
+                    <option value="false">Private</option>
+                    <option value="true">Public</option>
+                  </select>
+                </div>
+              </div>
+              <div class="control">
+                <button id="fq-confirm-save-figure" class="button is-link" disabled>
+                  Save
+                </button>
+              </div>
+              <div class="control">
+                <button id="cancel_add_chart" class="button is-link is-outlined">
+                  Cancel
+                </button>
+              </div>
+              <div class="control">
+                <button id="refresh_item_list" class="button">
+                  <span class="icon is-small">
+                    <i class="fas fa-sync-alt"></i>
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>

@@ -1,0 +1,71 @@
+/* FiglinQ */
+#tools_left {
+  grid-area: left;
+  border-right: none;
+  margin-left: auto;
+  margin-right: auto;
+  overflow-y: scroll;
+  scrollbar-width: none;
+}
+
+.panel-block.is-active {
+  background-color: #eef8ff;
+}
+
+.panel-block.is-active:hover {
+  background-color: #eef8ff;
+}
+
+.panel-block span {
+  pointer-events: none;
+}
+
+#modal_add_chart {
+  justify-content: flex-start;
+}
+#modal_add_chart .modal-content {
+  top: 20px;
+  max-height: calc(100vh - 40px);
+}
+#item_list_container {
+  max-height: calc(100vh - 270px);
+  overflow-y: auto;
+}
+
+#main_button {
+  visibility: hidden;
+}
+
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Old versions of Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently
+                                    supported by Chrome, Edge, Opera and Firefox */
+}
+#fq-powered-by-svgedit {
+  position: fixed;
+  top: 57px;
+  left: 10px;
+  color: white !important;
+  font-size: 11px;
+  line-height: 14px;
+  display: flex;
+}
+
+#fq-powered-by-svgedit strong {
+  color: white !important;
+  font-weight: bold;
+}
+
+#fq-spinner {
+  display: flex;
+  position: fixed;
+  width: 100vw;
+  height: calc(100vh - 52px);
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
