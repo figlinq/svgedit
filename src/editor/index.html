@@ -19,7 +19,6 @@
   <link href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bulma-switch@2.0.0/dist/css/bulma-switch.min.css" rel="stylesheet" media="all"></link>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  
   <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script> 
 
@@ -60,6 +59,7 @@
 </head>
 
 <body style="margin:0">
+  <!-- FiglinQ -->
   <div id="fq-spinner">
     <image src="./images/figlinq/spinner.gif" width="60" height="60" style="max-height:60px;"/>
   </div>
@@ -90,13 +90,13 @@
           </a>  
           <div class="navbar-dropdown">
             <a id="tool_clear" class="navbar-item">
-              New figure (N)
+              New figure
             </a>
             <a id="tool_open" class="navbar-item">
               Open figure
             </a>
-            <a id="save_figlinq_content" class="navbar-item">
-              Save figure (S)
+            <a id="fq-menu-item-save-figure" class="navbar-item">
+              Save figure
             </a>
             <a id="tool_import" class="navbar-item">
               Import figure
@@ -104,7 +104,7 @@
             <a id="tool_export_figlinq" class="navbar-item">
               Export figure
             </a>
-            <a id="add_figlinq_content_menu" class="navbar-item add_figlinq_content is-hidden">
+            <a id="fq-menu-add-content-btn_menu" class="navbar-item fq-menu-add-content-btn is-hidden">
               Add FiglinQ content
             </a>
             <hr class="navbar-divider">
@@ -118,8 +118,8 @@
         </div>
         <div class="navbar-item">
           <div class="field">
-            <input id="inter_switch" type="checkbox" name="inter_switch" class="switch is-success">
-            <label for="inter_switch">Figure interactivity</label>
+            <input id="fq-menu-interact-switch" type="checkbox" name="fq-menu-interact-switch" class="switch is-success">
+            <label for="fq-menu-interact-switch">Figure interactivity</label>
           </div>
         </div>
       </div>
@@ -127,16 +127,16 @@
       <div class="navbar-end">
         <div class="navbar-item">
           <div class="buttons">
-            <a id="add_figlinq_content_btn" class="button is-light is-small is-hidden add_figlinq_content">
+            <a id="fq-menu-add-content-btn_btn" class="button is-light is-small is-hidden fq-menu-add-content-btn">
               <span class="icon">
                 <i class="fas fa-plus"></i>
               </span>
               <span>Add FiglinQ content</span>
             </a>
-            <a href="https://figlinq.com/sign-up" id="sign_up" class="button is-light is-small">
+            <a href="https://figlinq.com/sign-up" id="fq-menu-signup-btn" class="button is-light is-small">
               <strong>Sign up</strong>
             </a>
-            <a href="https://create.figlinq.com/organize/home/" id="log_in" class="button is-light is-small">
+            <a href="https://create.figlinq.com/organize/home/" id="fq-menu-login-btn" class="button is-light is-small">
               Log in
             </a>
           </div>
@@ -144,7 +144,7 @@
       </div>
     </div>
   </nav>
-  <div id="container" style="width:100vw;height:calc(100vh - 52px); overflow:hidden;"></div>
+  <div id="container" style="width:100vw;height:calc(100vh - 52px);"></div>
   <div id="fq-modal-content" class="modal">
     <div class="modal-background"></div>
     <div class="modal-content">
@@ -169,7 +169,7 @@
             <div class="breadcrumb" aria-label="breadcrumbs">
               <ul>
                 <li class="breadcrumb-item" data-fid="-1">
-                  <a href="#" class="folder-item" data-fid="-1">&nbsp;
+                  <a href="#" class="fq-modal-folder-item" data-fid="-1">&nbsp;
                     <span class="icon is-small mx-0">
                       <i class="fas fa-home"></i>
                     </span>
@@ -183,12 +183,12 @@
           <div class="panel-block content-add-panel is-hidden">
             <div class="field is-grouped">
               <div class="control">
-                <button id="confirm_add_content" class="button is-link" disabled>
+                <button id="fq-modal-add-confirm-btn" class="button is-link" disabled>
                   Add item(s)
                 </button>
               </div>
               <div class="control">
-                <button id="cancel_add_chart" class="button is-link is-outlined">
+                <button id="fq-modal-cancel-btn" class="button is-link is-outlined">
                   Cancel
                 </button>
               </div>
@@ -203,7 +203,7 @@
                 </div>
               </div>
               <div class="control">
-                <button id="refresh_item_list" class="button">
+                <button id="fq-modal-refresh-btn" class="button">
                   <span class="icon is-small">
                     <i class="fas fa-sync-alt"></i>
                   </span>
@@ -220,7 +220,7 @@
                 <div class="field-body">
                   <div class="field">
                     <p class="control">
-                      <input id="fq-file-save-name-input" class="input" type="text">
+                      <input id="fq-modal-save-name-input" class="input" type="text">
                     </p>
                   </div>
                 </div>
@@ -238,17 +238,17 @@
                 </div>
               </div>
               <div class="control">
-                <button id="fq-confirm-save-figure" class="button is-link" disabled>
+                <button id="fq-modal-save-confirm-btn" class="button is-link" disabled>
                   Save
                 </button>
               </div>
               <div class="control">
-                <button id="cancel_add_chart" class="button is-link is-outlined">
+                <button id="fq-modal-cancel-btn" class="button is-link is-outlined">
                   Cancel
                 </button>
               </div>
               <div class="control">
-                <button id="refresh_item_list" class="button">
+                <button id="fq-modal-refresh-btn" class="button">
                   <span class="icon is-small">
                     <i class="fas fa-sync-alt"></i>
                   </span>

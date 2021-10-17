@@ -607,3 +607,10 @@ ul li.current {
 #elem_id, #elem_class{
   display: none;
 }
+
+.input {
+  padding-bottom: calc(.5em - 1px) !important;
+  padding-left: calc(.75em - 1px) !important;
+  padding-right: calc(.75em - 1px) !important;
+  padding-top: calc(.5em - 1px) !important;
+}

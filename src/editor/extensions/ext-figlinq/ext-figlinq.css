@@ -36,6 +36,10 @@
   visibility: hidden;
 }
 
+#tool_image {
+    display: none;
+}
+
 .noselect {
   -webkit-touch-callout: none; /* iOS Safari */
   -webkit-user-select: none; /* Safari */
@@ -67,5 +71,16 @@
   height: calc(100vh - 52px);
   justify-content: center;
   align-items: center;
-  pointer-events: none;
+    pointer-events: none;
+}
+
+#zoom{
+    margin-right: 4px;
+    background-color: var(--input-color);
+    border-radius: 3px;
+}
+
+#zoom select{
+    background-color: #b2b2b2;
+    border: 0;
 }
