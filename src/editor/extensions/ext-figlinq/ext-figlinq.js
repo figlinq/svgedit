@@ -45,8 +45,8 @@ export default {
             fqItemListFile,
             fqUserId,
             fqModalMode,
-            fqLastFolderId = false,
-            csrf_token = "QsqJChOV9ra5FhreGlIQujW72gfE7oU0A9ZNq0TrwkUY7B2WvFphOQMa2gtWVc20";        
+            fqCsrfToken,        
+            fqLastFolderId = false;
         
         // To use this function we need to get content_type field into the "children" object returned from v2 
         // const getExt = (contentType) => {
@@ -90,6 +90,7 @@ export default {
               jQuery("#fq-menu-signup-btn").addClass("is-hidden");
               jQuery(".fq-menu-add-content-btn").removeClass("is-hidden");
               fqUserId = data.username;
+              fqCsrfToken = data.csrf_token;
             }
           })
           .fail(function() {});
@@ -197,6 +198,11 @@ export default {
           );
         };
 
+        const getFileExt = (fname) => {
+          var re = /(?:\.([^.]+))?$/;
+          return re.exec(fname)[1];
+        }
+
         const updateItemList = (fid, page) => {
           var url =
           baseUrl + "v2/folders/" +
@@ -217,19 +223,23 @@ export default {
             .done(function(data) {
               var results = data.children.results;
               var index = 0;
+              
               results.forEach(result => {
                 const currentFid = result.fid.includes(":")
                   ? result.fid.substring(result.fid.indexOf(":") + 1)
                   : result.fid;
 
+                const isSvg = getFileExt(result.filename) === "svg";
+                const includeNonSvg = fqModalMode == "addContent";
+                
                 if (result.filetype === "fold" && !result.deleted) {
                   fqItemListFolder += folderItem(result.filename, currentFid);
-                } else if (result.filetype === "external_image" && !result.deleted) {
+                } else if ((includeNonSvg || isSvg) && result.filetype === "external_image" && !result.deleted) {
                   fqItemListFile += imageItem(result.filename, currentFid, index);
-                  index = +1;
-                } else if (result.filetype === "plot" && !result.deleted) {
+                  index += 1;
+                } else if (includeNonSvg && result.filetype === "plot" && !result.deleted) {
                   fqItemListFile += plotItem(result.filename, currentFid, index);
-                  index = +1;
+                  index += 1;
                 }
               });
 
@@ -320,49 +330,63 @@ export default {
           return svg;
         };
 
-        const loadHomeDirContents = () => {
+        const showToast = (msg, type) => {
+          bulmaToast.toast({ 
+            message: msg, 
+            type: type, 
+            position: 'bottom-right',
+            closeOnClick: true,
+            dismissible: true,
+          });
+        }
+
+        const refreshModalContents = () => {
+
+          fqItemListFolder = "";
+          fqItemListFile = "";
        
           if (fqLastFolderId) {
             jQuery("#fq-modal-content").addClass("is-active");
+            updateItemList(fqLastFolderId, 1);
           } else {
             var fid = "-1";
             fqLastFolderId = fid;
-            fqItemListFolder = "";
-            fqItemListFile = "";
             updateItemList(fid, 1);
           }
         }
+
+        const inlineImage = async function(img) {
+          var src = jQuery(img).attr("src");
+          let blob = await fetch(src).then(r => r.blob());
+          let dataUrl = await new Promise(resolve => {
+            let reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.readAsDataURL(blob);
+          });
+          jQuery(img).attr("src", dataUrl);
+        };
 
         jQuery(document).on("click", "#fq-modal-cancel-btn", () => {
           jQuery("#fq-modal-content").removeClass("is-active");
         });
 
         jQuery(document).on("click", "#fq-modal-refresh-btn", () => {
-          jQuery("#fq-modal-refresh-btn").addClass("is-loading");
-          fqItemListFolder = "";
-          fqItemListFile = "";
-          updateItemList(fqLastFolderId, 1);
+          refreshModalContents();
         });
 
         jQuery(document).on("click", ".fq-modal-plot-item, .fq-modal-image-item", e => {
 
-          if(fqModalMode === "saveContent"){
+          if(fqModalMode === "saveFigure"){
             if(jQuery(e.target).hasClass("fq-modal-image-item")){
               jQuery(".fq-modal-plot-item, .fq-modal-image-item").removeClass("is-active");
               jQuery(e.target).addClass("is-active");
               var text = jQuery(e.target).find(".fq-list-item-text").html();
+              text = text.replace(/\.[^/.]+$/, "");
               jQuery("#fq-modal-save-name-input").val(text);
               jQuery("#fq-modal-save-confirm-btn").prop("disabled", false);
             }
             return
           }
-
-          const dataFid = jQuery(e.target)
-            .data("fid")
-            .toString();
-          const fid = dataFid.includes(":")
-            ? dataFid.substring(dataFid.indexOf(":") + 1)
-            : dataFid;           
 
           if (jQuery(e.target).hasClass("is-active")) {
             jQuery(e.target).removeClass("is-active");
@@ -512,20 +536,6 @@ export default {
           }
         });
 
-        jQuery(document).on("click", "#fq-menu-item-save-figure", () => {
-         
-          jQuery(".file-save-panel").removeClass("is-hidden");
-          jQuery(".content-add-panel").addClass("is-hidden");
-          jQuery("#file-panel-heading").html("Save figure");
-          jQuery("#fq-modal-content").addClass("is-active");
-          jQuery("#fq-modal-save-confirm-btn").prop("disabled", true);
-          jQuery("#fq-modal-save-name-input").val("");
-
-          loadHomeDirContents();
-          fqModalMode = "saveContent";
-
-        });
-
         jQuery(document).on("click", "#fq-modal-save-confirm-btn", () => {
 
           const world_readable = jQuery("#world_readable").val();
@@ -534,7 +544,7 @@ export default {
           // Check if name exists
           var replacedFid, nameExists = false;
           jQuery(".fq-modal-image-item").each(function() {
-            if(jQuery(this).find(".fq-list-item-text").html() == fname) {
+            if(jQuery(this).find(".fq-list-item-text").html() == fname + ".svg") {
               nameExists = true;
               replacedFid = fqUserId + ":" + jQuery(this).data('fid');
             }
@@ -554,9 +564,6 @@ export default {
           formData.append("files", file);
           if(nameExists) formData.append("replaced_fid", replacedFid);
 
-          // TODO: move figure editor to the same subdomain, so that all cookies can be accessed
-          // var csrf_token = Cookies.get('plotly_csrf_on');
-
           jQuery.ajax({
             method: "POST",
             url: baseUrl + "v2/external-images/" + apiEndpoint,
@@ -564,10 +571,10 @@ export default {
               withCredentials: true
             },
             headers: {
-              'X-File-Name': fname, 
+              'X-File-Name': fname + ".svg",
               'Plotly-World-Readable': world_readable,
               'Plotly-Parent': fqLastFolderId,
-              'X-CSRFToken': csrf_token,
+              'X-CSRFToken': fqCsrfToken,
             },
             data: formData,
             processData: false,
@@ -578,6 +585,7 @@ export default {
             fqItemListFolder = "";
             fqItemListFile = "";
             updateItemList(fqLastFolderId, 1);
+            showToast("File saved", "is-success");
           })
           .fail();
         });
@@ -620,12 +628,44 @@ export default {
           var checked = jQuery("#fq-menu-interact-switch").is(":checked");
           if(checked) jQuery("#fq-menu-interact-switch").click();
 
-          jQuery(".file-save-panel").addClass("is-hidden");
+          jQuery(".modal-action-panel").addClass("is-hidden");
           jQuery(".content-add-panel").removeClass("is-hidden");
           jQuery("#file-panel-heading").html("Select content");
 
-          loadHomeDirContents();
           fqModalMode = "addContent";
+          refreshModalContents();
+          // refreshModalContents();
+
+        });
+
+        jQuery(document).on("click", "#fq-menu-item-save-figure", () => {
+         
+          jQuery(".modal-action-panel").addClass("is-hidden");
+          jQuery("#file-panel-heading").html("Save figure");
+          jQuery(".file-save-panel").removeClass("is-hidden");
+
+          jQuery("#fq-modal-content").addClass("is-active");
+          jQuery("#fq-modal-save-confirm-btn").prop("disabled", true);
+          jQuery("#fq-modal-save-name-input").val("");
+
+          fqModalMode = "saveFigure";
+          refreshModalContents();
+          // refreshModalContents();
+
+        });
+
+        jQuery(document).on("click", "#fq-menu-item-open-figure", () => {
+         
+          jQuery(".modal-action-panel").addClass("is-hidden");
+          jQuery("#file-panel-heading").html("Open figure");
+          jQuery(".figure-open-panel").removeClass("is-hidden");
+
+          jQuery("#fq-modal-content").addClass("is-active");
+          jQuery("#fq-modal-open-confirm-btn").prop("disabled", true);
+
+          fqModalMode = "openFigure";
+          refreshModalContents();
+          // refreshModalContents();
 
         });
 

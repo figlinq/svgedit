@@ -21,7 +21,7 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script> 
-
+  <script src="https://cdn.jsdelivr.net/npm/bulma-toast@2.4.1/dist/bulma-toast.min.js"></script>
 
   <!-- SCRIPTS -->
 
@@ -60,6 +60,12 @@
 
 <body style="margin:0">
   <!-- FiglinQ -->
+  <script>
+    // disable the beforeunload event
+      window.addEventListener('beforeunload', function(event) {
+        event.stopImmediatePropagation();
+      }, true);
+  </script>
   <div id="fq-spinner">
     <image src="./images/figlinq/spinner.gif" width="60" height="60" style="max-height:60px;"/>
   </div>
@@ -92,7 +98,7 @@
             <a id="tool_clear" class="navbar-item">
               New figure
             </a>
-            <a id="tool_open" class="navbar-item">
+            <a id="fq-menu-item-open-figure" class="navbar-item">
               Open figure
             </a>
             <a id="fq-menu-item-save-figure" class="navbar-item">
@@ -180,7 +186,7 @@
           </div>
           <div id="item_list_container" style="border-bottom: 1px solid #ededed; max-height: calc(100vh - 400px); overflow: scroll; ">            
           </div>
-          <div class="panel-block content-add-panel is-hidden">
+          <div class="panel-block modal-action-panel content-add-panel is-hidden">
             <div class="field is-grouped">
               <div class="control">
                 <button id="fq-modal-add-confirm-btn" class="button is-link" disabled>
@@ -211,10 +217,10 @@
               </div>
             </div>
           </div>
-          <div class="panel-block file-save-panel is-hidden">
+          <div class="panel-block modal-action-panel file-save-panel is-hidden">
             <div class="control">
               <div class="field is-horizontal">
-                <div class="field-label is-normal" style="padding-top: .5em;">
+                <div class="field-label is-normal mr-2" style="padding-top: .5em;">
                   <label class="label">File name:</label>
                 </div>
                 <div class="field-body">
@@ -224,10 +230,13 @@
                     </p>
                   </div>
                 </div>
+                <div class="field-label is-normal ml-2" style="padding-top: .5em; text-align: left; max-width: 30px;">
+                  <label class="label">.svg </label>
+                </div>
               </div>              
             </div>
           </div>
-          <div class="panel-block file-save-panel is-hidden">
+          <div class="panel-block modal-action-panel file-save-panel is-hidden">
             <div class="field is-grouped">
               <div class="control">
                 <div class="select">
@@ -240,6 +249,27 @@
               <div class="control">
                 <button id="fq-modal-save-confirm-btn" class="button is-link" disabled>
                   Save
+                </button>
+              </div>
+              <div class="control">
+                <button id="fq-modal-cancel-btn" class="button is-link is-outlined">
+                  Cancel
+                </button>
+              </div>
+              <div class="control">
+                <button id="fq-modal-refresh-btn" class="button">
+                  <span class="icon is-small">
+                    <i class="fas fa-sync-alt"></i>
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="panel-block modal-action-panel figure-open-panel is-hidden">
+            <div class="field is-grouped">
+              <div class="control">
+                <button id="fq-modal-open-confirm-btn" class="button is-link" disabled>
+                  Open
                 </button>
               </div>
               <div class="control">
