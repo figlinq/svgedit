@@ -1,5 +1,6 @@
 import { folderItem, plotItem, imageItem, breadcrumb } from "./elements";
 import { NS } from "../../../common/namespaces.js";
+import { convertUnit, isValidUnit } from '../../../common/units.js';
 
 /**
  * @file ext-figlinq.js
@@ -10,24 +11,8 @@ import { NS } from "../../../common/namespaces.js";
  *
  */
 
-// jQuery.fn.reverse = [].reverse;
 const name = "figlinq";
 const baseUrl = location.hostname == "localhost" ? "https://plotly.local/" : "https://create.figlinq.com/";
-
-const loadExtensionTranslation = async function(svgEditor) {
-  let translationModule;
-  const lang = svgEditor.configObj.pref("lang");
-  try {
-    // eslint-disable-next-line no-unsanitized/method
-    translationModule = await import(`./locale/${lang}.js`);
-  } catch (_error) {
-    // eslint-disable-next-line no-console
-    console.warn(`Missing translation (${lang}) for ${name} - using 'en'`);
-    // eslint-disable-next-line no-unsanitized/method
-    translationModule = await import(`./locale/en.js`);
-  }
-  svgEditor.i18next.addResourceBundle(lang, name, translationModule.default);
-};
 
 export default {
   name,
@@ -89,11 +74,22 @@ export default {
               jQuery("#fq-menu-login-btn").addClass("is-hidden");
               jQuery("#fq-menu-signup-btn").addClass("is-hidden");
               jQuery(".fq-menu-add-content-btn").removeClass("is-hidden");
+              jQuery(".fq-menu-interact-switch-item").removeClass("is-hidden");
+              jQuery("#fq-menu-item-open-figure").removeClass("is-hidden");
+              jQuery("#fq-menu-item-save-figure").removeClass("is-hidden");
+              
               fqUserId = data.username;
               fqCsrfToken = data.csrf_token;
             }
           })
-          .fail(function() {});
+          .fail(function() {
+            jQuery("#fq-menu-login-btn").removeClass("is-hidden");
+            jQuery("#fq-menu-signup-btn").removeClass("is-hidden");
+            jQuery(".fq-menu-add-content-btn").addClass("is-hidden");
+            jQuery(".fq-menu-add-content-btn").addClass("is-hidden");
+            jQuery(".fq-menu-add-content-btn").addClass("is-hidden");
+            jQuery(".fq-menu-add-content-btn").addClass("is-hidden");
+          });
         }
 
         const ensureElementLowercase = () => {
@@ -221,6 +217,8 @@ export default {
               }
             })
             .done(function(data) {
+              jQuery("#fq-modal-open-confirm-btn").prop("disabled", true);
+              jQuery("#fq-modal-save-confirm-btn").prop("disabled", true);
               var results = data.children.results;
               var index = 0;
               
@@ -255,7 +253,9 @@ export default {
                 updateItemList(fid, page);
               }
             })
-            .fail(function() {})
+            .fail(function() {
+              showToast("Communication error, file list has not been updated", "is-danger");
+            })
             .always(function() {});
         };
 
@@ -337,14 +337,31 @@ export default {
             position: 'bottom-right',
             closeOnClick: true,
             dismissible: true,
+            duration: 3000,
           });
+        }
+
+        const ensureRulesGrids = () => {
+
+          let showGrid = svgEditor.configObj.curConfig.showGrid;
+          if(showGrid){
+            jQuery("#fq-menu-show-grid").find("i").removeClass("fa-square").addClass("fa-check-square");
+          } else {
+            jQuery("#fq-menu-show-grid").find("i").addClass("fa-square").removeClass("fa-check-square");
+          }
+
+          let showRulers = svgEditor.configObj.curConfig.showRulers;
+          if(showRulers){
+            jQuery("#fq-menu-show-rulers").find("i").removeClass("fa-square").addClass("fa-check-square");
+          } else {
+            jQuery("#fq-menu-show-rulers").find("i").addClass("fa-square").removeClass("fa-check-square");
+          }
         }
 
         const refreshModalContents = () => {
 
           fqItemListFolder = "";
           fqItemListFile = "";
-       
           if (fqLastFolderId) {
             jQuery("#fq-modal-content").addClass("is-active");
             updateItemList(fqLastFolderId, 1);
@@ -366,8 +383,99 @@ export default {
           jQuery(img).attr("src", dataUrl);
         };
 
-        jQuery(document).on("click", "#fq-modal-cancel-btn", () => {
-          jQuery("#fq-modal-content").removeClass("is-active");
+        jQuery(document).on("change", "#fq-doc-baseunit", (e) => {
+          let baseunit = jQuery(e.target).val();
+
+          svgEditor.configObj.curConfig.baseUnit = baseunit;
+          svgCanvas.setConfig(svgEditor.configObj.curConfig);
+          svgEditor.updateCanvas();
+        });
+
+        jQuery(document).on("change", "#fq-doc-size", (e) => {
+          var w, h, val = jQuery(e.target).val();          
+          if(val){
+            const dims = val.split("x");
+            w = dims[0];
+            h = dims[1];
+            // const resolution = svgEditor.svgCanvas.getResolution();
+            if (svgEditor.configObj.curConfig.baseUnit !== "px") {
+              w = convertUnit(w) + svgEditor.configObj.curConfig.baseUnit;
+              h = convertUnit(h) + svgEditor.configObj.curConfig.baseUnit;
+            }
+
+            jQuery("#fq-doc-setup-width").val(w);
+            jQuery("#fq-doc-setup-height").val(h);
+          }
+        });
+
+        jQuery(document).on("click", "#fq-menu-show-grid", () => {
+          jQuery("#view_grid").click();
+          let showGrid = svgEditor.configObj.curConfig.showGrid;
+          if(showGrid){
+            jQuery("#fq-menu-show-grid").find("i").removeClass("fa-square").addClass("fa-check-square");
+          } else {
+            jQuery("#fq-menu-show-grid").find("i").addClass("fa-square").removeClass("fa-check-square");
+          }
+        });
+        
+        jQuery(document).on("click", "#fq-menu-show-rulers", () => {
+          let showRulers = svgEditor.configObj.curConfig.showRulers;
+          if(!showRulers){
+            jQuery("#fq-menu-show-rulers").find("i").removeClass("fa-square").addClass("fa-check-square");
+          } else {
+            jQuery("#fq-menu-show-rulers").find("i").addClass("fa-square").removeClass("fa-check-square");
+          }
+          svgEditor.configObj.curConfig.showRulers = !showRulers;
+          svgEditor.rulers.display(!showRulers);
+        });
+
+        jQuery(document).on("click", "#fq-menu-item-doc-properties", () => {
+          jQuery("#fq-doc-size").val("");
+          const resolution = svgEditor.svgCanvas.getResolution();
+          if (svgEditor.configObj.curConfig.baseUnit !== "px") {
+            resolution.w =
+            convertUnit(resolution.w) + svgEditor.configObj.curConfig.baseUnit;
+            resolution.h =
+            convertUnit(resolution.h) + svgEditor.configObj.curConfig.baseUnit;
+          }
+
+          const baseunit = svgEditor.configObj.curConfig.baseUnit;
+          jQuery("#fq-doc-baseunit").val(baseunit);
+
+          jQuery("#fq-doc-setup-width").val(resolution.w);
+          jQuery("#fq-doc-setup-height").val(resolution.h);
+          jQuery("#fq-modal-doc-setup").addClass("is-active");
+          
+        });
+        
+        jQuery(document).on("click", "#fq-doc-setup-save-btn", () => {
+
+          const predefined = jQuery("#fq-doc-size").val();
+          const w = predefined === 'fit' ? 'fit' : jQuery("#fq-doc-setup-width").val();
+          const h = predefined === 'fit' ? 'fit' : jQuery("#fq-doc-setup-height").val();
+          const baseunit = jQuery("#fq-doc-baseunit").val();
+
+          if (w !== 'fit' && !isValidUnit('width', w)) {
+            showToast('Invalid width unit!', 'is-danger');
+            return;
+          }
+          if (h !== 'fit' && !isValidUnit('height', h)) {
+            showToast('Invalid height unit!', 'is-danger');
+            return;
+          }
+          if (!svgCanvas.setResolution(w, h)) {
+            showToast('No content to fit!', 'is-danger');
+          }
+
+          svgEditor.configObj.curConfig.baseUnit = baseunit;
+          svgCanvas.setConfig(svgEditor.configObj.curConfig);
+          svgEditor.updateCanvas();
+                
+          jQuery("#fq-modal-doc-setup").removeClass("is-active");
+        });
+    
+        jQuery(document).on("click", ".fq-modal-cancel-btn", () => {
+          jQuery(".modal").removeClass("is-active");
         });
 
         jQuery(document).on("click", "#fq-modal-refresh-btn", () => {
@@ -385,6 +493,13 @@ export default {
               jQuery("#fq-modal-save-name-input").val(text);
               jQuery("#fq-modal-save-confirm-btn").prop("disabled", false);
             }
+            return
+          }
+
+          if(fqModalMode === "openFigure"){
+            jQuery(".fq-modal-image-item").removeClass("is-active");
+            jQuery(e.target).addClass("is-active");
+            jQuery("#fq-modal-open-confirm-btn").prop("disabled", false);
             return
           }
 
@@ -672,6 +787,7 @@ export default {
         // Init
         jQuery("#fq-menu-interact-switch").prop( "checked", false );
         ensureElementLowercase();
+        ensureRulesGrids();
         getFqUserId(); 
         setInteractiveOff();
         replaceZoom();
