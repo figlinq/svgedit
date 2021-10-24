@@ -29,8 +29,10 @@ export default {
         var fqItemListFolder,
             fqItemListFile,
             fqUserId,
+            fqUserData,
             fqModalMode,
             fqCsrfToken,        
+            fqCurrentFigData = false,        
             fqLastFolderId = false;
         
         // To use this function we need to get content_type field into the "children" object returned from v2 
@@ -77,9 +79,11 @@ export default {
               jQuery(".fq-menu-interact-switch-item").removeClass("is-hidden");
               jQuery("#fq-menu-item-open-figure").removeClass("is-hidden");
               jQuery("#fq-menu-item-save-figure").removeClass("is-hidden");
+              jQuery("#fq-menu-item-save-figure-as").removeClass("is-hidden");
               
               fqUserId = data.username;
               fqCsrfToken = data.csrf_token;
+              fqUserData = data;
             }
           })
           .fail(function() {
@@ -199,6 +203,30 @@ export default {
           return re.exec(fname)[1];
         }
 
+        const getUrlParameter = function getUrlParameter(sParam) {
+          var sPageURL = window.location.search.substring(1),
+              sURLVariables = sPageURL.split('&'),
+              sParameterName,
+              i;
+      
+          for (i = 0; i < sURLVariables.length; i++) {
+              sParameterName = sURLVariables[i].split('=');
+      
+              if (sParameterName[0] === sParam) {
+                  return typeof sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
+              }
+          }
+          return false;
+        };
+
+        const loadFqFigure = () => {
+          // Load figure from url
+          var fqFigId = getUrlParameter('fqfid');
+          if(fqFigId){
+            openFigure({data: {fid: fqFigId}});
+          } 
+        }
+
         const updateItemList = (fid, page) => {
           var url =
           baseUrl + "v2/folders/" +
@@ -246,7 +274,7 @@ export default {
                 jQuery("#item_list_container").html(
                   fqItemListFolder + fqItemListFile
                 );
-                jQuery("#fq-modal-content").addClass("is-active");
+                // jQuery("#fq-modal-file").addClass("is-active");
                 jQuery("#fq-modal-refresh-btn").removeClass("is-loading");
               } else {
                 page = page + 1;
@@ -363,13 +391,44 @@ export default {
           fqItemListFolder = "";
           fqItemListFile = "";
           if (fqLastFolderId) {
-            jQuery("#fq-modal-content").addClass("is-active");
+            jQuery("#fq-modal-file").addClass("is-active");
             updateItemList(fqLastFolderId, 1);
           } else {
             var fid = "-1";
             fqLastFolderId = fid;
             updateItemList(fid, 1);
           }
+        }
+
+        const decodeBase64 = function(s) {
+            var e={},i,b=0,c,x,l=0,a,r='',w=String.fromCharCode,L=s.length;
+            var A="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+            for(i=0;i<64;i++){e[A.charAt(i)]=i;}
+            for(x=0;x<L;x++){
+                c=e[s.charAt(x)];b=(b<<6)+c;l+=6;
+                while(l>=8){((a=(b>>>(l-=8))&0xff)||(x<(L-2)))&&(r+=w(a));}
+            }
+            return r;
+        };
+
+        const openFigure = async function(e) {
+          
+          var url = baseUrl + "v2/external-images/" + e.data.fid;
+
+          jQuery.ajax({
+            url: url,
+            xhrFields: {withCredentials: true},
+          })
+          .done(function(data) {
+            var dataUrl = data.image_content;
+            var svgString = decodeBase64(dataUrl.split(",")[1]);
+            svgEditor.loadSvgString(svgString);
+            jQuery("#fq-modal-confirm").removeClass("is-active");
+            fqCurrentFigData = data;
+          })
+          .fail(function(data) {
+            showToast('This figure could not be loaded', 'is-danger');
+          });
         }
 
         const inlineImage = async function(img) {
@@ -522,7 +581,7 @@ export default {
           }
 
           if(fqModalMode === "openFigure"){
-            jQuery(".fq-modal-image-item").removeClass("is-active");
+            jQuery(".fq-modal-plot-item, .fq-modal-image-item").removeClass("is-active");
             jQuery(e.target).addClass("is-active");
             jQuery("#fq-modal-open-confirm-btn").prop("disabled", false);
             return
@@ -642,7 +701,7 @@ export default {
                     x = 0;
                   }
                   jQuery(e.target).removeClass("is-loading");
-                  jQuery("#fq-modal-content").removeClass("is-active");
+                  jQuery("#fq-modal-file").removeClass("is-active");
                 })
             } else if (selectedType === "image"){
               // Add width and height fields in v2
@@ -661,7 +720,7 @@ export default {
               img.src = importUrl;
               
               jQuery(e.target).removeClass("is-loading");
-              jQuery("#fq-modal-content").removeClass("is-active");
+              jQuery("#fq-modal-file").removeClass("is-active");
             }
           });
         });
@@ -674,6 +733,13 @@ export default {
           } else {
             jQuery("#fq-modal-save-confirm-btn").prop("disabled", true);
           }
+        });
+
+        jQuery(document).on("click", "#fq-modal-open-confirm-btn", () => {
+          jQuery("#fq-modal-file").removeClass("is-active");
+          jQuery("#fq-modal-confirm").addClass("is-active");
+          let fid = jQuery(".fq-modal-image-item.is-active").data("fid");
+          jQuery("#fq-confirmation-btn").on("click", openFigure, {fid: fqUserId + ":" + fid});
         });
 
         jQuery(document).on("click", "#fq-modal-save-confirm-btn", () => {
@@ -720,12 +786,14 @@ export default {
             processData: false,
             contentType: false,
           })
-          .done(function() {
+          .done(function(data) {
             jQuery("#fq-modal-refresh-btn").addClass("is-loading");
             fqItemListFolder = "";
             fqItemListFile = "";
             updateItemList(fqLastFolderId, 1);
+            jQuery("#fq-modal-file").removeClass("is-active");
             showToast("File saved", "is-success");
+            fqCurrentFigData = data;
           })
           .fail();
         });
@@ -774,23 +842,21 @@ export default {
 
           fqModalMode = "addContent";
           refreshModalContents();
-          // refreshModalContents();
 
         });
 
-        jQuery(document).on("click", "#fq-menu-item-save-figure", () => {
+        jQuery(document).on("click", "#fq-menu-item-save-figure-as", () => {
          
           jQuery(".modal-action-panel").addClass("is-hidden");
           jQuery("#file-panel-heading").html("Save figure");
           jQuery(".file-save-panel").removeClass("is-hidden");
 
-          jQuery("#fq-modal-content").addClass("is-active");
+          jQuery("#fq-modal-file").addClass("is-active");
           jQuery("#fq-modal-save-confirm-btn").prop("disabled", true);
           jQuery("#fq-modal-save-name-input").val("");
 
           fqModalMode = "saveFigure";
           refreshModalContents();
-          // refreshModalContents();
 
         });
 
@@ -800,12 +866,11 @@ export default {
           jQuery("#file-panel-heading").html("Open figure");
           jQuery(".figure-open-panel").removeClass("is-hidden");
 
-          jQuery("#fq-modal-content").addClass("is-active");
+          jQuery("#fq-modal-file").addClass("is-active");
           jQuery("#fq-modal-open-confirm-btn").prop("disabled", true);
 
           fqModalMode = "openFigure";
           refreshModalContents();
-          // refreshModalContents();
 
         });
 
@@ -816,6 +881,7 @@ export default {
         getFqUserId(); 
         setInteractiveOff();
         replaceZoom();
+        loadFqFigure();
       },
     };
   }
