@@ -84,3 +84,7 @@
     background-color: #b2b2b2;
     border: 0;
 }
+
+.panel-block label{
+  font-weight: normal;
+}

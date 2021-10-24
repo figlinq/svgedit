@@ -353,14 +353,14 @@
   <div id="fq-modal-doc-setup" class="modal">
     <div class="modal-background"></div>
     <div class="modal-content">
-      <div class="box">
-        <nav class="panel">
+      <div class="box is-shadowless">
+        <nav class="panel is-shadowless">
           <p id="file-panel-heading" class="panel-heading">
             Document setup
           </p>
-          <div class="panel-block">
+          <div class="panel-block py-4">
             <div class="is-flex is-flex-direction-column">
-              <p class="is-size-5 mb-3">Document units</p>
+              <p class="mb-3"><strong>Document units</strong></p>
               <div class="field">
                 <!-- <label class="label">Predefined:</label> -->
                 <div class="control">
@@ -377,9 +377,10 @@
             </div>
           </div>
 
-          <div class="panel-block">
+          <!-- Document size -->
+          <div class="panel-block py-4">
             <div class="is-flex is-flex-direction-column">
-              <p class="is-size-5 mb-3">Document size</p>
+              <p class="mb-2"><strong>Document size</strong></p>
               <div class="field is-horizontal">
                 <div class="field-body">
                   <div class="field">
@@ -388,10 +389,11 @@
                       <div class="select">
                         <select id="fq-doc-size">
                           <option value="">Select</option>
-                          <option value="2100x2970">A4 format</option>
-                          <option value="2159x2794">Letter format</option>
+                          <option value="210mmx297mm">A4 format</option>
+                          <option value="215.9mmx279.4mm">Letter format</option>
+                          <option value="800x600">600 x 800px</option>
                           <option value="1200x1600">1200 x 1600px</option>
-                          <option value="fit">Fit to content</option>
+                          <!-- <option value="fit">Fit to content</option> -->
                         </select>
                       </div>
                     </div>
@@ -399,13 +401,13 @@
                   <div class="field">
                     <label class="label">Width:</label>
                     <p class="control is-expanded has-icons-left">
-                      <input id="fq-doc-setup-width" class="input" type="text" placeholder="(px)">
+                      <input id="fq-doc-setup-width" class="input" type="text">
                     </p>
                   </div>
                   <div class="field">
                     <label class="label">Height:</label>
                     <p class="control is-expanded has-icons-left">
-                      <input id="fq-doc-setup-height" class="input" type="text" placeholder="(px)">
+                      <input id="fq-doc-setup-height" class="input" type="text">
                     </p>
                   </div>
                 </div>
@@ -413,7 +415,28 @@
             </div>
           </div>
 
-          <div class="panel-block">
+          <!-- Grid -->
+          <div class="panel-block py-4">
+            <div class="is-flex is-flex-direction-column">
+              <p><strong>Grid</strong></p>
+              <div class="field is-grouped is-align-items-center">
+                <p class="control">
+                  <label class="checkbox">Snapping enabled:
+                    <input id="fq-doc-setup-snapping-enabled" class="checkbox" type="checkbox">
+                  </label>
+                </p>
+                <p class="control">
+                  <label class="checkbox">Snapping step (px):</label>
+                </p>
+                <p class="control is-flex-shrink-1">
+                  <input id="fq-doc-setup-snapping-step" class="input" type="text">
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action buttons -->
+          <div class="panel-block py-4">
             <div class="field is-grouped">
               <div class="control">
                 <button id="fq-doc-setup-save-btn" class="button is-link">

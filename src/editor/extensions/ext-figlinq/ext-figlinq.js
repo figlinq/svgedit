@@ -384,11 +384,20 @@ export default {
         };
 
         jQuery(document).on("change", "#fq-doc-baseunit", (e) => {
-          let baseunit = jQuery(e.target).val();
+          let baseUnit = jQuery(e.target).val();
+          var w = jQuery("#fq-doc-setup-width").val();
+          var h = jQuery("#fq-doc-setup-height").val();
 
-          svgEditor.configObj.curConfig.baseUnit = baseunit;
+          svgEditor.configObj.curConfig.baseUnit = baseUnit;
           svgCanvas.setConfig(svgEditor.configObj.curConfig);
           svgEditor.updateCanvas();
+          const resolution = svgEditor.svgCanvas.getResolution();
+          w = convertUnit(resolution.w) + baseUnit;
+          h = convertUnit(resolution.h) + baseUnit;
+
+          // Update inputs
+          jQuery("#fq-doc-setup-width").val(w);
+          jQuery("#fq-doc-setup-height").val(h);
         });
 
         jQuery(document).on("change", "#fq-doc-size", (e) => {
@@ -396,12 +405,15 @@ export default {
           if(val){
             const dims = val.split("x");
             w = dims[0];
-            h = dims[1];
+            h = w === 'fit' ? 'fit' : dims[1];
             // const resolution = svgEditor.svgCanvas.getResolution();
             if (svgEditor.configObj.curConfig.baseUnit !== "px") {
               w = convertUnit(w) + svgEditor.configObj.curConfig.baseUnit;
               h = convertUnit(h) + svgEditor.configObj.curConfig.baseUnit;
             }
+
+            w = w === 'fit' ? 'Fit contents' : w;
+            h = h === 'fit' ? 'Fit contents' : h;
 
             jQuery("#fq-doc-setup-width").val(w);
             jQuery("#fq-doc-setup-height").val(h);
@@ -442,6 +454,12 @@ export default {
           const baseunit = svgEditor.configObj.curConfig.baseUnit;
           jQuery("#fq-doc-baseunit").val(baseunit);
 
+          const gridSnappingOn = svgEditor.configObj.curConfig.gridSnapping;
+          const gridSnappingStep = svgEditor.configObj.curConfig.snappingStep;
+
+          jQuery("#fq-doc-setup-snapping-enabled").prop('checked', gridSnappingOn);
+          jQuery("#fq-doc-setup-snapping-step").val(gridSnappingStep);
+
           jQuery("#fq-doc-setup-width").val(resolution.w);
           jQuery("#fq-doc-setup-height").val(resolution.h);
           jQuery("#fq-modal-doc-setup").addClass("is-active");
@@ -449,12 +467,16 @@ export default {
         });
         
         jQuery(document).on("click", "#fq-doc-setup-save-btn", () => {
-
           const predefined = jQuery("#fq-doc-size").val();
+          const gridSnappingStep = parseInt(jQuery("#fq-doc-setup-snapping-step").val());
+          const gridSnappingOn = jQuery("#fq-doc-setup-snapping-enabled").prop("checked");
+
           const w = predefined === 'fit' ? 'fit' : jQuery("#fq-doc-setup-width").val();
           const h = predefined === 'fit' ? 'fit' : jQuery("#fq-doc-setup-height").val();
           const baseunit = jQuery("#fq-doc-baseunit").val();
-
+          jQuery("#fq-modal-doc-setup").removeClass("is-active");
+          
+          
           if (w !== 'fit' && !isValidUnit('width', w)) {
             showToast('Invalid width unit!', 'is-danger');
             return;
@@ -463,15 +485,18 @@ export default {
             showToast('Invalid height unit!', 'is-danger');
             return;
           }
+          
           if (!svgCanvas.setResolution(w, h)) {
             showToast('No content to fit!', 'is-danger');
           }
-
+          
           svgEditor.configObj.curConfig.baseUnit = baseunit;
+          svgEditor.configObj.curConfig.gridSnapping = gridSnappingOn;
+          svgEditor.configObj.curConfig.snappingStep = gridSnappingStep;
+
           svgCanvas.setConfig(svgEditor.configObj.curConfig);
           svgEditor.updateCanvas();
-                
-          jQuery("#fq-modal-doc-setup").removeClass("is-active");
+                      
         });
     
         jQuery(document).on("click", ".fq-modal-cancel-btn", () => {
