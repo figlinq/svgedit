@@ -48,10 +48,10 @@ class LayersPanel {
     // eslint-disable-next-line no-unsanitized/property
     template.innerHTML = `
     <div id="sidepanels">
-      <div id="sidepanel_handle" title="${i18next.t('ui.panel_action')}">${i18next.t('ui.panel')}</div>
+      <se-text id="sidepanel_handle" title="ui.panel_action" text="ui.panel"></se-text>
       <div id="sidepanel_content">
         <div id="layerpanel">
-          <h3 id="layersLabel">${i18next.t('layers.layers')}</h3>
+          <se-text id="layersLabel" text="layers.layers"></se-text>
           <fieldset id="layerbuttons">
             <se-button id="layer_new" title="layers.new" size="small" src="new.svg"></se-button>
             <se-button id="layer_delete" title="layers.del" size="small" src="delete.svg"></se-button>
@@ -67,10 +67,9 @@ class LayersPanel {
               <td class="layername">Layer 1</td>
             </tr>
           </table>
-          <span id="selLayerLabel">${i18next.t('layers.move_elems_to')}</span>
-          <select id="selLayerNames" title="${i18next.t('layers.move_selected')}" disabled="disabled">
-            <option selected="selected" value="layer1">Layer 1</option>
-          </select>
+          <se-select id="selLayerNames" title="layers.move_selected" label="layers.move_elems_to" options="Layer 1"
+            values="layer1" value="layer1" disabled="disabled">     
+          </se-select>
         </div>
      </div>
   </div>
@@ -278,14 +277,13 @@ class LayersPanel {
     while(layerlist.firstChild)
       layerlist.removeChild(layerlist.firstChild);
 
-    const selLayerNames = $id("selLayerNames");
-    // empty() ref: http://youmightnotneedjquery.com/#empty
-    while(selLayerNames.firstChild)
-      selLayerNames.removeChild(selLayerNames.firstChild);
+    $id("selLayerNames").setAttribute("options", "");
     const drawing = this.editor.svgCanvas.getCurrentDrawing();
     const currentLayerName = drawing.getCurrentLayerName();
     let layer = this.editor.svgCanvas.getCurrentDrawing().getNumLayers();
     // we get the layers in the reverse z-order (the layer rendered on top is listed first)
+    let values = "";
+    let text = "";
     while (layer--) {
       const name = drawing.getLayerName(layer);
       const layerTr = document.createElement("tr");
@@ -298,9 +296,11 @@ class LayersPanel {
       layerTr.appendChild(layerVis);
       layerTr.appendChild(layerName);
       layerlist.appendChild(layerTr);
-      // eslint-disable-next-line no-unsanitized/property
-      selLayerNames.innerHTML += '<option value="' + name + '">' + name + '</option>';
+      values = (values) ? values + "::" + name : name;
+      text = (text) ? text + "," + name : name;
     }
+    $id("selLayerNames").setAttribute("options", text);
+    $id("selLayerNames").setAttribute("values", values);
     // handle selection of layer
     const nelements = $id('layerlist').querySelectorAll("td.layername");
     Array.from(nelements).forEach(function(element) {
