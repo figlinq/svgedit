@@ -1,5 +1,5 @@
 import { folderItem, plotItem, imageItem, breadcrumb } from "./elements";
-import { NS } from "../../../common/namespaces.js";
+import { NS } from "./namespaces.js";
 import { convertUnit, isValidUnit } from '../../../common/units.js';
 
 /**
@@ -57,13 +57,15 @@ export default {
               <option value="50">50</option>
               <option value="25">25</option>
               <option value="canvas">Fit to canvas</option>
-              <option value="selection">Fit to election</option>
-              <option value="layer">Fit to layer content</option>
-              <option value="content">Fit to all content</option>
+              <option value="selection">Fit to selection</option>
+              <option value="layer">Fit to content</option>
             </select>
           </div>`;
           jQuery("#zoom").replaceWith(element);
         }
+        // Fitting to content does not work 
+        // <option value="layer">Fit to layer content</option>
+        // <option value="content">Fit to all content</option>
 
         const getFqUserId = () => {
           jQuery
@@ -702,6 +704,7 @@ export default {
                   }
                   jQuery(e.target).removeClass("is-loading");
                   jQuery("#fq-modal-file").removeClass("is-active");
+                  setTimeout(function(){ svgEditor.zoomChanged(window, "layer"); }, 300);
                 })
             } else if (selectedType === "image"){
               // Add width and height fields in v2
@@ -721,6 +724,7 @@ export default {
               
               jQuery(e.target).removeClass("is-loading");
               jQuery("#fq-modal-file").removeClass("is-active");
+              setTimeout(function(){ svgEditor.zoomChanged(window, "layer"); }, 300);              
             }
           });
         });
@@ -807,7 +811,7 @@ export default {
             case 'selection':
             case 'layer':
             case 'content':
-              svgEditor.zoomChanged(window, value);
+              svgEditor.zoomChanged(window, "layer");
               break;
             default:
             {
