@@ -24,6 +24,21 @@ export default {
     return {
       name: svgEditor.i18next.t(`${name}:name`),
       callback() {
+
+        jQuery(document).keydown(function(e){
+          // Ctrl + z (undo)
+          if ( e.originalEvent.ctrlKey && !e.originalEvent.shiftKey && e.originalEvent.keyCode == 90 ) {
+            clickUndo();
+          }
+          // Ctrl + Shift + z (redo) 
+          else if ( e.originalEvent.ctrlKey && e.originalEvent.shiftKey && e.originalEvent.keyCode == 90 ) {
+            clickRedo();
+          }
+          // Ctrl + y (redo)
+          else if( e.originalEvent.ctrlKey && e.originalEvent.keyCode == 89 ) {
+            clickRedo();
+          }
+        });
         
         // Initiate global vars
         var fqItemListFolder,
@@ -62,7 +77,7 @@ export default {
             </select>
           </div>`;
           jQuery("#zoom").replaceWith(element);
-        }
+        };
         // Fitting to content does not work 
         // <option value="layer">Fit to layer content</option>
         // <option value="content">Fit to all content</option>
@@ -78,7 +93,7 @@ export default {
               jQuery("#fq-menu-login-btn").addClass("is-hidden");
               jQuery("#fq-menu-signup-btn").addClass("is-hidden");
               jQuery(".fq-menu-add-content-btn").removeClass("is-hidden");
-              jQuery(".fq-menu-interact-switch-item").removeClass("is-hidden");
+              jQuery("#fq-menu-interact-switch-item").removeClass("is-hidden");
               jQuery("#fq-menu-item-open-figure").removeClass("is-hidden");
               jQuery("#fq-menu-item-save-figure").removeClass("is-hidden");
               jQuery("#fq-menu-item-save-figure-as").removeClass("is-hidden");
@@ -96,7 +111,7 @@ export default {
             jQuery(".fq-menu-add-content-btn").addClass("is-hidden");
             jQuery(".fq-menu-add-content-btn").addClass("is-hidden");
           });
-        }
+        };
 
         const ensureElementLowercase = () => {
           
@@ -110,7 +125,7 @@ export default {
             str = str.replaceAll("IFRAME", "iframe");
           }          
           svgEditor.loadSvgString(str);
-        }
+        };
 
         const setInteractiveOff = () => {
 
@@ -203,7 +218,7 @@ export default {
         const getFileExt = (fname) => {
           var re = /(?:\.([^.]+))?$/;
           return re.exec(fname)[1];
-        }
+        };
 
         const getUrlParameter = function getUrlParameter(sParam) {
           var sPageURL = window.location.search.substring(1),
@@ -227,7 +242,7 @@ export default {
           if(fqFigId){
             openFigure({data: {fid: fqFigId}});
           } 
-        }
+        };
 
         const updateItemList = (fid, page) => {
           var url =
@@ -247,7 +262,7 @@ export default {
               }
             })
             .done(function(data) {
-              jQuery("#fq-modal-open-confirm-btn").prop("disabled", true);
+              jQuery("#fq-modal-files-btn-openfig").prop("disabled", true);
               jQuery("#fq-modal-save-confirm-btn").prop("disabled", true);
               var results = data.children.results;
               var index = 0;
@@ -273,7 +288,7 @@ export default {
 
               if (data.children.next == null) {
                 jQuery(".panel-list-item").remove();
-                jQuery("#item_list_container").html(
+                jQuery("#fq-modal-item-list-container").html(
                   fqItemListFolder + fqItemListFile
                 );
                 // jQuery("#fq-modal-file").addClass("is-active");
@@ -324,7 +339,7 @@ export default {
             children: [newBody]
           };
           return newForeignObj;
-        }
+        };
 
         const importImage = (url, width = "auto", height = "auto", x, y, selectedType) => {
           const newImage = svgCanvas.addSVGElementFromJson({
@@ -369,7 +384,7 @@ export default {
             dismissible: true,
             duration: 3000,
           });
-        }
+        };
 
         const ensureRulesGrids = () => {
 
@@ -386,21 +401,21 @@ export default {
           } else {
             jQuery("#fq-menu-show-rulers").find("i").addClass("fa-square").removeClass("fa-check-square");
           }
-        }
+        };
 
         const refreshModalContents = () => {
 
           fqItemListFolder = "";
           fqItemListFile = "";
+          jQuery("#fq-modal-file").addClass("is-active");
           if (fqLastFolderId) {
-            jQuery("#fq-modal-file").addClass("is-active");
             updateItemList(fqLastFolderId, 1);
           } else {
             var fid = "-1";
             fqLastFolderId = fid;
             updateItemList(fid, 1);
           }
-        }
+        };
 
         const decodeBase64 = function(s) {
             var e={},i,b=0,c,x,l=0,a,r='',w=String.fromCharCode,L=s.length;
@@ -413,6 +428,39 @@ export default {
             return r;
         };
 
+        const clickUndo = function() {
+          const { undoMgr, textActions } = svgCanvas;
+          if (undoMgr.getUndoStackSize() > 0) {
+            undoMgr.undo();
+            svgEditor.layersPanel.populateLayers();
+            if (svgEditor.svgCanvas.getMode() === 'textedit') {
+              textActions.clear();
+            }
+          }
+        }
+
+        const clickRedo = function() {
+          const { undoMgr } = svgCanvas;
+          if (undoMgr.getRedoStackSize() > 0) {
+            undoMgr.redo();
+            svgEditor.layersPanel.populateLayers();
+          }
+        }
+
+        const onConfirmClear = async function () {
+          jQuery("#fq-modal-confirm").removeClass("is-active");
+          const [ x, y ] = svgEditor.configObj.curConfig.dimensions;
+          svgEditor.leftPanel.clickSelect();
+          svgEditor.svgCanvas.clear();
+          svgEditor.svgCanvas.setResolution(x, y);
+          svgEditor.updateCanvas(true);
+          svgEditor.zoomImage();
+          svgEditor.layersPanel.populateLayers();
+          svgEditor.topPanel.updateContextPanel();
+          svgEditor.svgCanvas.runExtensions("onNewDocument");
+          setTimeout(function(){ svgEditor.zoomChanged(window, "canvas"); }, 300);
+        };
+    
         const openFigure = async function(e) {
           
           var url = baseUrl + "v2/external-images/" + e.data.fid;
@@ -427,11 +475,12 @@ export default {
             svgEditor.loadSvgString(svgString);
             jQuery("#fq-modal-confirm").removeClass("is-active");
             fqCurrentFigData = data;
+            setTimeout(function(){ svgEditor.zoomChanged(window, "canvas"); }, 300);
           })
           .fail(function(data) {
             showToast('This figure could not be loaded', 'is-danger');
           });
-        }
+        };
 
         const inlineImage = async function(img) {
           var src = jQuery(img).attr("src");
@@ -479,6 +528,42 @@ export default {
             jQuery("#fq-doc-setup-width").val(w);
             jQuery("#fq-doc-setup-height").val(h);
           }
+        });
+
+        jQuery(document).on("click", "#fq-menu-file-item-export", () => {          
+          jQuery("#fq-modal-export").addClass("is-active");
+        });
+
+        jQuery(document).on("click", ".fq-modal-export-quality", (e) => {
+          const incr = parseInt(jQuery(e.target).data("increment"));
+          var value = parseInt(jQuery("#fq-modal-export-quality-input").val());
+          var newValue = value + incr;
+          if (newValue > 100) newValue = 100;                      
+          if (newValue < 10) newValue = 10;
+          jQuery("#fq-modal-export-quality-input").val(newValue);
+        });
+        
+        jQuery(document).on("click", "#fq-modal-export-btn-export", () => {
+          
+          var imgType = jQuery("#fq-modal-export-format-select").val();
+          var quality = parseFloat(jQuery("#fq-modal-export-quality-input").val()) / 100;
+          var imgRes = jQuery("#fq-modal-export-size-select").val();
+          
+          if (imgType === "PDF") {
+            svgCanvas.exportPDF("test");
+          } else {
+            svgCanvas.rasterExport(imgType, quality, "test");
+          }
+
+        });
+
+        jQuery(document).on("focusout", "#fq-modal-export-quality-input", (e) => {
+          var newValue = parseInt(jQuery(e.target).val());
+          if (newValue > 100) newValue = 100;            
+          if (newValue < 10) newValue = 10;
+          if (newValue == NaN) newValue = 80;
+
+          jQuery(e.target).val(newValue)
         });
 
         jQuery(document).on("click", "#fq-menu-show-grid", () => {
@@ -585,7 +670,7 @@ export default {
           if(fqModalMode === "openFigure"){
             jQuery(".fq-modal-plot-item, .fq-modal-image-item").removeClass("is-active");
             jQuery(e.target).addClass("is-active");
-            jQuery("#fq-modal-open-confirm-btn").prop("disabled", false);
+            jQuery("#fq-modal-files-btn-openfig").prop("disabled", false);
             return
           }
 
@@ -739,11 +824,19 @@ export default {
           }
         });
 
-        jQuery(document).on("click", "#fq-modal-open-confirm-btn", () => {
+        jQuery(document).on("click", "#fq-modal-files-btn-openfig", () => {
           jQuery("#fq-modal-file").removeClass("is-active");
           jQuery("#fq-modal-confirm").addClass("is-active");
           let fid = jQuery(".fq-modal-image-item.is-active").data("fid");
-          jQuery("#fq-confirmation-btn").on("click", openFigure, {fid: fqUserId + ":" + fid});
+
+          jQuery("#fq-modal-confirm-btn-ok").prop("onclick", null).off("click");
+          jQuery("#fq-modal-confirm-btn-ok").on("click", {fid: fqUserId + ":" + fid}, openFigure);
+        });
+
+        jQuery(document).on("click", "#fq-menu-file-item-newfig", () => {
+          jQuery("#fq-modal-confirm-btn-ok").html("New figure");
+          jQuery("#fq-modal-confirm").addClass("is-active");
+          jQuery("#fq-modal-confirm-btn-ok").on("click", onConfirmClear);
         });
 
         jQuery(document).on("click", "#fq-modal-save-confirm-btn", () => {
@@ -811,7 +904,7 @@ export default {
             case 'selection':
             case 'layer':
             case 'content':
-              svgEditor.zoomChanged(window, "layer");
+              svgEditor.zoomChanged(window, value);
               break;
             default:
             {
@@ -836,7 +929,6 @@ export default {
         });
 
         jQuery(document).on("click", ".fq-menu-add-content-btn", () => {
-          
           var checked = jQuery("#fq-menu-interact-switch").is(":checked");
           if(checked) jQuery("#fq-menu-interact-switch").click();
 
@@ -871,7 +963,7 @@ export default {
           jQuery(".figure-open-panel").removeClass("is-hidden");
 
           jQuery("#fq-modal-file").addClass("is-active");
-          jQuery("#fq-modal-open-confirm-btn").prop("disabled", true);
+          jQuery("#fq-modal-files-btn-openfig").prop("disabled", true);
 
           fqModalMode = "openFigure";
           refreshModalContents();

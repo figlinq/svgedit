@@ -27,7 +27,7 @@
   top: 20px;
   max-height: calc(100vh - 40px);
 }
-#item_list_container {
+#fq-modal-item-list-container {
   max-height: calc(100vh - 270px);
   overflow-y: auto;
 }
@@ -87,4 +87,12 @@
 
 .panel-block label{
   font-weight: normal;
+}
+
+#palette {
+  margin-left: unset !important;
+}
+
+html {
+  overflow-y: hidden !important;
 }
