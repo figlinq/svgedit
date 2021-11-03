@@ -1,15 +1,11 @@
 import { folderItem, plotItem, imageItem, breadcrumb } from "./elements";
 import { NS } from "./namespaces.js";
 import { convertUnit, isValidUnit } from '../../../common/units.js';
-import Canvg from 'canvg';
 
 /**
  * @file ext-figlinq.js
- *
  * @license MIT
- *
  * @copyright 2021 figlinq.com
- *
  */
 
 const name = "figlinq";
@@ -20,8 +16,7 @@ export default {
   async init() {
     const svgEditor = this;
     const { svgCanvas } = svgEditor;
-    // const { imgPath } = svgEditor.configObj.curConfig;
-    // await loadExtensionTranslation(svgEditor);
+    
     return {
       name: svgEditor.i18next.t(`${name}:name`),
       callback() {
@@ -552,7 +547,7 @@ export default {
           const imgResMultiplier = parseInt(jQuery("#fq-modal-export-size-select").val());
           const fName = "Test";
           var data = '<?xml version="1.0"?>' + svgCanvas.svgCanvasToString();
-          
+
           if (imgType === "pdf") {
             // https://jsfiddle.net/klesun/zg4qbwd8/42/;            
           } else {
