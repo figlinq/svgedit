@@ -62,9 +62,9 @@
   <!-- FiglinQ -->
   <script>
     // disable the beforeunload event
-      // window.addEventListener('beforeunload', function(event) {
-      //   event.stopImmediatePropagation();
-      // }, true);
+      window.addEventListener('beforeunload', function(event) {
+        event.stopImmediatePropagation();
+      }, true);
   </script>
 
   <div id="fq-spinner">
@@ -501,10 +501,10 @@
           <div class="control">
             <div class="select">
               <select id="fq-modal-export-format-select">
-                <option value="PNG">.png</option>
-                <option value="JPEG">.jpg</option>
-                <option value="BMP">.bmp</option>
-                <option value="PDF">.pdf</option>
+                <option value="png">.png</option>
+                <option value="jpeg">.jpg</option>
+                <option value="bmp">.bmp</option>
+                <option value="pdf">.pdf</option>
               </select>
             </div>
           </div>
@@ -545,7 +545,7 @@
           <div class="control">
             <div class="select">
               <select id="fq-modal-export-size-select">
-                <option value="original">Original</option>
+                <option value="1">Original</option>
                 <option value="2">2x</option>
                 <option value="3">3x</option>
                 <option value="4">4x</option>
@@ -571,6 +571,7 @@
       </div>
     </div>
   </div>
+  <canvas id="fq-canvas"></canvas>
 </body>
 
 </html>

@@ -1,6 +1,7 @@
 import { folderItem, plotItem, imageItem, breadcrumb } from "./elements";
 import { NS } from "./namespaces.js";
 import { convertUnit, isValidUnit } from '../../../common/units.js';
+import Canvg from 'canvg';
 
 /**
  * @file ext-figlinq.js
@@ -493,6 +494,7 @@ export default {
           jQuery(img).attr("src", dataUrl);
         };
 
+
         jQuery(document).on("change", "#fq-doc-baseunit", (e) => {
           let baseUnit = jQuery(e.target).val();
           var w = jQuery("#fq-doc-setup-width").val();
@@ -544,17 +546,52 @@ export default {
         });
         
         jQuery(document).on("click", "#fq-modal-export-btn-export", () => {
-          
-          var imgType = jQuery("#fq-modal-export-format-select").val();
-          var quality = parseFloat(jQuery("#fq-modal-export-quality-input").val()) / 100;
-          var imgRes = jQuery("#fq-modal-export-size-select").val();
-          
-          if (imgType === "PDF") {
-            svgCanvas.exportPDF("test");
-          } else {
-            svgCanvas.rasterExport(imgType, quality, "test");
-          }
 
+          const imgType = jQuery("#fq-modal-export-format-select").val();
+          const quality = parseFloat(jQuery("#fq-modal-export-quality-input").val()) / 100;
+          const imgResMultiplier = parseInt(jQuery("#fq-modal-export-size-select").val());
+          const fName = "Test";
+          var data = '<?xml version="1.0"?>' + svgCanvas.svgCanvasToString();
+          
+          if (imgType === "pdf") {
+            // https://jsfiddle.net/klesun/zg4qbwd8/42/;            
+          } else {
+          
+            // if (imgType === "PDF") {
+            //   svgCanvas.exportPDF("test");
+            // } else {
+            //   svgCanvas.rasterExport(imgType, quality, "test");
+            // }
+
+            const canvas = document.getElementById('fq-canvas');
+            const resolution = svgCanvas.getResolution();
+
+            const w = resolution.w * parseInt(imgResMultiplier);
+            const h = resolution.h * parseInt(imgResMultiplier);
+            canvas.width = w;
+            canvas.height = h;            
+            
+            var win = window.URL || window.webkitURL || window;
+            var img = new Image();
+            var blob = new Blob([data], { type: 'image/svg+xml' });
+            var url = win.createObjectURL(blob);
+            
+            img.onload = function () {
+              canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+              win.revokeObjectURL(url);
+              var uri = canvas.toDataURL('image/' + imgType, quality).replace('image/' + imgType, 'octet/stream');
+              var a = document.createElement('a');
+              document.body.appendChild(a);
+              a.style = 'display: none';
+              a.href = uri
+              a.download = fName + '.' + imgType;
+              a.click();
+              window.URL.revokeObjectURL(uri);
+              document.body.removeChild(a);
+            };
+
+            img.src = url;
+          }
         });
 
         jQuery(document).on("focusout", "#fq-modal-export-quality-input", (e) => {
