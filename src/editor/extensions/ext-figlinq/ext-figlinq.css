@@ -96,3 +96,11 @@
 html {
   overflow-y: hidden !important;
 }
+
+.modal-action-panel {
+  border-bottom: 0px !important;
+}
+
+.breadcrumb ul {
+  align-items: center !important;
+}

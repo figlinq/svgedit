@@ -22,6 +22,10 @@
   <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script> 
   <script src="https://cdn.jsdelivr.net/npm/bulma-toast@2.4.1/dist/bulma-toast.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdfkit@0.10.0/js/pdfkit.standalone.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/svg-to-pdfkit@0.1.8/source.js"></script>
+  <!-- <script type="module" src="./extensions/ext-figlinq/svg-injector.js"></script> -->
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/svg-injector/1.1.3/svg-injector.min.js" integrity="sha512-LpKoEmPyokcDYSjRJ/7WgybgdAYFsKtCrGC9m+VBwcefe1vHXyUnD9fTQb3nXVJda6ny1J84UR+iBtEYm3OQmQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
 
   <!-- SCRIPTS -->
 
@@ -222,8 +226,8 @@
     <div class="modal-background"></div>
     <div class="modal-content">
       <div class="box">
-        <nav class="panel">
-          <p id="file-panel-heading" class="panel-heading">
+        <nav class="panel is-shadowless">
+          <p id="file-panel-heading" class="panel-heading is-size-6">
             Select content
           </p>
           <!-- <div class="panel-block">
@@ -238,12 +242,12 @@
             <a class="is-active">My files</a>
             <!-- <a>Shared with me</a> -->
           </p>
-          <div id="panel_breadcrumb" class="panel-block">
-            <div class="breadcrumb" aria-label="breadcrumbs">
+          <div id="panel_breadcrumb" class="panel-block pl-0">
+            <div class="breadcrumb is-size-7" aria-label="breadcrumbs">
               <ul>
                 <li class="breadcrumb-item" data-fid="-1">
-                  <a href="#" class="fq-modal-folder-item" data-fid="-1">&nbsp;
-                    <span class="icon is-small mx-0">
+                  <a href="#" class="fq-modal-folder-item" data-fid="-1" style="font-size:14px;">&nbsp;
+                    <span class="icon mx-0">
                       <i class="fas fa-home"></i>
                     </span>
                   </a>
@@ -253,20 +257,20 @@
           </div>
           <div id="fq-modal-item-list-container" style="border-bottom: 1px solid #ededed; max-height: calc(100vh - 400px); overflow-y: auto; ">            
           </div>
-          <div class="panel-block modal-action-panel content-add-panel is-hidden">
+          <div class="panel-block modal-action-panel content-add-panel is-hidden pt-5">
             <div class="field is-grouped">
               <div class="control">
-                <button id="fq-modal-add-confirm-btn" class="button is-link" disabled>
+                <button id="fq-modal-add-confirm-btn" class="button is-link is-small" disabled>
                   Add item(s)
                 </button>
               </div>
               <div class="control">
-                <button class="button is-link is-outlined fq-modal-cancel-btn">
+                <button class="button is-link is-outlined fq-modal-cancel-btn is-small">
                   Cancel
                 </button>
               </div>
               <div class="control">
-                <div class="select">
+                <div class="select is-small">
                   <select id="col_select">
                     <option value="1">1 column</option>
                     <option value="2">2 columns</option>
@@ -276,7 +280,7 @@
                 </div>
               </div>
               <div class="control">
-                <button id="fq-modal-refresh-btn" class="button">
+                <button id="fq-modal-refresh-btn" class="button is-small">
                   <span class="icon is-small">
                     <i class="fas fa-sync-alt"></i>
                   </span>
@@ -288,17 +292,17 @@
             <div class="control">
               <div class="field is-horizontal">
                 <div class="field-label is-normal mr-2" style="padding-top: .5em;">
-                  <label class="label">File name:</label>
+                  <label class="label is-size-7">File name:</label>
                 </div>
                 <div class="field-body">
                   <div class="field">
                     <p class="control">
-                      <input id="fq-modal-save-name-input" class="input" type="text">
+                      <input id="fq-modal-save-name-input" class="input is-small" type="text">
                     </p>
                   </div>
                 </div>
                 <div class="field-label is-normal ml-2" style="padding-top: .5em; text-align: left; max-width: 30px;">
-                  <label class="label">.svg </label>
+                  <label class="label is-size-7">.svg</label>
                 </div>
               </div>              
             </div>
@@ -306,7 +310,7 @@
           <div class="panel-block modal-action-panel file-save-panel is-hidden">
             <div class="field is-grouped">
               <div class="control">
-                <div class="select">
+                <div class="select is-small">
                   <select id="world_readable">
                     <option value="false">Private</option>
                     <option value="true">Public</option>
@@ -314,17 +318,17 @@
                 </div>
               </div>
               <div class="control">
-                <button id="fq-modal-save-confirm-btn" class="button is-link" disabled>
+                <button id="fq-modal-save-confirm-btn" class="button is-link is-small" disabled>
                   Save
                 </button>
               </div>
               <div class="control">
-                <button class="button is-link is-outlined fq-modal-cancel-btn">
+                <button class="button is-link is-outlined fq-modal-cancel-btn is-small">
                   Cancel
                 </button>
               </div>
               <div class="control">
-                <button id="fq-modal-refresh-btn" class="button">
+                <button id="fq-modal-refresh-btn" class="button is-small">
                   <span class="icon is-small">
                     <i class="fas fa-sync-alt"></i>
                   </span>
@@ -333,20 +337,20 @@
             </div>
           </div>
 
-          <div class="panel-block modal-action-panel figure-open-panel is-hidden">
+          <div class="panel-block modal-action-panel figure-open-panel is-hidden pt-5">
             <div class="field is-grouped">
               <div class="control">
-                <button id="fq-modal-files-btn-openfig" class="button is-link" disabled>
+                <button id="fq-modal-files-btn-openfig" class="button is-link is-small" disabled>
                   Open
                 </button>
               </div>
               <div class="control">
-                <button class="button is-link is-outlined fq-modal-cancel-btn">
+                <button class="button is-link is-outlined fq-modal-cancel-btn is-small">
                   Cancel
                 </button>
               </div>
               <div class="control">
-                <button id="fq-modal-refresh-btn" class="button">
+                <button id="fq-modal-refresh-btn" class="button is-small">
                   <span class="icon is-small">
                     <i class="fas fa-sync-alt"></i>
                   </span>
@@ -365,16 +369,16 @@
     <div class="modal-content">
       <div class="box is-shadowless">
         <nav class="panel is-shadowless">
-          <p id="file-panel-heading" class="panel-heading">
+          <p id="file-panel-heading" class="panel-heading is-size-6">
             Document setup
           </p>
           <div class="panel-block py-4">
             <div class="is-flex is-flex-direction-column">
-              <p class="mb-3"><strong>Document units</strong></p>
+              <p class="mb-3 is-size-7"><strong>Document units</strong></p>
               <div class="field">
                 <!-- <label class="label">Predefined:</label> -->
                 <div class="control">
-                  <div class="select">
+                  <div class="select is-small">
                     <select id="fq-doc-baseunit">
                       <option value="px">Pixels</option>
                       <option value="mm">Millimeters</option>
@@ -390,13 +394,13 @@
           <!-- Document size -->
           <div class="panel-block py-4">
             <div class="is-flex is-flex-direction-column">
-              <p class="mb-2"><strong>Document size</strong></p>
+              <p class="mb-2 is-size-7"><strong>Document size</strong></p>
               <div class="field is-horizontal">
                 <div class="field-body">
                   <div class="field">
-                    <label class="label">Predefined:</label>
+                    <label class="label is-size-7">Predefined:</label>
                     <div class="control">
-                      <div class="select">
+                      <div class="select is-small">
                         <select id="fq-doc-size">
                           <option value="">Select</option>
                           <option value="210mmx297mm">A4 format</option>
@@ -409,15 +413,15 @@
                     </div>
                   </div>
                   <div class="field">
-                    <label class="label">Width:</label>
+                    <label class="label is-size-7">Width:</label>
                     <p class="control is-expanded has-icons-left">
-                      <input id="fq-doc-setup-width" class="input" type="text">
+                      <input id="fq-doc-setup-width" class="input is-small" type="text">
                     </p>
                   </div>
                   <div class="field">
-                    <label class="label">Height:</label>
+                    <label class="label is-size-7">Height:</label>
                     <p class="control is-expanded has-icons-left">
-                      <input id="fq-doc-setup-height" class="input" type="text">
+                      <input id="fq-doc-setup-height" class="input is-small" type="text">
                     </p>
                   </div>
                 </div>
@@ -428,18 +432,19 @@
           <!-- Grid -->
           <div class="panel-block py-4">
             <div class="is-flex is-flex-direction-column">
-              <p><strong>Grid</strong></p>
+              <p class="is-size-7"><strong>Grid & snapping</strong></p>
               <div class="field is-grouped is-align-items-center">
                 <p class="control">
-                  <label class="checkbox">Snapping enabled:
-                    <input id="fq-doc-setup-snapping-enabled" class="checkbox" type="checkbox">
+                  <label class="checkbox is-size-7">
+                    <input id="fq-doc-setup-snapping-enabled" class="checkbox is-small" type="checkbox">
+                    Snapping enabled
                   </label>
                 </p>
-                <p class="control">
-                  <label class="checkbox">Snapping step (px):</label>
+                <p class="control ml-5">
+                  <label class="checkbox is-size-7">Snapping step (px):</label>
                 </p>
                 <p class="control is-flex-shrink-1">
-                  <input id="fq-doc-setup-snapping-step" class="input" type="text">
+                  <input id="fq-doc-setup-snapping-step" class="input is-small" type="text">
                 </p>
               </div>
             </div>
@@ -449,12 +454,12 @@
           <div class="panel-block py-4">
             <div class="field is-grouped">
               <div class="control">
-                <button id="fq-doc-setup-save-btn" class="button is-link">
+                <button id="fq-doc-setup-save-btn" class="button is-link is-small">
                   Save
                 </button>
               </div>
               <div class="control">
-                <button class="button is-link is-outlined fq-modal-cancel-btn">
+                <button class="button is-link is-outlined fq-modal-cancel-btn is-small">
                   Cancel
                 </button>
               </div>
@@ -470,15 +475,15 @@
     <div class="modal-background"></div>
     <div class="modal-content" style="max-width: 400px;">
       <div class="box">
-        <p class="mb-5">All unsaved changes will be lost. Are you sure?</p>
+        <p class="mb-5 is-size-7">All unsaved changes will be lost. Are you sure?</p>
         <div class="field is-grouped is-grouped-centered">
           <p class="control">
-            <a id="fq-modal-confirm-btn-ok" class="button is-link">
+            <a id="fq-modal-confirm-btn-ok" class="button is-link is-small">
               Open
             </a>
           </p>
           <p class="control">
-            <a class="button is-link is-outlined fq-modal-cancel-btn">
+            <a class="button is-link is-outlined fq-modal-cancel-btn is-small">
               Cancel
             </a>
           </p>
@@ -492,14 +497,14 @@
     <div class="modal-background"></div>
     <div class="modal-content" style="max-width: 400px;">
       <div class="box">
-        <p class="title mb-5 is-5">Export figure</p>
+        <p class="mb-5 is-size-6">Export figure</p>
         
         <div class="field is-grouped is-align-items-center">
           <p class="control">
-            <label>File format:</label>
+            <label class="is-size-7">File format:</label>
           </p>
           <div class="control">
-            <div class="select">
+            <div class="select is-small">
               <select id="fq-modal-export-format-select">
                 <option value="png">.png</option>
                 <option value="jpeg">.jpg</option>
@@ -513,23 +518,23 @@
         <!-- Quality -->
         <div class="field is-grouped is-align-items-center">
           <p class="control">
-            <label>Quality:</label>
+            <label class="is-size-7">Quality:</label>
           </p>
           <div class="field has-addons">
             <p class="control">
-              <a id="fq-modal-export-quality-minus" class="button fq-modal-export-quality" data-increment="-5">
+              <a id="fq-modal-export-quality-minus" class="button fq-modal-export-quality is-small" data-increment="-5">
                 <span class="icon is-small" style="pointer-events: none;">
-                  <i class="fas fa-minus"></i> 
+                  <i class="fas fa-minus fa-xs"></i> 
                 </span>
               </a>
             </p>
             <p class="control">
-              <input id="fq-modal-export-quality-input" class="input" size="2" type="text" value="80" style="text-align: center;">
+              <input id="fq-modal-export-quality-input" class="input is-small" size="2" type="text" value="80" style="text-align: center;">
             </p>
             <p class="control">
-              <a id="fq-modal-export-quality-plus" class="button fq-modal-export-quality" data-increment="5">
+              <a id="fq-modal-export-quality-plus" class="button fq-modal-export-quality is-small" data-increment="5">
                 <span class="icon is-small" style="pointer-events: none;">
-                  <i class="fas fa-plus"></i>
+                  <i class="fas fa-plus fa-xs"></i>
                 </span>
               </a>
             </p>
@@ -540,10 +545,10 @@
         <!-- Size -->
         <div class="field is-grouped is-align-items-center mb-4">
           <p class="control">
-            <label>Document dimensions:</label>
+            <label class="is-size-7">Document dimensions:</label>
           </p>
           <div class="control">
-            <div class="select">
+            <div class="select is-small">
               <select id="fq-modal-export-size-select">
                 <option value="1">Original</option>
                 <option value="2">2x</option>
@@ -558,12 +563,12 @@
 
         <div class="field is-grouped is-grouped-centered">
           <p class="control">
-            <a id="fq-modal-export-btn-export" class="button is-link">
+            <a id="fq-modal-export-btn-export" class="button is-link is-small">
               Export
             </a>
           </p>
           <p class="control">
-            <a class="button is-link is-outlined fq-modal-cancel-btn">
+            <a class="button is-link is-outlined fq-modal-cancel-btn is-small">
               Cancel
             </a>
           </p>
@@ -571,7 +576,7 @@
       </div>
     </div>
   </div>
-  <canvas id="fq-canvas"></canvas>
+  <canvas id="fq-canvas" style="background-color: rgba(255, 255, 255, 0);"></canvas>
 </body>
 
 </html>

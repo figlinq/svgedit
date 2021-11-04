@@ -1,7 +1,7 @@
 import { folderItem, plotItem, imageItem, breadcrumb } from "./elements";
 import { NS } from "./namespaces.js";
 import { convertUnit, isValidUnit } from '../../../common/units.js';
-
+import SVGInjector from 'svg-injector';
 /**
  * @file ext-figlinq.js
  * @license MIT
@@ -44,7 +44,13 @@ export default {
             fqModalMode,
             fqCsrfToken,        
             fqCurrentFigData = false,        
-            fqLastFolderId = false;
+            fqLastFolderId = false,
+            plotElementInfo,
+            svgAttrWhitelist = ["class", "height", "width", "x", "y", "id"],
+            imgType,
+            quality,
+            imgResMultiplier,
+            fName;
         
         // To use this function we need to get content_type field into the "children" object returned from v2 
         // const getExt = (contentType) => {
@@ -478,17 +484,145 @@ export default {
           });
         };
 
-        const inlineImage = async function(img) {
-          var src = jQuery(img).attr("src");
-          let blob = await fetch(src).then(r => r.blob());
+        const inlineImage = async function(imgId) {
+          var imgUrl = jQuery("#" + imgId).attr("xlink:href");
+          
+          let fetchResult = await fetch(imgUrl, {
+            method: 'GET', // *GET, POST, PUT, DELETE, etc.
+            mode: 'cors', // no-cors, *cors, same-origin
+            credentials: 'include', // include, *same-origin, omit
+            headers: {
+              'X-CSRFToken': fqCsrfToken,
+            }
+          })
+          .then( 
+            async (r) => {
+              const blob = await r.blob();
+              const type = r.headers.get("Content-Type");
+              return {blob, type};
+            } 
+          );
+
           let dataUrl = await new Promise(resolve => {
             let reader = new FileReader();
             reader.onload = () => resolve(reader.result);
-            reader.readAsDataURL(blob);
+            reader.readAsDataURL(fetchResult.blob);
           });
-          jQuery(img).attr("src", dataUrl);
+          jQuery("#" + imgId).attr("xlink:href", dataUrl);
         };
 
+        const svgToRaster = (data, fName, imgType, quality, imgResMultiplier) => {
+          const canvas = document.getElementById('fq-canvas');
+          const resolution = svgCanvas.getResolution();
+
+          const w = resolution.w * parseInt(imgResMultiplier);
+          const h = resolution.h * parseInt(imgResMultiplier);
+          canvas.width = w;
+          canvas.height = h;            
+          
+          var win = window.URL || window.webkitURL || window;
+          var img = new Image();
+          var blob = new Blob([data], { type: 'image/svg+xml' });
+          var url = win.createObjectURL(blob);
+          
+          img.onload = function () {
+            
+            const ctx = canvas.getContext('2d');
+            
+            if (imgType == "jpeg") {
+              ctx.fillStyle = 'white';
+              ctx.fillRect(0, 0, w, h);
+            }
+
+            ctx.drawImage(img, 0, 0, w, h);
+            
+            win.revokeObjectURL(url);
+            var uri = canvas.toDataURL('image/' + imgType, quality).replace('image/' + imgType, 'octet/stream');
+            
+            // Add link to download file
+            var a = document.createElement('a');
+            document.body.appendChild(a);
+            a.style = 'display: none';
+            a.href = uri
+            a.download = fName + '.' + imgType;
+            a.click();
+            window.URL.revokeObjectURL(uri);
+            document.body.removeChild(a);
+          };
+
+          img.src = url;
+        }
+
+        const svgToPdf = (svg, fName) => {
+          const doc = new window.PDFDocument({size: [595.28, 841.89]});
+          const chunks = [];
+          doc.pipe({
+            // writable stream implementation
+            write: (chunk) => chunks.push(chunk),            
+            end: () => {
+              const pdfBlob = new Blob(chunks, {
+                type: 'application/octet-stream'
+              });
+              var blobUrl = window.URL.createObjectURL(pdfBlob);
+              
+              var a = document.createElement('a');
+              document.body.appendChild(a);
+              a.style = 'display: none';
+              a.href = blobUrl
+              a.download = fName + '.pdf';
+              a.click();
+              window.URL.revokeObjectURL(blobUrl);
+              document.body.removeChild(a);
+            },
+            // readable stream stub iplementation
+            on: (event, action) => {},
+            once: (...args) => {},
+            emit: (...args) => {},
+          });
+        
+          window.SVGtoPDF(doc, svg, 0, 0, {width: 595.28, height: 841.89, preserveAspectRatio: "xMinYMin meet"});
+          doc.end();
+        };
+        
+        const inlineImageLoop = async function(imgIdArray) {
+          for (const imgId of imgIdArray) {
+            await inlineImage(imgId);
+          }
+        };
+
+        const onAfterSvgInjection = () => {
+
+          // Remove unnecessary attributes from inlined SVGs and restore original values 
+          plotElementInfo.forEach( info => {
+            var attrToRemove = getAttributes(jQuery("#" + info.id));
+           
+            for (const key in attrToRemove) {
+              if( jQuery.inArray(key, svgAttrWhitelist) == -1 ) {
+                jQuery("#" + info.id).removeAttr(key);
+              }
+            }
+            // Restore lost/changed attributes
+            for (const key in info) {
+              jQuery("#" + info.id).attr(key, info.key);
+            }
+          });
+
+          var data = '<?xml version="1.0"?>' + svgCanvas.svgCanvasToString();
+          if (imgType === "pdf") {
+            svgToPdf(data, fName);
+          } else {
+            svgToRaster(data, fName, imgType, quality, imgResMultiplier);
+          }
+
+        }
+
+        const getAttributes = ( $node ) => {
+          var attrs = {};
+          $.each( $node[0].attributes, function ( index, attribute ) {
+              attrs[attribute.name] = attribute.value;
+          } );      
+          return attrs;
+        }
 
         jQuery(document).on("change", "#fq-doc-baseunit", (e) => {
           let baseUnit = jQuery(e.target).val();
@@ -540,62 +674,62 @@ export default {
           jQuery("#fq-modal-export-quality-input").val(newValue);
         });
         
-        jQuery(document).on("click", "#fq-modal-export-btn-export", () => {
+        jQuery(document).on("click", "#fq-modal-export-btn-export", async () => {
 
-          const imgType = jQuery("#fq-modal-export-format-select").val();
-          const quality = parseFloat(jQuery("#fq-modal-export-quality-input").val()) / 100;
-          const imgResMultiplier = parseInt(jQuery("#fq-modal-export-size-select").val());
-          const fName = "Test";
-          var data = '<?xml version="1.0"?>' + svgCanvas.svgCanvasToString();
-
-          if (imgType === "pdf") {
-            // https://jsfiddle.net/klesun/zg4qbwd8/42/;            
-          } else {
+          imgType = jQuery("#fq-modal-export-format-select").val();
+          quality = parseFloat(jQuery("#fq-modal-export-quality-input").val()) / 100;
+          imgResMultiplier = parseInt(jQuery("#fq-modal-export-size-select").val());
+          fName = "Test";
           
-            // if (imgType === "PDF") {
-            //   svgCanvas.exportPDF("test");
-            // } else {
-            //   svgCanvas.rasterExport(imgType, quality, "test");
-            // }
+          var imageArray = [];
 
-            const canvas = document.getElementById('fq-canvas');
-            const resolution = svgCanvas.getResolution();
-
-            const w = resolution.w * parseInt(imgResMultiplier);
-            const h = resolution.h * parseInt(imgResMultiplier);
-            canvas.width = w;
-            canvas.height = h;            
-            
-            var win = window.URL || window.webkitURL || window;
-            var img = new Image();
-            var blob = new Blob([data], { type: 'image/svg+xml' });
-            var url = win.createObjectURL(blob);
-            
-            img.onload = function () {
-              canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-              win.revokeObjectURL(url);
-              var uri = canvas.toDataURL('image/' + imgType, quality).replace('image/' + imgType, 'octet/stream');
-              var a = document.createElement('a');
-              document.body.appendChild(a);
-              a.style = 'display: none';
-              a.href = uri
-              a.download = fName + '.' + imgType;
-              a.click();
-              window.URL.revokeObjectURL(uri);
-              document.body.removeChild(a);
-            };
-
-            img.src = url;
+          // Inline images
+          var imgElements = jQuery(".fq-image-element.fq-image");
+          if (imgElements.length) {
+            jQuery( imgElements ).each(function( index ) {
+              imageArray.push(jQuery(this).attr('id'));
+            });
+            await inlineImageLoop(imageArray);
           }
+
+          // Inline plots
+          var plotElements = jQuery(".fq-image-element.fq-plot");
+          plotElementInfo = [];
+          if (plotElements.length) {
+            jQuery( plotElements ).each(function( index ) {
+              jQuery(this).attr("src", jQuery(this).attr("xlink:href"));
+              plotElementInfo.push(
+                {
+                  id: jQuery(this).attr("id"),
+                  width: jQuery(this).attr("width"),
+                  height: jQuery(this).attr("height"),
+                  x: jQuery(this).attr("x"),
+                  y: jQuery(this).attr("y"),
+                  class: jQuery(this).attr("class"),
+                }
+              );
+            });
+
+            var mySVGsToInject = document.querySelectorAll('image.fq-plot');
+            SVGInjector(mySVGsToInject, null, onAfterSvgInjection);
+
+          } else {
+            var data = '<?xml version="1.0"?>' + svgCanvas.svgCanvasToString();
+            if (imgType === "pdf") {
+              svgToPdf(data, fName);
+            } else {
+              svgToRaster(data, fName, imgType, quality, imgResMultiplier);
+            }
+          }
+
         });
 
         jQuery(document).on("focusout", "#fq-modal-export-quality-input", (e) => {
           var newValue = parseInt(jQuery(e.target).val());
           if (newValue > 100) newValue = 100;            
           if (newValue < 10) newValue = 10;
-          if (newValue == NaN) newValue = 80;
-
-          jQuery(e.target).val(newValue)
+          if (isNaN(newValue)) newValue = 80;
+          jQuery(e.target).val(newValue);
         });
 
         jQuery(document).on("click", "#fq-menu-show-grid", () => {
