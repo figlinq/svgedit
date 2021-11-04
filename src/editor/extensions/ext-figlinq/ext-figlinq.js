@@ -1,7 +1,6 @@
 import { folderItem, plotItem, imageItem, breadcrumb } from "./elements";
 import { NS } from "./namespaces.js";
 import { convertUnit, isValidUnit } from '../../../common/units.js';
-import SVGInjector from 'svg-injector';
 /**
  * @file ext-figlinq.js
  * @license MIT
