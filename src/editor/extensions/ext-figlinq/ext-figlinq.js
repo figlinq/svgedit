@@ -484,7 +484,7 @@ export default {
           });
         };
 
-        const inlineImage = async function(imgId) {
+        const inlineRasterImage = async function(imgId) {
           var imgUrl = jQuery("#" + imgId).attr("xlink:href");
           
           let fetchResult = await fetch(imgUrl, {
@@ -508,7 +508,22 @@ export default {
             reader.onload = () => resolve(reader.result);
             reader.readAsDataURL(fetchResult.blob);
           });
-          jQuery("#" + imgId).attr("xlink:href", dataUrl);
+          jQuery("#fq-svg-container").find('#'+imgId).attr("xlink:href", dataUrl);
+        };
+
+        const inlineSvgImage = async function(imgId) {
+          var imgUrl = jQuery("#fq-svg-container").find('#'+imgId).attr("xlink:href");
+          
+          await fetch(imgUrl, {
+            method: 'GET',
+            mode: 'cors',
+            credentials: 'include',
+          })
+          .then(result => result.text())
+          .then(text => {
+              var doc = new DOMParser().parseFromString(text, 'application/xml');
+              jQuery("#fq-svg-container").find('#'+imgId).replaceWith( doc.documentElement );
+          });
         };
 
         const svgToRaster = (data, fName, imgType, quality, imgResMultiplier) => {
@@ -553,7 +568,7 @@ export default {
           img.src = url;
         }
 
-        const svgToPdf = (svg, fName) => {
+        const svgToPdf = (data, fName) => {
           const doc = new window.PDFDocument({size: [595.28, 841.89]});
           const chunks = [];
           doc.pipe({
@@ -580,38 +595,54 @@ export default {
             emit: (...args) => {},
           });
         
-          window.SVGtoPDF(doc, svg, 0, 0, {width: 595.28, height: 841.89, preserveAspectRatio: "xMinYMin meet"});
+          window.SVGtoPDF(doc, data, 0, 0, {width: 595.28, height: 841.89, preserveAspectRatio: "xMinYMin meet"});
           doc.end();
         };
         
-        const inlineImageLoop = async function(imgIdArray) {
+        const inlineRasterImageLoop = async function(imgIdArray) {
           for (const imgId of imgIdArray) {
-            await inlineImage(imgId);
+            await inlineRasterImage(imgId);
+          }
+        };
+
+        const inlineSvgImageLoop = async function(imgIdArray) {
+          for (const imgId of imgIdArray) {
+            await inlineSvgImage(imgId);
           }
         };
 
         const onAfterSvgInjection = () => {
 
           // Remove unnecessary attributes from inlined SVGs and restore original values 
-          plotElementInfo.forEach( info => {
-            var attrToRemove = getAttributes(jQuery("#" + info.id));
+          // plotElementInfo.forEach( info => {
+          //   var attrToRemove = getAttributes(jQuery("#fq-svg-container").find("#" + info.id));
            
-            for (const key in attrToRemove) {
-              if( jQuery.inArray(key, svgAttrWhitelist) == -1 ) {
-                jQuery("#" + info.id).removeAttr(key);
-              }
-            }
-            // Restore lost/changed attributes
-            for (const key in info) {
-              jQuery("#" + info.id).attr(key, info.key);
-            }
-          });
+          //   for (const key in attrToRemove) {
+          //     if( jQuery.inArray(key, svgAttrWhitelist) == -1 ) {
+          //       jQuery("#fq-svg-container").find("#" + info.id).removeAttr(key);
+          //     }
+          //   }
+          //   // Restore lost/changed attributes
+          //   for (const key in info) {
+          //     jQuery("#fq-svg-container").find("#" + info.id).attr(key, info.key);
+          //   }
+          //   var contents = jQuery("#fq-svg-container").find("#" + info.id).contents();
+          //   jQuery("#fq-svg-container").find("#" + info.id).replaceWith(contents);
+          //   console.log(contents);
+          // });
 
-          var data = '<?xml version="1.0"?>' + svgCanvas.svgCanvasToString();
+
+          var el = document.getElementById("fq-svg-container");
+          var svgEl = el.firstChild;
+          var serializer = new XMLSerializer();
+          var svgStr = serializer.serializeToString(svgEl);
+          console.log(svgStr);
+
+          // var data = '<?xml version="1.0"?>' + svgCanvas.svgCanvasToString();
           if (imgType === "pdf") {
-            svgToPdf(data, fName);
+            svgToPdf(svgStr, fName);
           } else {
-            svgToRaster(data, fName, imgType, quality, imgResMultiplier);
+            svgToRaster(svgStr, fName, imgType, quality, imgResMultiplier);
           }
 
         }
@@ -682,17 +713,48 @@ export default {
           fName = "Test";
           
           var imageArray = [];
+          var plotArray = [];
+
+          // Clone SVG into temp div
+          var svgString = svgCanvas.svgCanvasToString();
+          var doc = new DOMParser().parseFromString(svgString, 'application/xml');
+          var el = document.getElementById("fq-svg-container");
+          el.appendChild(
+            el.ownerDocument.importNode(doc.documentElement, true)
+          )
 
           // Inline images
-          var imgElements = jQuery(".fq-image-element.fq-image");
+          var imgElements = jQuery("#fq-svg-container").find(".fq-image-element.fq-image");
+          
           if (imgElements.length) {
-            jQuery( imgElements ).each(function( index ) {
+            jQuery( imgElements ).each(function() {
               imageArray.push(jQuery(this).attr('id'));
             });
-            await inlineImageLoop(imageArray);
+            await inlineRasterImageLoop(imageArray);
           }
 
           // Inline plots
+          var plotElements = jQuery("#fq-svg-container").find(".fq-image-element.fq-plot");
+          
+          if (plotElements.length) {
+            jQuery( plotElements ).each(function() {
+              plotArray.push(jQuery(this).attr('id'));
+            });
+            await inlineSvgImageLoop(plotArray);
+          }
+
+          var el = document.getElementById("fq-svg-container");
+          var svgEl = el.firstChild;
+          var serializer = new XMLSerializer();
+          var svgStr = serializer.serializeToString(svgEl);
+
+          if (imgType === "pdf") {
+            svgToPdf(svgStr, fName);
+          } else {
+            svgToRaster(svgStr, fName, imgType, quality, imgResMultiplier);
+          }
+          return;
+          
           var plotElements = jQuery(".fq-image-element.fq-plot");
           plotElementInfo = [];
           if (plotElements.length) {
@@ -706,19 +768,41 @@ export default {
                   x: jQuery(this).attr("x"),
                   y: jQuery(this).attr("y"),
                   class: jQuery(this).attr("class"),
+                  src: jQuery(this).attr("src"),
                 }
               );
             });
 
-            var mySVGsToInject = document.querySelectorAll('image.fq-plot');
-            SVGInjector(mySVGsToInject, null, onAfterSvgInjection);
+            // var data = '<?xml version="1.0"?>' + svgCanvas.svgCanvasToString();
+            var xml_string = svgCanvas.svgCanvasToString();
+            
+
+            var mySVGsToInject = jQuery("#fq-svg-container").find('image.fq-plot')[0];
+            var svgUrl = plotElementInfo[0].src;
+
+            fetch( svgUrl, {
+              method: 'GET', // *GET, POST, PUT, DELETE, etc.
+              mode: 'cors', // no-cors, *cors, same-origin
+              credentials: 'include', // include, *same-origin, omit
+              headers: {
+                'X-CSRFToken': fqCsrfToken,
+              }
+            })
+              .then(r => r.text())
+              .then(text => {
+                  var doc2 = new DOMParser().parseFromString(text, 'application/xml');
+                  jQuery("#fq-svg-container").find('image.fq-plot').replaceWith( doc2.documentElement );
+                  onAfterSvgInjection();
+                  // console.log(mySVGsToInject);
+              })
+              .catch(console.error.bind(console));
+            // SVGInjector(mySVGsToInject, null, onAfterSvgInjection);
 
           } else {
-            var data = '<?xml version="1.0"?>' + svgCanvas.svgCanvasToString();
             if (imgType === "pdf") {
-              svgToPdf(data, fName);
+              svgToPdf(xml_string, fName);
             } else {
-              svgToRaster(data, fName, imgType, quality, imgResMultiplier);
+              svgToRaster(xml_string, fName, imgType, quality, imgResMultiplier);
             }
           }
 
@@ -908,12 +992,12 @@ export default {
             y = 0,
             colNumber = jQuery("#col_select").val(),
             curCol = 1,
-            selectedFid, selectedType, ext;
+            selectedFid, ext;
 
           jQuery.each(selectedItems, index => {
             
             selectedFid = jQuery(selectedItems[index]).data("fid");
-            selectedType = jQuery(selectedItems[index]).data("ftype");
+            var selectedType = jQuery(selectedItems[index]).data("ftype");
 
             var imgDataUrl =
               baseUrl + "v2/plots/" +
