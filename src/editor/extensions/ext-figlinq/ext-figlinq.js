@@ -520,8 +520,13 @@ export default {
           })
           .then(result => result.text())
           .then(text => {
-              var doc = new DOMParser().parseFromString(text, 'application/xml');
-              jQuery("#fq-svg-container").find('#'+imgId).replaceWith( doc.documentElement );
+            var replacedObj = jQuery( "#fq-svg-container" ).find('#'+imgId);
+            var doc = new DOMParser().parseFromString(text, 'application/xml');
+            var newObj = jQuery(doc.documentElement).replaceAll( replacedObj );
+
+            jQuery(newObj).attr( "id", imgId )
+            .attr( "x", 50 )
+            .attr( "y", 50 );
           });
         };
 
@@ -635,7 +640,6 @@ export default {
           var svgEl = el.firstChild;
           var serializer = new XMLSerializer();
           var svgStr = serializer.serializeToString(svgEl);
-          console.log(svgStr);
 
           // var data = '<?xml version="1.0"?>' + svgCanvas.svgCanvasToString();
           if (imgType === "pdf") {
@@ -714,17 +718,16 @@ export default {
           var imageArray = [];
           var plotArray = [];
 
+          // Empty temp div
+          jQuery("#fq-svg-container").empty();
+
           // Clone SVG into temp div
           var svgString = svgCanvas.svgCanvasToString();
           var doc = new DOMParser().parseFromString(svgString, 'application/xml');
-          var el = document.getElementById("fq-svg-container");
-          el.appendChild(
-            el.ownerDocument.importNode(doc.documentElement, true)
-          )
+          jQuery("#fq-svg-container").append(doc.documentElement);
 
-          // Inline images
+          // Inline raster images
           var imgElements = jQuery("#fq-svg-container").find(".fq-image-element.fq-image");
-          
           if (imgElements.length) {
             jQuery( imgElements ).each(function() {
               imageArray.push(jQuery(this).attr('id'));
@@ -734,7 +737,6 @@ export default {
 
           // Inline plots
           var plotElements = jQuery("#fq-svg-container").find(".fq-image-element.fq-plot");
-          
           if (plotElements.length) {
             jQuery( plotElements ).each(function() {
               plotArray.push(jQuery(this).attr('id'));
@@ -742,69 +744,20 @@ export default {
             await inlineSvgImageLoop(plotArray);
           }
 
+          // Get the svg string
           var el = document.getElementById("fq-svg-container");
           var svgEl = el.firstChild;
           var serializer = new XMLSerializer();
           var svgStr = serializer.serializeToString(svgEl);
+          // jQuery("#fq-svg-container").empty();
 
+          // Create image
           if (imgType === "pdf") {
             svgToPdf(svgStr, fName);
           } else {
             svgToRaster(svgStr, fName, imgType, quality, imgResMultiplier);
           }
-          return;
           
-          var plotElements = jQuery(".fq-image-element.fq-plot");
-          plotElementInfo = [];
-          if (plotElements.length) {
-            jQuery( plotElements ).each(function( index ) {
-              jQuery(this).attr("src", jQuery(this).attr("xlink:href"));
-              plotElementInfo.push(
-                {
-                  id: jQuery(this).attr("id"),
-                  width: jQuery(this).attr("width"),
-                  height: jQuery(this).attr("height"),
-                  x: jQuery(this).attr("x"),
-                  y: jQuery(this).attr("y"),
-                  class: jQuery(this).attr("class"),
-                  src: jQuery(this).attr("src"),
-                }
-              );
-            });
-
-            // var data = '<?xml version="1.0"?>' + svgCanvas.svgCanvasToString();
-            var xml_string = svgCanvas.svgCanvasToString();
-            
-
-            var mySVGsToInject = jQuery("#fq-svg-container").find('image.fq-plot')[0];
-            var svgUrl = plotElementInfo[0].src;
-
-            fetch( svgUrl, {
-              method: 'GET', // *GET, POST, PUT, DELETE, etc.
-              mode: 'cors', // no-cors, *cors, same-origin
-              credentials: 'include', // include, *same-origin, omit
-              headers: {
-                'X-CSRFToken': fqCsrfToken,
-              }
-            })
-              .then(r => r.text())
-              .then(text => {
-                  var doc2 = new DOMParser().parseFromString(text, 'application/xml');
-                  jQuery("#fq-svg-container").find('image.fq-plot').replaceWith( doc2.documentElement );
-                  onAfterSvgInjection();
-                  // console.log(mySVGsToInject);
-              })
-              .catch(console.error.bind(console));
-            // SVGInjector(mySVGsToInject, null, onAfterSvgInjection);
-
-          } else {
-            if (imgType === "pdf") {
-              svgToPdf(xml_string, fName);
-            } else {
-              svgToRaster(xml_string, fName, imgType, quality, imgResMultiplier);
-            }
-          }
-
         });
 
         jQuery(document).on("focusout", "#fq-modal-export-quality-input", (e) => {
