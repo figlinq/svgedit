@@ -118,20 +118,20 @@
                 <span>Open figure</span>
               </span>     
             </a>
-            <a id="fq-menu-item-save-figure-as" class="navbar-item is-hidden">
-              <span class="icon-text">
-                <span class="icon">
-                  <i class="far fa-save"></i>
-                </span>
-                <span>Save figure as...</span>
-              </span>    
-            </a>
             <a id="fq-menu-item-save-figure" class="navbar-item is-hidden">
               <span class="icon-text">
                 <span class="icon">
                   <i class="fas fa-save"></i>
                 </span>
                 <span>Save figure</span>
+              </span>    
+            </a>
+            <a id="fq-menu-item-save-figure-as" class="navbar-item is-hidden">
+              <span class="icon-text">
+                <span class="icon">
+                  <i class="far fa-save"></i>
+                </span>
+                <span>Save figure as...</span>
               </span>    
             </a>
             <a id="tool_import" class="navbar-item">
@@ -493,64 +493,70 @@
   </div>
 
   <!-- Export modal -->
-  <div id="fq-modal-export" class="modal is-active">
+  <div id="fq-modal-export" class="modal">
     <div class="modal-background"></div>
-    <div class="modal-content" style="max-width: 400px;">
+    <div class="modal-content" style="max-width: 460px;">
       <div class="box">
         <p class="mb-5 is-size-6">Export figure</p>
         
-        <div class="field is-grouped is-align-items-center">
-          <p class="control">
-            <label class="is-size-7">File format:</label>
+        <!-- File name & format -->
+        <div class="field is-grouped">
+          <p class="control" style="margin-top: 2px;">
+            <label class="is-size-7">Name/format:</label>
           </p>
-          <div class="control">
-            <div class="select is-small">
-              <select id="fq-modal-export-format-select">
-                <option value="png">.png</option>
-                <option value="jpeg">.jpg</option>
-                <option value="bmp">.bmp</option>
-                <option value="pdf">.pdf</option>
-              </select>
+          <div class="field has-addons">
+            <p class="control">
+              <input id="fq-modal-export-fname-input" value="Figure" class="input is-small" type="text">
+            </p>
+            <div class="control">
+              <div class="select is-small">
+                <select id="fq-modal-export-format-select">
+                  <option value="png">.png</option>
+                  <option value="jpeg">.jpg</option>
+                  <option value="bmp">.bmp</option>
+                  <option value="pdf">.pdf</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Quality -->
-        <div class="field is-grouped is-align-items-center">
+        <div class="field is-grouped is-align-items-baseline">
           <p class="control">
             <label class="is-size-7">Quality:</label>
           </p>
           <div class="field has-addons">
             <p class="control">
-              <a id="fq-modal-export-quality-minus" class="button fq-modal-export-quality is-small" data-increment="-5">
+              <button id="fq-modal-export-quality-minus" class="button fq-modal-export-quality is-small" data-increment="-5">
                 <span class="icon is-small" style="pointer-events: none;">
                   <i class="fas fa-minus fa-xs"></i> 
                 </span>
-              </a>
+              </button>
             </p>
             <p class="control">
-              <input id="fq-modal-export-quality-input" class="input is-small" size="2" type="text" value="80" style="text-align: center;">
+              <input id="fq-modal-export-quality-input" class="input is-small" size="1" type="text" value="80" style="text-align: center;">
             </p>
             <p class="control">
-              <a id="fq-modal-export-quality-plus" class="button fq-modal-export-quality is-small" data-increment="5">
+              <button id="fq-modal-export-quality-plus" class="button fq-modal-export-quality is-small" data-increment="5">
                 <span class="icon is-small" style="pointer-events: none;">
                   <i class="fas fa-plus fa-xs"></i>
                 </span>
-              </a>
+              </button>
             </p>
           </div>
         </div>
         <!-- End quality -->
 
         <!-- Size -->
-        <div class="field is-grouped is-align-items-center mb-4">
+        <div class="field is-grouped is-align-items-baseline mb-4">
           <p class="control">
             <label class="is-size-7">Document dimensions:</label>
           </p>
           <div class="control">
             <div class="select is-small">
               <select id="fq-modal-export-size-select">
-                <option value="1">Original</option>
+                <option value="1">1x (current)</option>
                 <option value="2">2x</option>
                 <option value="3">3x</option>
                 <option value="4">4x</option>

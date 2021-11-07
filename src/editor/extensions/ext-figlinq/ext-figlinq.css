@@ -104,3 +104,7 @@ html {
 .breadcrumb ul {
   align-items: center !important;
 }
+
+#cmenu_canvas li{
+  min-width: 240px !important;
+}
