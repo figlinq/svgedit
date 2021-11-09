@@ -491,6 +491,9 @@ export default {
           currentUrl.searchParams.delete("fid");
           window.history.pushState(null, null, currentUrl.href);
 
+          fqCurrentFigData = false;
+          jQuery("#fq-menu-item-save-figure").addClass("is-disabled");
+
           const [ x, y ] = svgEditor.configObj.curConfig.dimensions;
           svgEditor.leftPanel.clickSelect();
           svgEditor.svgCanvas.clear();
@@ -525,15 +528,17 @@ export default {
             jQuery("#fq-modal-confirm").removeClass("is-active");
             fqCurrentFigData = data;
             setTimeout(function(){ svgEditor.zoomChanged(window, "canvas"); }, 250);
-            showToast('File "' + data.filename + '" opened', 'is-success');
+            showToast('File "' + data.filename + '" loaded', 'is-success');
 
             // Add fid to url
             var currentUrl = new URL(document.location);
             currentUrl.searchParams.set("fid", data.fid);
             window.history.pushState(null, null, decodeURIComponent(currentUrl.href));
+
+            jQuery("#fq-menu-item-save-figure").removeClass("is-disabled");
           })
           .fail(function(data) {
-            showToast('This file could not be opened', 'is-danger');
+            showToast('This file could not be loaded', 'is-danger');
           });
         };
 
@@ -594,17 +599,15 @@ export default {
               w = resolution.w * parseInt(fqExportDocSize);
               h = resolution.h * parseInt(fqExportDocSize);
             }
-
+            
             canvas.width = w;
             canvas.height = h;            
-            
             var blob = new Blob([svgString], { type: 'image/svg+xml' });          
             var win = window.URL || window.webkitURL || window;
-            var img = new Image();
+            var img = new Image();            
             var url = win.createObjectURL(blob);
-            
-            img.onload = function () {
-              
+
+            img.onload = function () {              
               const ctx = canvas.getContext('2d');
               
               if (fqExportDocType != "png") {
@@ -613,7 +616,6 @@ export default {
               }
               ctx.drawImage(img, 0, 0, w, h);            
               win.revokeObjectURL(url);
-              
               // If saving image/thumbnail to FiglinQ, return blob so that it can be added to form
               if (fqExportMode === "thumb"){
                 canvas.toBlob(function(blob) {resolve(blob)});
@@ -726,7 +728,9 @@ export default {
           // jQuery("#fq-svg-container").empty();
 
           // Clone SVG into temp div
+          
           var svgString = svgCanvas.svgCanvasToString();
+          
           var doc = new DOMParser().parseFromString(svgString, 'application/xml');
           jQuery("#fq-svg-container").append(doc.documentElement);
 
@@ -815,33 +819,20 @@ export default {
             fqItemListFile = "";
             updateItemList(fqLastFolderId, 1);
             jQuery("#fq-modal-file").removeClass("is-active");
-            showToast("File saved", "is-success");
+            
+            showToast("File " + response.file.filename + " saved", "is-success");
+            
+            var currentUrl = new URL(document.location);
+            currentUrl.searchParams.set("fid", response.file.fid);
+            window.history.pushState(null, null, decodeURIComponent(currentUrl.href));
+            
             fqCurrentFigData = response.file;
-          })
+            jQuery("#fq-menu-item-save-figure").removeClass("is-disabled");
+
+            })
           .fail(function() {
             showToast("Error - file was not saved", "is-danger");
           });
-        }
-
-        const removeURLParameter = (url, parameter) => {
-          //prefer to use l.search if you have a location/link object
-          var urlparts = url.split('?');   
-          if (urlparts.length >= 2) {
-      
-              var prefix = encodeURIComponent(parameter) + '=';
-              var pars = urlparts[1].split(/[&;]/g);
-      
-              //reverse iteration as may be destructive
-              for (var i = pars.length; i-- > 0;) {    
-                  //idiom for string.startsWith
-                  if (pars[i].lastIndexOf(prefix, 0) !== -1) {  
-                      pars.splice(i, 1);
-                  }
-              }
-      
-              return urlparts[0] + (pars.length > 0 ? '?' + pars.join('&') : '');
-          }
-          return url;
         }
 
         jQuery(document).on("change", "#fq-modal-export-format-select", () => {
@@ -1285,6 +1276,11 @@ export default {
         });
 
         jQuery(document).on("click", "#fq-menu-item-save-figure", async () => {
+
+          if(!fqCurrentFigData){
+            showToast("Error - figure data could not be found", "is-danger");
+            return;
+          }
           
           fqExportMode = "thumb";
           fqExportDocType = "png";
@@ -1311,7 +1307,7 @@ export default {
           uploadFileToFiglinQ(formData, apiEndpoint, world_readable);
         })
 
-        jQuery(document).on("click", "#fq-menu-item-save-igure-as", () => {
+        jQuery(document).on("click", "#fq-menu-item-save-figure-as", () => {
          
           jQuery(".modal-action-panel").addClass("is-hidden");
           jQuery("#file-panel-heading").html("Save figure");

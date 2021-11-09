@@ -40,15 +40,15 @@
     display: none;
 }
 
-.noselect {
+.noselect, .navbar .navbar-item, .navbar .navbar-link {
   -webkit-touch-callout: none; /* iOS Safari */
   -webkit-user-select: none; /* Safari */
   -khtml-user-select: none; /* Konqueror HTML */
   -moz-user-select: none; /* Old versions of Firefox */
   -ms-user-select: none; /* Internet Explorer/Edge */
-  user-select: none; /* Non-prefixed version, currently
-                                    supported by Chrome, Edge, Opera and Firefox */
+  user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
 }
+
 #fq-powered-by-svgedit {
   position: fixed;
   top: 57px;
@@ -107,4 +107,9 @@ html {
 
 #cmenu_canvas li{
   min-width: 240px !important;
+}
+
+.is-disabled{
+  pointer-events: none;
+  opacity: 0.5;
 }
