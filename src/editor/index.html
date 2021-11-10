@@ -66,9 +66,9 @@
   <!-- FiglinQ -->
   <script>
     // disable the beforeunload event
-      window.addEventListener('beforeunload', function(event) {
-        event.stopImmediatePropagation();
-      }, true);
+      // window.addEventListener('beforeunload', function(event) {
+      //   event.stopImmediatePropagation();
+      // }, true);
   </script>
 
   <div id="fq-spinner">
@@ -101,11 +101,11 @@
           <a class="navbar-link">
             File
           </a>
-          <div class="navbar-dropdown" style="min-width: 200px;">
+          <div class="navbar-dropdown" style="min-width: 220px;">
             <a id="fq-menu-file-item-newfig" class="navbar-item">
               <span class="icon-text">
                 <span class="icon">
-                  <i class="fas fa-file"></i>
+                  <i class="far fa-file"></i>
                 </span>
                 <span>New figure</span>
               </span>              
@@ -113,7 +113,7 @@
             <a id="fq-menu-item-open-figure" class="navbar-item is-hidden">
               <span class="icon-text">
                 <span class="icon">
-                  <i class="fas fa-folder-open"></i>
+                  <i class="far fa-folder-open"></i>
                 </span>
                 <span>Open figure</span>
               </span>     
@@ -139,8 +139,8 @@
                 <span class="icon">
                   <i class="fas fa-file-import"></i>
                 </span>
-                <span>Import figure</span>
-              </span>    
+                <span>Import local content</span>
+              </span>
             </a>
             <a id="fq-menu-file-item-export" class="navbar-item">
               <span class="icon-text">

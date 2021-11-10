@@ -854,6 +854,35 @@ export default {
           // Update inputs
           jQuery("#fq-doc-setup-width").val(w);
           jQuery("#fq-doc-setup-height").val(h);
+          jQuery("#fq-doc-size").val("");
+        });
+
+        jQuery(document).on("change", "#fq-doc-setup-width", (e) => {
+          jQuery("#fq-doc-size").val("");
+          
+          var w = jQuery(e.target).val();
+          var resolution = svgEditor.svgCanvas.getResolution();
+          var x = w;
+          svgEditor.svgCanvas.setResolution(x, resolution.h);
+
+          // var baseUnit = svgEditor.configObj.curConfig.baseUnit;
+          // w = convertUnit(resolution.w) + baseUnit;
+        });
+
+        jQuery(document).on("change", "#fq-doc-setup-height", (e) => {
+          jQuery("#fq-doc-size").val("");
+          
+          var h = jQuery(e.target).val();
+          var resolution = svgEditor.svgCanvas.getResolution();
+          var y = h;
+          svgEditor.svgCanvas.setResolution(resolution.w, y);
+
+          // var baseUnit = svgEditor.configObj.curConfig.baseUnit;
+          // w = convertUnit(resolution.w) + baseUnit;
+        });
+        
+        jQuery(document).on("change", "#fq-doc-setup-height", (e) => {
+          jQuery("#fq-doc-size").val("");
         });
 
         jQuery(document).on("change", "#fq-doc-size", (e) => {
@@ -873,6 +902,7 @@ export default {
 
             jQuery("#fq-doc-setup-width").val(w);
             jQuery("#fq-doc-setup-height").val(h);
+            jQuery("#fq-doc-baseunit").val("mm");
           }
         });
 
@@ -1183,8 +1213,8 @@ export default {
 
         jQuery(document).on("click", "#fq-menu-file-item-newfig", () => {
           jQuery("#fq-modal-confirm-btn-ok").html("New figure");
-          jQuery("#fq-modal-confirm").addClass("is-active");
           jQuery("#fq-modal-confirm-btn-ok").on("click", onConfirmClear);
+          jQuery("#fq-modal-confirm").addClass("is-active");
         });
 
         jQuery(document).on("click", "#fq-modal-save-confirm-btn", async () => {
@@ -1275,7 +1305,9 @@ export default {
 
         });
 
-        jQuery(document).on("click", "#fq-menu-item-save-figure", async () => {
+        jQuery(document).on("click", "#fq-menu-item-save-figure", async (event) => {
+
+          event.target.blur();
 
           if(!fqCurrentFigData){
             showToast("Error - figure data could not be found", "is-danger");
