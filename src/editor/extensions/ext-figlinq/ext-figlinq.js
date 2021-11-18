@@ -187,7 +187,7 @@ export default {
                 height: height,
                 id: svgCanvas.getNextId(),
                 style: "pointer-events:inherit",
-                class: "fq-content-element fq-plot"
+                class: "fq-plot"
               }
             });
             newImage.setAttributeNS(NS.XLINK, "xlink:href", url);
@@ -198,7 +198,7 @@ export default {
 
         const setInteractiveOn = () => {
           var currentUrl, src, height, width, x, y, newForeignObj, newElem;
-          const plotImages = jQuery('.fq-content-element.fq-plot');
+          const plotImages = jQuery('.fq-plot');
           
           plotImages.each(function(){
             currentUrl = jQuery(this).attr("xlink:href");
@@ -387,7 +387,7 @@ export default {
               height: height,
               id: svgCanvas.getNextId(),
               style: "pointer-events:inherit",
-              class: "fq-content-element" + " fq-" + selectedType,
+              class: "fq-" + selectedType,
             }
           });
           newImage.setAttributeNS(NS.XLINK, "xlink:href", url);
@@ -735,7 +735,7 @@ export default {
           jQuery("#fq-svg-container").append(doc.documentElement);
 
           // Inline raster images and plots
-          var fqElements = jQuery("#fq-svg-container").find(".fq-content-element"),
+          var fqElements = jQuery("#fq-svg-container").find(".fq-image, .fq-plot"),
           imageIdArray = [],
           plotIdArray = [],
           attrArray = {},

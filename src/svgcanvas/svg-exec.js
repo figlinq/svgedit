@@ -488,7 +488,7 @@ export const setSvgString = function (xmlString, preventUndo) {
     batchCmd.addSubCommand(new ChangeElementCommand(svgContext_.getSVGRoot(), changes));
 
     // reset zoom
-    svgContext_.setCurrentZoom(1);
+    // svgContext_.setCurrentZoom(1);
 
     svgCanvas.clearSelection();
     pathModule.clearData();
