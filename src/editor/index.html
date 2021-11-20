@@ -230,20 +230,20 @@
           <p id="file-panel-heading" class="panel-heading is-size-6">
             Select content
           </p>
-          <!-- <div class="panel-block">
-            <p class="control has-icons-left">
-              <input class="input" type="text" placeholder="Search">
-              <span class="icon is-left">
-                <i class="fas fa-search" aria-hidden="true"></i>
+          <div class="panel-block">
+            <p class="control has-icons-right">
+              <input id="fq-modal-file-search-input" class="input" type="text" placeholder="Search (>2 characters)">
+              <span class="icon is-right">
+                <i id="fq-modal-file-search-icon" class="fas fa-search" aria-hidden="true" style="pointer-events: all; cursor: pointer;"></i>
               </span>
             </p>
-          </div> -->
+          </div>
           <p id="panel_tabs" class="panel-tabs">
             <a class="is-active">My files</a>
             <!-- <a>Shared with me</a> -->
           </p>
-          <div id="panel_breadcrumb" class="panel-block pl-0">
-            <div class="breadcrumb is-size-7" aria-label="breadcrumbs">
+          <div id="fq-modal-file-panel-breadcrumb" class="panel-block pl-0">
+            <div class="breadcrumb is-size-6" aria-label="breadcrumbs">
               <ul>
                 <li class="breadcrumb-item" data-fid="-1">
                   <a href="#" class="fq-modal-folder-item" data-fid="-1" style="font-size:14px;">&nbsp;
@@ -253,6 +253,16 @@
                   </a>
                 </li>
               </ul>
+            </div>
+          </div>
+          <div id="fq-modal-file-search-title" class="panel-block pl-0 is-hidden">
+            <div class="breadcrumb is-size-6" aria-label="breadcrumbs">
+              <span class="icon-text">
+                <span class="icon ml-1">
+                  <i class="fas fa-search"></i>
+                </span>
+                <span><strong>Search results: </strong><span id="fq-modal-file-search-items-found"></span></span>
+              </span>
             </div>
           </div>
           <div id="fq-modal-item-list-container" style="border-bottom: 1px solid #ededed; max-height: calc(100vh - 400px); overflow-y: auto; ">            

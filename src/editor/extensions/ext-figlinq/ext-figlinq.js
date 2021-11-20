@@ -61,6 +61,7 @@ export default {
           fqModalMode,
           fqCsrfToken,        
           fqLastFolderId = false,
+          fqSearchMode = true,
           fqExportDocType,
           fqExportDocQuality,
           fqExportDocSize,
@@ -234,7 +235,7 @@ export default {
                 jQuery(this).remove();
               }
             });
-          } else {
+          } else if(fname){
             jQuery(breadcrumb(fid, fname)).insertAfter(".breadcrumb-item:last");
           }
         };
@@ -280,15 +281,11 @@ export default {
           } 
         };
 
-        const updateItemList = (fid, page) => {
-          var url =
-          baseUrl + "v2/folders/" +
-            fqUserId +
-            ":" +
-            fid +
-            "?page=" +
-            page +
-            "&filetype=plot&filetype=fold&filetype=external_image&order_by=filename";
+        const updateItemList = (fid, page, searchQuery=false) => {
+          
+          var url = !searchQuery ?
+          `${baseUrl}v2/folders/${fqUserId}:${fid}?page=${page}&filetype=plot&filetype=fold&filetype=external_image&order_by=filename&page_size=1000` :
+          `${baseUrl}v2/folders/all?s=${searchQuery}&filetype=plot&filetype=external_image&page_size=1000`;
 
           jQuery
             .ajax({
@@ -333,6 +330,8 @@ export default {
                 page = page + 1;
                 updateItemList(fid, page);
               }
+              var items = results.length == 1 ? "item" : "items";
+              jQuery("#fq-modal-file-search-items-found").text(results.length + " " + items + " found");
             })
             .fail(function() {
               showToast("Communication error, file list has not been updated", "is-danger");
@@ -444,13 +443,41 @@ export default {
           fqItemListFolder = "";
           fqItemListFile = "";
           jQuery("#fq-modal-file").addClass("is-active");
-          if (fqLastFolderId) {
-            updateItemList(fqLastFolderId, 1);
+
+          let val = jQuery("#fq-modal-file-search-input").val();
+          if(val){
+            jQuery("#fq-modal-file-search-icon").removeClass("fas fa-search");
+            jQuery("#fq-modal-file-search-icon").addClass("far fa-times-circle");
           } else {
-            var fid = "-1";
-            fqLastFolderId = fid;
-            updateItemList(fid, 1);
+            jQuery("#fq-modal-file-search-icon").removeClass("far fa-times-circle");
+            jQuery("#fq-modal-file-search-icon").addClass("fas fa-search");
           }
+
+          val = val.length >= 3 ? val : false;
+          if(val) {
+            fqItemListFolder = "";
+            fqItemListFile = "";
+            jQuery("#fq-modal-file-search-title").removeClass("is-hidden");
+            jQuery("#fq-modal-file-panel-breadcrumb").addClass("is-hidden");
+            updateItemList(false, 1, val);
+            fqSearchMode = true;
+          } else if(fqSearchMode){
+            fqItemListFolder = "";
+            fqItemListFile = "";
+            jQuery("#fq-modal-file-search-title").addClass("is-hidden");
+            jQuery("#fq-modal-file-panel-breadcrumb").removeClass("is-hidden");
+
+            if (fqLastFolderId) {
+              updateItemList(fqLastFolderId, 1);
+              
+            } else {
+              var fid = "-1";
+              fqLastFolderId = fid;
+              updateItemList(fid, 1);
+            }
+            updateBreadcrumb(fid, false);
+            fqSearchMode = false;
+          }          
         };
 
         const decodeBase64 = function(s) {
@@ -1189,6 +1216,15 @@ export default {
               setTimeout(function(){ svgEditor.zoomChanged(window, "layer"); }, 300);              
             }
           });
+        });
+
+        jQuery(document).on("click", "#fq-modal-file-search-icon.fa-times-circle", (e) => {
+          jQuery("#fq-modal-file-search-input").val("").keyup();
+          fqSearchMode = false;
+        });
+
+        jQuery(document).on("keyup", "#fq-modal-file-search-input", (e) => {
+          refreshModalContents();
         });
 
         jQuery(document).on("keyup", "#fq-modal-save-name-input", (e) => {
