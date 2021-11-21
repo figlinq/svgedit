@@ -59,9 +59,13 @@ export default {
           fqUserData,
           fqCurrentFigData = false,
           fqModalMode,
+          fqModalFileTabMode = "my",
           fqCsrfToken,        
-          fqLastFolderId = false,
-          fqSearchMode = true,
+          fqLastFolderId = {
+            my: false,
+            shared: false,
+          },
+          fqSearchMode = false,
           fqExportDocType,
           fqExportDocQuality,
           fqExportDocSize,
@@ -126,7 +130,7 @@ export default {
             xhrFields: {withCredentials: true}
           })
           .done(function(data) {
-            if (data.username != "") {
+            if (data.username) {
               jQuery("#fq-menu-login-btn").addClass("is-hidden");
               jQuery("#fq-menu-signup-btn").addClass("is-hidden");
               jQuery(".fq-menu-add-content-btn").removeClass("is-hidden");
@@ -134,10 +138,17 @@ export default {
               jQuery("#fq-menu-item-open-figure").removeClass("is-hidden");
               jQuery("#fq-menu-item-save-figure").removeClass("is-hidden");
               jQuery("#fq-menu-item-save-figure-as").removeClass("is-hidden");
+              jQuery("#fq-breadcrumb-item-home")
+                .data("fid", `${data.username}:-1`)
+                .find(".fq-modal-folder-item")
+                .data("fid", `${data.username}:-1`);
               
               fqUserId = data.username;
               fqCsrfToken = data.csrf_token;
               fqUserData = data;
+              // console.log(fqCsrfToken);
+            } else {
+              showToast("Getting current user failed", "is-danger");
             }
           })
           .fail(function() {
@@ -147,6 +158,7 @@ export default {
             jQuery(".fq-menu-add-content-btn").addClass("is-hidden");
             jQuery(".fq-menu-add-content-btn").addClass("is-hidden");
             jQuery(".fq-menu-add-content-btn").addClass("is-hidden");
+            showToast("Connecting to FiglinQ failed", "is-danger");
           });
         };
 
@@ -228,7 +240,7 @@ export default {
               jQuery(".breadcrumb-item")
                 .get()
                 .reverse()
-            ).each(function(index) {
+            ).each(function() {
               if (jQuery(this).data("fid") == fid) {
                 return false;
               } else {
@@ -237,6 +249,8 @@ export default {
             });
           } else if(fname){
             jQuery(breadcrumb(fid, fname)).insertAfter(".breadcrumb-item:last");
+          } else {
+            jQuery(".breadcrumb-item:not(#fq-breadcrumb-item-home)").remove();
           }
         };
 
@@ -281,11 +295,33 @@ export default {
           } 
         };
 
-        const updateItemList = (fid, page, searchQuery=false) => {
+        const getNumIdFromFid = (dataFid, index=1) => {
+          if(!dataFid || !dataFid.includes(":")) return false;
+          return dataFid.split(":")[index];
+        }
+
+        const updateItemList = (dataFid, page, searchQuery=false) => {
+          const fid = getNumIdFromFid(dataFid);
+          var url;
+
+          if (fqModalFileTabMode == "my") {
+
+            url = searchQuery ?
+            `${baseUrl}v2/folders/all?s=${searchQuery}&filetype=plot&filetype=external_image&page_size=1000` :
+            `${baseUrl}v2/folders/${dataFid}?page=${page}&filetype=plot&filetype=fold&filetype=external_image&order_by=filename&page_size=1000`;
           
-          var url = !searchQuery ?
-          `${baseUrl}v2/folders/${fqUserId}:${fid}?page=${page}&filetype=plot&filetype=fold&filetype=external_image&order_by=filename&page_size=1000` :
-          `${baseUrl}v2/folders/all?s=${searchQuery}&filetype=plot&filetype=external_image&page_size=1000`;
+          } else if(fqModalFileTabMode == "shared") {
+            
+            if(fid == -1){
+              // url = searchQuery ?
+              // `${baseUrl}v2/folders/shared?s=${searchQuery}&filetype=plot&filetype=external_image&order_by=filename&page_size=1000` :
+              url = `${baseUrl}v2/folders/shared?filetype=fold&filetype=plot&filetype=external_image&order_by=filename&page_size=1000`;
+            } else {
+              // url = searchQuery ?
+              // `${baseUrl}v2/folders/shared?s=${searchQuery}&filetype=plot&filetype=external_image&order_by=filename&page_size=1000` :
+              url = `${baseUrl}v2/folders/${dataFid}?page=${page}&filetype=fold&filetype=plot&filetype=external_image&order_by=filename&page_size=1000`;
+            }
+          }
 
           jQuery
             .ajax({
@@ -301,20 +337,16 @@ export default {
               var index = 0;
               
               results.forEach(result => {
-                const currentFid = result.fid.includes(":")
-                  ? result.fid.substring(result.fid.indexOf(":") + 1)
-                  : result.fid;
-
                 const isSvg = getFileExt(result.filename) === "svg";
                 const includeNonSvg = fqModalMode == "addContent";
                 
                 if (result.filetype === "fold" && !result.deleted) {
-                  fqItemListFolder += folderItem(result.filename, currentFid);
+                  fqItemListFolder += folderItem(result.filename, result.fid);
                 } else if ((includeNonSvg || isSvg) && result.filetype === "external_image" && !result.deleted) {
-                  fqItemListFile += imageItem(result.filename, currentFid, index);
+                  fqItemListFile += imageItem(result.filename, result.fid, index);
                   index += 1;
                 } else if (includeNonSvg && result.filetype === "plot" && !result.deleted) {
-                  fqItemListFile += plotItem(result.filename, currentFid, index);
+                  fqItemListFile += plotItem(result.filename, result.fid, index);
                   index += 1;
                 }
               });
@@ -324,11 +356,10 @@ export default {
                 jQuery("#fq-modal-item-list-container").html(
                   fqItemListFolder + fqItemListFile
                 );
-                // jQuery("#fq-modal-file").addClass("is-active");
                 jQuery("#fq-modal-refresh-btn").removeClass("is-loading");
               } else {
                 page = page + 1;
-                updateItemList(fid, page);
+                updateItemList(dataFid, page);
               }
               var items = results.length == 1 ? "item" : "items";
               jQuery("#fq-modal-file-search-items-found").text(results.length + " " + items + " found");
@@ -444,8 +475,8 @@ export default {
           fqItemListFile = "";
           jQuery("#fq-modal-file").addClass("is-active");
 
-          let val = jQuery("#fq-modal-file-search-input").val();
-          if(val){
+          let q = jQuery("#fq-modal-file-search-input").val();
+          if(q && fqModalFileTabMode == "my"){
             jQuery("#fq-modal-file-search-icon").removeClass("fas fa-search");
             jQuery("#fq-modal-file-search-icon").addClass("far fa-times-circle");
           } else {
@@ -453,31 +484,27 @@ export default {
             jQuery("#fq-modal-file-search-icon").addClass("fas fa-search");
           }
 
-          val = val.length >= 3 ? val : false;
-          if(val) {
-            fqItemListFolder = "";
-            fqItemListFile = "";
+          q = q.length >= 3 ? q : false;
+          if(q && fqModalFileTabMode == "my") {
+            fqSearchMode = true;
             jQuery("#fq-modal-file-search-title").removeClass("is-hidden");
             jQuery("#fq-modal-file-panel-breadcrumb").addClass("is-hidden");
-            updateItemList(false, 1, val);
-            fqSearchMode = true;
-          } else if(fqSearchMode){
-            fqItemListFolder = "";
-            fqItemListFile = "";
+            updateItemList("shared", 1, q);
+          } else {
+            fqSearchMode = false;
             jQuery("#fq-modal-file-search-title").addClass("is-hidden");
             jQuery("#fq-modal-file-panel-breadcrumb").removeClass("is-hidden");
 
-            if (fqLastFolderId) {
-              updateItemList(fqLastFolderId, 1);
-              
+            if (fqLastFolderId[fqModalFileTabMode]) {
+              updateItemList(fqLastFolderId[fqModalFileTabMode], 1);
             } else {
-              var fid = "-1";
-              fqLastFolderId = fid;
-              updateItemList(fid, 1);
+              fqLastFolderId[fqModalFileTabMode] = fqModalFileTabMode == "my" ?
+                fqUserId + ":-1" :
+                "shared:-1";
+              updateItemList(fqLastFolderId[fqModalFileTabMode], 1);
             }
-            updateBreadcrumb(fid, false);
-            fqSearchMode = false;
-          }          
+          }
+          updateBreadcrumb(fqLastFolderId[fqModalFileTabMode], false);
         };
 
         const decodeBase64 = function(s) {
@@ -534,9 +561,11 @@ export default {
         };
     
         const openFigure = async function(e) {
+
           
           var url = baseUrl + "v2/external-images/" + e.data.fid;
-
+          console.log(url)
+          
           jQuery.ajax({
             url: url,
             xhrFields: {withCredentials: true},
@@ -548,7 +577,7 @@ export default {
               showToast('This file type is not supported', 'is-danger');
               return;
             }
-
+            console.log(data)
             var dataUrl = data.image_content;
             var svgString = decodeBase64(dataUrl.split(",")[1]);
             svgEditor.loadSvgString(svgString);
@@ -823,7 +852,7 @@ export default {
           }
         }
 
-        const uploadFileToFiglinQ = (formData, apiEndpoint, world_readable) => {
+        const uploadFileToFiglinQ = (formData, apiEndpoint, world_readable, updateModal) => {
           jQuery.ajax({
             method: "POST",
             url: baseUrl + "v2/external-images/" + apiEndpoint,
@@ -833,7 +862,7 @@ export default {
             headers: {
               'X-File-Name': fqExportDocFname + ".svg",
               'Plotly-World-Readable': world_readable,
-              'Plotly-Parent': fqLastFolderId,
+              'Plotly-Parent': getNumIdFromFid(fqLastFolderId[fqModalFileTabMode], 1),
               'X-CSRFToken': fqCsrfToken,
             },
             data: formData,
@@ -841,23 +870,33 @@ export default {
             contentType: false,
           })
           .done(function(response) {
-            jQuery("#fq-modal-refresh-btn").addClass("is-loading");
-            fqItemListFolder = "";
-            fqItemListFile = "";
-            updateItemList(fqLastFolderId, 1);
-            jQuery("#fq-modal-file").removeClass("is-active");
+            if(updateModal){
+              jQuery("#fq-modal-refresh-btn").addClass("is-loading");
+              fqItemListFolder = "";
+              fqItemListFile = "";
+              updateItemList(fqLastFolderId[fqModalFileTabMode], 1);
+              jQuery("#fq-modal-file").removeClass("is-active");
+              var currentUrl = new URL(document.location);
+              currentUrl.searchParams.set("fid", response.file.fid);
+              window.history.pushState(null, null, decodeURIComponent(currentUrl.href));
+              jQuery("#fq-menu-item-save-figure").removeClass("is-disabled");
+            }
             
-            showToast("File " + response.file.filename + " saved", "is-success");
-            
-            var currentUrl = new URL(document.location);
-            currentUrl.searchParams.set("fid", response.file.fid);
-            window.history.pushState(null, null, decodeURIComponent(currentUrl.href));
-            
+            showToast("File " + response.file.filename + " saved", "is-success");            
             fqCurrentFigData = response.file;
-            jQuery("#fq-menu-item-save-figure").removeClass("is-disabled");
+            jQuery("#fq-menu-item-save-figure")
+              .find("i")
+              .removeClass("fa-spinner fa-pulse")
+              .addClass("fa-save");
+            jQuery("#fq-modal-save-confirm-btn").removeClass("is-loading");
 
-            })
+          })
           .fail(function() {
+            jQuery("#fq-menu-item-save-figure")
+              .find("i")
+              .removeClass("fa-spinner fa-pulse")
+              .addClass("fa-save");
+            jQuery("#fq-modal-save-confirm-btn").removeClass("is-loading");
             showToast("Error - file was not saved", "is-danger");
           });
         }
@@ -946,8 +985,8 @@ export default {
           jQuery("#fq-modal-export-quality-input").val(newValue);
         });
         
-        jQuery(document).on("click", "#fq-modal-export-btn-export", async () => {
-
+        jQuery(document).on("click", "#fq-modal-export-btn-export", async (e) => {
+          jQuery(e.currentTarget).addClass("is-loading");
           fqExportMode = "download";
           fqExportDocType = jQuery("#fq-modal-export-format-select").val();
           fqExportDocQuality = parseFloat(jQuery("#fq-modal-export-quality-input").val()) / 100;
@@ -959,7 +998,7 @@ export default {
           }
           
           await exportImageFromEditor();
-
+          jQuery(e.currentTarget).removeClass("is-loading");
         });
 
         jQuery(document).on("focusout", "#fq-modal-export-quality-input", (e) => {
@@ -1053,6 +1092,23 @@ export default {
           jQuery(".modal").removeClass("is-active");
         });
 
+        jQuery(document).on("click", ".fq-modal-file-tab", (e) => {
+          jQuery(".fq-modal-file-tab").removeClass("is-active");
+          jQuery(e.currentTarget).addClass("is-active");
+
+          fqModalFileTabMode = jQuery(e.currentTarget).data("mode");
+          if(fqModalFileTabMode == "shared"){
+            jQuery("#fq-modal-file-search-wrapper").prop( "disabled", true );
+          } else {
+            jQuery("#fq-modal-file-search-wrapper").prop( "disabled", false );
+          }
+          fqLastFolderId = {
+            my: false,
+            shared: false,
+          },
+          refreshModalContents();
+        })
+
         jQuery(document).on("click", "#fq-modal-refresh-btn", () => {
           refreshModalContents();
         });
@@ -1110,20 +1166,17 @@ export default {
           const dataFid = jQuery(e.currentTarget)
             .data("fid")
             .toString();
-          const fid = dataFid.includes(":")
-            ? dataFid.substring(dataFid.indexOf(":") + 1)
-            : dataFid;
           const fname = jQuery(e.target)
             .text()
             .trim();
             
-          fqLastFolderId = fid;
+          fqLastFolderId[fqModalFileTabMode] = dataFid;
 
-          updateBreadcrumb(fid, fname);
+          updateBreadcrumb(dataFid, fname);
 
           fqItemListFolder = "";
           fqItemListFile = "";
-          updateItemList(fid, 1);
+          updateItemList(dataFid, 1);
           jQuery("#fq-modal-add-confirm-btn").prop("disabled", true);
           jQuery("#fq-modal-refresh-btn").addClass("is-loading");
         });
@@ -1146,26 +1199,21 @@ export default {
             y = 0,
             colNumber = jQuery("#col_select").val(),
             curCol = 1,
-            selectedFid, ext;
+            selectedFid, ext, userId, fileNumId;
 
           jQuery.each(selectedItems, index => {
             
             selectedFid = jQuery(selectedItems[index]).data("fid");
+            userId = getNumIdFromFid(selectedFid, 0);
+            fileNumId = getNumIdFromFid(selectedFid, 1);
+
             var selectedType = jQuery(selectedItems[index]).data("ftype");
 
-            var imgDataUrl =
-              baseUrl + "v2/plots/" +
-              fqUserId +
-              ":" +
-              selectedFid;
+            var imgDataUrl = `${baseUrl}v2/plots/${selectedFid}`;
             
-            ext = selectedType === "plot" ? ".svg" : ".src";
+            ext = selectedType === "plot" ? "svg" : "src";
 
-            const importUrl = 
-              baseUrl + "~" +
-              fqUserId +
-              "/" +
-              selectedFid + ext;
+            const importUrl = `${baseUrl}~${userId}/${fileNumId}.${ext}`;
 
             if (selectedType === "plot"){
               jQuery
@@ -1244,7 +1292,7 @@ export default {
           let fid = jQuery(".fq-modal-image-item.is-active").data("fid");
 
           jQuery("#fq-modal-confirm-btn-ok").prop("onclick", null).off("click");
-          jQuery("#fq-modal-confirm-btn-ok").on("click", {fid: fqUserId + ":" + fid}, openFigure);
+          jQuery("#fq-modal-confirm-btn-ok").on("click", {fid: fid}, openFigure);
         });
 
         jQuery(document).on("click", "#fq-menu-file-item-newfig", () => {
@@ -1253,8 +1301,9 @@ export default {
           jQuery("#fq-modal-confirm").addClass("is-active");
         });
 
-        jQuery(document).on("click", "#fq-modal-save-confirm-btn", async () => {
-          
+        jQuery(document).on("click", "#fq-modal-save-confirm-btn", async (event) => {
+          jQuery("#fq-modal-save-confirm-btn").addClass("is-loading");
+          event.target.blur();
           fqExportMode = "thumb";
           fqExportDocType = "png";
           fqExportDocFname = jQuery("#fq-modal-save-name-input").val();
@@ -1267,7 +1316,7 @@ export default {
           jQuery(".fq-modal-image-item").each(function() {
             if(jQuery(this).find(".fq-list-item-text").html() == fqExportDocFname + ".svg") {
               nameExists = true;
-              replacedFid = fqUserId + ":" + jQuery(this).data('fid');
+              replacedFid = jQuery(this).data("fid");
             }
           });
 
@@ -1282,7 +1331,7 @@ export default {
           var imageFile = new File([imageBlob], fqExportDocFname + ".svg");
           
           var thumbBlob = await exportImageFromEditor();
-          var thumbFile = new File([thumbBlob], fqExportDocFname + "_thumb.svg");
+          var thumbFile = new File([thumbBlob], fqExportDocFname + "_thumb.png");
 
           var formData = new FormData();
 
@@ -1291,7 +1340,7 @@ export default {
 
           if(nameExists) formData.append("replaced_fid", replacedFid);
 
-          uploadFileToFiglinQ(formData, apiEndpoint, world_readable);
+          uploadFileToFiglinQ(formData, apiEndpoint, world_readable, true);
 
         });
 
@@ -1342,7 +1391,10 @@ export default {
         });
 
         jQuery(document).on("click", "#fq-menu-item-save-figure", async (event) => {
-
+          jQuery("#fq-menu-item-save-figure")
+            .find("i")
+            .removeClass("fa-save")
+            .addClass("fa-spinner fa-pulse");
           event.target.blur();
 
           if(!fqCurrentFigData){
@@ -1353,7 +1405,7 @@ export default {
           fqExportMode = "thumb";
           fqExportDocType = "png";
           fqExportDocFname = fqCurrentFigData.filename;
-          fqLastFolderId = fqCurrentFigData.parent;
+          fqLastFolderId[fqModalFileTabMode] = fqCurrentFigData.owner + ':' + fqCurrentFigData.parent;
           const world_readable = fqCurrentFigData.world_readable;
           const replacedFid = fqCurrentFigData.fid;
           
@@ -1372,7 +1424,7 @@ export default {
           formData.append("thumb", thumbFile);
           formData.append("replaced_fid", replacedFid);
 
-          uploadFileToFiglinQ(formData, apiEndpoint, world_readable);
+          uploadFileToFiglinQ(formData, apiEndpoint, world_readable, false);
         })
 
         jQuery(document).on("click", "#fq-menu-item-save-figure-as", () => {
@@ -1408,7 +1460,7 @@ export default {
         jQuery("#fq-menu-interact-switch").prop( "checked", false );
         ensureElementLowercase();
         ensureRulesGrids();
-        getFqUserId(); 
+        getFqUserId();
         setInteractiveOff();
         replaceZoom();
         loadFqFigure();
