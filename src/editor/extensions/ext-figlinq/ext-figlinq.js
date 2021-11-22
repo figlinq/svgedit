@@ -562,9 +562,7 @@ export default {
     
         const openFigure = async function(e) {
 
-          
           var url = baseUrl + "v2/external-images/" + e.data.fid;
-          console.log(url)
           
           jQuery.ajax({
             url: url,
@@ -577,7 +575,6 @@ export default {
               showToast('This file type is not supported', 'is-danger');
               return;
             }
-            console.log(data)
             var dataUrl = data.image_content;
             var svgString = decodeBase64(dataUrl.split(",")[1]);
             svgEditor.loadSvgString(svgString);
