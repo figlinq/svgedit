@@ -849,19 +849,22 @@ export default {
           }
         }
 
-        const uploadFileToFiglinQ = (formData, apiEndpoint, world_readable, updateModal) => {
+        const uploadFileToFiglinQ = (formData, apiEndpoint, world_readable, updateModal, parentId=false) => {
+          
+          var headers = {
+            'X-File-Name': fqExportDocFname + ".svg",
+            'Plotly-World-Readable': world_readable,
+            'X-CSRFToken': fqCsrfToken,
+          };
+          if(parentId){
+            headers['Plotly-Parent'] = parentId;
+          }
+
           jQuery.ajax({
             method: "POST",
             url: baseUrl + "v2/external-images/" + apiEndpoint,
-            xhrFields: {
-              withCredentials: true
-            },
-            headers: {
-              'X-File-Name': fqExportDocFname + ".svg",
-              'Plotly-World-Readable': world_readable,
-              'Plotly-Parent': getNumIdFromFid(fqLastFolderId[fqModalFileTabMode], 1),
-              'X-CSRFToken': fqCsrfToken,
-            },
+            xhrFields: {withCredentials: true},
+            headers: headers,
             data: formData,
             processData: false,
             contentType: false,
@@ -1337,7 +1340,7 @@ export default {
 
           if(nameExists) formData.append("replaced_fid", replacedFid);
 
-          uploadFileToFiglinQ(formData, apiEndpoint, world_readable, true);
+          uploadFileToFiglinQ(formData, apiEndpoint, world_readable, true, getNumIdFromFid(fqLastFolderId[fqModalFileTabMode], 1));
 
         });
 
@@ -1388,6 +1391,7 @@ export default {
         });
 
         jQuery(document).on("click", "#fq-menu-item-save-figure", async (event) => {
+
           jQuery("#fq-menu-item-save-figure")
             .find("i")
             .removeClass("fa-save")
@@ -1420,8 +1424,12 @@ export default {
           formData.append("files", imageFile);
           formData.append("thumb", thumbFile);
           formData.append("replaced_fid", replacedFid);
-
-          uploadFileToFiglinQ(formData, apiEndpoint, world_readable, false);
+          
+          const parentId = fqCurrentFigData.owner === fqUserId ?
+            fqCurrentFigData.parent :
+            false;
+          
+          uploadFileToFiglinQ(formData, apiEndpoint, world_readable, false, parentId);
         })
 
         jQuery(document).on("click", "#fq-menu-item-save-figure-as", () => {
