@@ -219,7 +219,7 @@ export default {
             height = jQuery(this).attr("height");
             width = jQuery(this).attr("width");
             x = jQuery(this).attr("x");
-            y = jQuery(this).attr("y");
+            y = jQuery(this).attr("y"); 
 
             newForeignObj = generateFObject(x, y, width, height, src);
             newElem = svgCanvas.addSVGElementFromJson(newForeignObj);
@@ -1402,6 +1402,9 @@ export default {
             showToast("Error - figure data could not be found", "is-danger");
             return;
           }
+
+          setInteractiveOff();
+          jQuery("#fq-menu-interact-switch").prop( "checked", false );
           
           fqExportMode = "thumb";
           fqExportDocType = "png";
