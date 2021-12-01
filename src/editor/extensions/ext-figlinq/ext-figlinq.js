@@ -291,8 +291,23 @@ export default {
           // Load figure from url
           var fid = getUrlParameter('fid');
           if(fid){
-            openFigure({data: {fid: fid}});
-          } 
+            // Check fids
+            const fidArray = fid.split(',');
+            if(fidArray.length === 1){ // Just one fid, open it
+              openFigure({data: {fid: fid}});
+            } else { // multiple fids, open modal
+              var checked = jQuery("#fq-menu-interact-switch").is(":checked");
+              if(checked) jQuery("#fq-menu-interact-switch").click();
+    
+              jQuery(".modal-action-panel").addClass("is-hidden");
+              jQuery(".content-add-panel").removeClass("is-hidden");
+              jQuery("#file-panel-heading").html("Select content");
+    
+              fqModalMode = "addContent";
+              refreshModalContents(fidArray);
+            }
+            
+          }
         };
 
         const getNumIdFromFid = (dataFid, index=1) => {
@@ -301,24 +316,23 @@ export default {
         }
 
         const updateItemList = (dataFid, page, searchQuery=false) => {
+          if(Array.isArray(dataFid)){
+            // Get file info 
+            dataFid.forEach(fid => {
+              console.log(fid);
+            });
+          }
           const fid = getNumIdFromFid(dataFid);
           var url;
 
           if (fqModalFileTabMode == "my") {
-
             url = searchQuery ?
             `${baseUrl}v2/folders/all?s=${searchQuery}&filetype=plot&filetype=external_image&page_size=1000` :
             `${baseUrl}v2/folders/${dataFid}?page=${page}&filetype=plot&filetype=fold&filetype=external_image&order_by=filename&page_size=1000`;
-          
-          } else if(fqModalFileTabMode == "shared") {
-            
+          } else if(fqModalFileTabMode == "shared") {            
             if(fid == -1){
-              // url = searchQuery ?
-              // `${baseUrl}v2/folders/shared?s=${searchQuery}&filetype=plot&filetype=external_image&order_by=filename&page_size=1000` :
               url = `${baseUrl}v2/folders/shared?filetype=fold&filetype=plot&filetype=external_image&order_by=filename&page_size=1000`;
             } else {
-              // url = searchQuery ?
-              // `${baseUrl}v2/folders/shared?s=${searchQuery}&filetype=plot&filetype=external_image&order_by=filename&page_size=1000` :
               url = `${baseUrl}v2/folders/${dataFid}?page=${page}&filetype=fold&filetype=plot&filetype=external_image&order_by=filename&page_size=1000`;
             }
           }
@@ -330,45 +344,49 @@ export default {
                 withCredentials: true
               }
             })
-            .done(function(data) {
-              jQuery("#fq-modal-files-btn-openfig").prop("disabled", true);
-              jQuery("#fq-modal-save-confirm-btn").prop("disabled", true);
-              var results = data.children.results;
-              var index = 0;
-              
-              results.forEach(result => {
-                const isSvg = getFileExt(result.filename) === "svg";
-                const includeNonSvg = fqModalMode == "addContent";
-                
-                if (result.filetype === "fold" && !result.deleted) {
-                  fqItemListFolder += folderItem(result.filename, result.fid);
-                } else if ((includeNonSvg || isSvg) && result.filetype === "external_image" && !result.deleted) {
-                  fqItemListFile += imageItem(result.filename, result.fid, index);
-                  index += 1;
-                } else if (includeNonSvg && result.filetype === "plot" && !result.deleted) {
-                  fqItemListFile += plotItem(result.filename, result.fid, index);
-                  index += 1;
-                }
-              });
-
-              if (data.children.next == null) {
-                jQuery(".panel-list-item").remove();
-                jQuery("#fq-modal-item-list-container").html(
-                  fqItemListFolder + fqItemListFile
-                );
-                jQuery("#fq-modal-refresh-btn").removeClass("is-loading");
-              } else {
-                page = page + 1;
-                updateItemList(dataFid, page);
-              }
-              var items = results.length == 1 ? "item" : "items";
-              jQuery("#fq-modal-file-search-items-found").text(results.length + " " + items + " found");
-            })
+            .done(populateFileModal)
             .fail(function() {
               showToast("Communication error, file list has not been updated", "is-danger");
             })
             .always(function() {});
         };
+
+
+
+        const populateFileModal = (data) => {
+          jQuery("#fq-modal-files-btn-openfig").prop("disabled", true);
+          jQuery("#fq-modal-save-confirm-btn").prop("disabled", true);
+          var results = data.children.results;
+          var index = 0;
+          
+          results.forEach(result => {
+            const isSvg = getFileExt(result.filename) === "svg";
+            const includeNonSvg = fqModalMode === "addContent";
+            
+            if (result.filetype === "fold" && !result.deleted) {
+              fqItemListFolder += folderItem(result.filename, result.fid);
+            } else if ((includeNonSvg || isSvg) && result.filetype === "external_image" && !result.deleted) {
+              fqItemListFile += imageItem(result.filename, result.fid, index);
+              index += 1;
+            } else if (includeNonSvg && result.filetype === "plot" && !result.deleted) {
+              fqItemListFile += plotItem(result.filename, result.fid, index);
+              index += 1;
+            }
+          });
+
+          if (data.children.next == null) {
+            jQuery(".panel-list-item").remove();
+            jQuery("#fq-modal-item-list-container").html(
+              fqItemListFolder + fqItemListFile
+            );
+            jQuery("#fq-modal-refresh-btn").removeClass("is-loading");
+          } else {
+            page = page + 1;
+            updateItemList(dataFid, page);
+          }
+          var items = results.length == 1 ? "item" : "items";
+          jQuery("#fq-modal-file-search-items-found").text(results.length + " " + items + " found");
+        }
 
         const generateFObject = (x, y, width, height, src) => {
           let newIframe = {
@@ -469,7 +487,7 @@ export default {
           }
         };
 
-        const refreshModalContents = () => {
+        const refreshModalContents = (fidArray=false) => {
 
           fqItemListFolder = "";
           fqItemListFile = "";
@@ -485,7 +503,10 @@ export default {
           }
 
           q = q.length >= 3 ? q : false;
-          if(q && fqModalFileTabMode == "my") {
+
+          if(fidArray) { // Open specific fids in modal
+            updateItemList(fidArray, 1, q);
+          } else if(q && fqModalFileTabMode == "my") { // Search query present, "My files" tab
             fqSearchMode = true;
             jQuery("#fq-modal-file-search-title").removeClass("is-hidden");
             jQuery("#fq-modal-file-panel-breadcrumb").addClass("is-hidden");
