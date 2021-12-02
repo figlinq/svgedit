@@ -470,19 +470,34 @@ export default {
         };
 
         const importImage = (url, width = "auto", height = "auto", x, y, selectedType) => {
-          const newImage = svgCanvas.addSVGElementFromJson({
+
+          const _img = {
             element: "image",
             attr: {
+              id: svgCanvas.getNextId(),
+              style: "pointer-events:inherit",
+              class: "fq-" + selectedType,
+              "xlink:href": url,
+              width: width,
+              height: height,
+            }
+          };
+
+          const _svg = {
+            element: "svg",
+            attr: {
+              id: svgCanvas.getNextId(),
+              viewBox: `0 0 ${width} ${height}`,
               x: x,
               y: y,
               width: width,
               height: height,
-              id: svgCanvas.getNextId(),
-              style: "pointer-events:inherit",
-              class: "fq-" + selectedType,
-            }
-          });
-          newImage.setAttributeNS(NS.XLINK, "xlink:href", url);
+            },
+            children: [_img],
+          };
+
+          svgCanvas.addSVGElementFromJson(_svg);
+          ensureElementLowercase();
         };
 
         const getSvgFromEditor = () => {
