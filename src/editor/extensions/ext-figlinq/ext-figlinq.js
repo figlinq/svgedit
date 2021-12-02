@@ -443,6 +443,17 @@ export default {
 
         const getSvgFromEditor = () => {
           svgCanvas.clearSelection();
+
+          // Temporarily switch units to pixels for correct viewbox settings
+          var revertUnit = false; 
+          const initialUnit = svgEditor.configObj.curConfig.baseUnit;
+          if (initialUnit !== "px") {
+            revertUnit = true;
+            svgEditor.configObj.curConfig.baseUnit = "px";
+            svgCanvas.setConfig(svgEditor.configObj.curConfig);
+            svgEditor.updateCanvas();
+          }
+
           const saveOpts = {
             images: svgEditor.configObj.pref("img_save"),
             round_digits: 6,
@@ -454,8 +465,13 @@ export default {
           }
   
           const svg = '<?xml version="1.0"?>' + svgCanvas.svgCanvasToString();
-          // const b64Data = svgCanvas.encode64(svg);
-          // const blob = b64toBlob(b64Data, 'image/svg+xml');
+          
+          // Revert back to previous units
+          if (initialUnit !== "px" && revertUnit) {
+            svgEditor.configObj.curConfig.baseUnit = initialUnit;
+            svgCanvas.setConfig(svgEditor.configObj.curConfig);
+            svgEditor.updateCanvas();
+          }
           return svg;
         };
 
