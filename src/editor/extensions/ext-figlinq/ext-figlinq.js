@@ -55,6 +55,7 @@ export default {
         // Initiate global vars
         var fqItemListFolder,
           fqItemListFile,
+          fqItemListPreloaded,
           fqUserId,
           fqUserData,
           fqCurrentFigData = false,
@@ -64,6 +65,7 @@ export default {
           fqLastFolderId = {
             my: false,
             shared: false,
+            preloaded: false,
           },
           fqSearchMode = false,
           fqExportDocType,
@@ -315,13 +317,54 @@ export default {
           return dataFid.split(":")[index];
         }
 
+        const getFileDataFromFiglinQ = (fid) => {
+          const url = `${baseUrl}v2/files/${fid}`;
+          return new Promise((resolve, reject) => {
+            jQuery
+            .ajax({
+              url: url,
+              xhrFields: {
+                withCredentials: true
+              }
+            })
+            .done(function (data) {
+              resolve(data)
+            })
+            .fail(function (error) {
+              resolve(
+                {
+                  fid: fid,
+                  error: error.responseJSON.detail,
+                }
+              );
+            })
+          })
+        }
+
         const updateItemList = (dataFid, page, searchQuery=false) => {
           if(Array.isArray(dataFid)){
-            // Get file info 
-            dataFid.forEach(fid => {
-              console.log(fid);
+            // Get data for each file 
+            var actions = dataFid.map(getFileDataFromFiglinQ);
+            var results = Promise.all(actions); // pass array of promises
+            results.then(data => {
+              var dataFormatted = {
+                children: {
+                  results: data,
+                  next: null,
+                }
+              };
+              fqItemListPreloaded = {
+                data: dataFormatted,
+                fids: dataFid,
+              };
+              jQuery(".fq-modal-file-tab").removeClass("is-active");
+              jQuery("#fq-modal-file-tab-preloaded").removeClass("is-hidden");
+              jQuery("#fq-modal-file-tab-preloaded").addClass("is-active");
+              populateFileModal(dataFormatted);
             });
+            return;
           }
+
           const fid = getNumIdFromFid(dataFid);
           var url;
 
@@ -356,8 +399,7 @@ export default {
         const populateFileModal = (data) => {
           jQuery("#fq-modal-files-btn-openfig").prop("disabled", true);
           jQuery("#fq-modal-save-confirm-btn").prop("disabled", true);
-          var results = data.children.results;
-          var index = 0;
+          var index = 0, results = data.children.results;
           
           results.forEach(result => {
             const isSvg = getFileExt(result.filename) === "svg";
@@ -371,6 +413,8 @@ export default {
             } else if (includeNonSvg && result.filetype === "plot" && !result.deleted) {
               fqItemListFile += plotItem(result.filename, result.fid, index);
               index += 1;
+            } else if('error' in result) {
+              showToast(`Error loading file ${result.fid} - ${result.error}.`, 'is-danger');
             }
           });
 
@@ -476,13 +520,14 @@ export default {
         };
 
         const showToast = (msg, type) => {
+          const duration = type === "is-danger" ? 10000 : 4000;
           bulmaToast.toast({ 
             message: msg, 
             type: type, 
             position: 'bottom-right',
             closeOnClick: true,
             dismissible: true,
-            duration: 3000,
+            duration: duration,
           });
         };
 
@@ -1136,12 +1181,18 @@ export default {
           fqModalFileTabMode = jQuery(e.currentTarget).data("mode");
           if(fqModalFileTabMode == "shared"){
             jQuery("#fq-modal-file-search-wrapper").prop( "disabled", true );
-          } else {
+          } else if(fqModalFileTabMode == "my"){
             jQuery("#fq-modal-file-search-wrapper").prop( "disabled", false );
+          } else if(fqModalFileTabMode == "preloaded"){
+            jQuery("#fq-modal-file-search-wrapper").prop( "disabled", true );
+            refreshModalContents(fqItemListPreloaded.fids);
+            return;
           }
+
           fqLastFolderId = {
             my: false,
             shared: false,
+            preloaded: false,
           },
           refreshModalContents();
         })
