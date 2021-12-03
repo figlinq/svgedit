@@ -4,7 +4,7 @@ import { convertUnit, isValidUnit } from '../../../common/units.js';
 import * as hstry from '../../../svgcanvas/history';
 
 const {
-  InsertElementCommand, BatchCommand
+  InsertElementCommand, BatchCommand, UndoManager
 } = hstry;
 
 /**
@@ -56,7 +56,7 @@ export default {
         //     event.stopPropagation();
         //     return false;
         //   }
-        // });
+        // }, false);
         
         // Initiate global vars
         var fqItemListFolder,
@@ -174,70 +174,45 @@ export default {
           
           var str = svgCanvas.getSvgString();
           
-          if(str.includes("BODY")) {
-            str = str.replaceAll("BODY", "body");
-          }
+          // if(str.includes("BODY")) {
+          //   str = str.replaceAll("BODY", "body");
+          // }
           
-          if(str.includes("IFRAME")) {
-            str = str.replaceAll("IFRAME", "iframe");
-          }          
+          // if(str.includes("IFRAME")) {
+          //   str = str.replaceAll("IFRAME", "iframe");
+          // }          
           svgEditor.loadSvgString(str);
         };
 
         const setInteractiveOff = () => {
-
-          const fObjects = jQuery("svg[class='figlinq-fobject']");
+          const fObjects = jQuery("svg[class='fq-fobj-cont']");
           fObjects.each(function() {
-            var url, height, width, x, y, iframe, iframeWidth, iframeHeight;
-
-            iframe = jQuery(this).find("iframe");
-            iframeWidth = iframe.attr("width");
-            iframeHeight = iframe.attr("height");
-            url = iframe.attr("src");
-            url = url.replace(".embed", ".svg");
-            height = jQuery(this).attr("height");
-            width = jQuery(this).attr("width");
-            x = jQuery(this).attr("x");
-            y = jQuery(this).attr("y");
-
-            const newImage = svgCanvas.addSVGElementFromJson({
-              element: "image",
-              attr: {
-                x: x,
-                y: y,
-                width: width,
-                height: height,
-                id: svgCanvas.getNextId(),
-                style: "pointer-events:inherit",
-                class: "fq-plot",
-                "data-original_dimensions": `${iframeWidth},${iframeHeight}`,
-              }
-            });
-            newImage.setAttributeNS(NS.XLINK, "xlink:href", url);
-            this.replaceWith(newImage);
+            var ref_id = jQuery(this).data("ref_id");
+            jQuery("#"+ref_id).attr("visibility", "visible");
+            this.remove();
           });
-          document.activeElement.blur();
         };
 
         const setInteractiveOn = () => {
-          var currentUrl, src, height, width, x, y, newForeignObj, newElem, oDim;
+          svgCanvas.clearSelection();
+          var currentUrl, src, height, width, x, y, newForeignObj, newElem, oDim, id;
           const plotImages = jQuery('.fq-plot');
           
           plotImages.each(function(){
-            currentUrl = jQuery(this).attr("xlink:href");
+            currentUrl = jQuery(this).attr("href");
             src = currentUrl.replace(".svg", ".embed");
             height = jQuery(this).attr("height");
             width = jQuery(this).attr("width");
             x = jQuery(this).attr("x");
             y = jQuery(this).attr("y");
+            id = jQuery(this).attr("id");
             oDim = jQuery(this).data("original_dimensions").split(",");
 
-            newForeignObj = generateFObject(x, y, width, height, src, oDim);
+            newForeignObj = generateFObject(x, y, width, height, src, oDim, id);
             newElem = svgCanvas.addSVGElementFromJson(newForeignObj);
-            this.replaceWith(newElem);
+            this.parentNode.insertBefore(newElem, this.nextSibling);
+            this.setAttribute("visibility", "hidden");
           });
-          // Ugly hack to reload iframes, but it works!
-          // ensureElementLowercase();
         };
 
         const updateBreadcrumb = (fid, fname) => {
@@ -302,6 +277,7 @@ export default {
           // Load figure from url
           var fid = getUrlParameter('fid');
           if(fid){
+            svgCanvas.clear();
             // Check fids
             const fidArray = fid.split(',');
             if(fidArray.length === 1){ // Just one fid, open it
@@ -403,8 +379,6 @@ export default {
             .always(function() {});
         };
 
-
-
         const populateFileModal = (data) => {
           jQuery("#fq-modal-files-btn-openfig").prop("disabled", true);
           jQuery("#fq-modal-save-confirm-btn").prop("disabled", true);
@@ -441,9 +415,11 @@ export default {
           jQuery("#fq-modal-file-search-items-found").text(results.length + " " + items + " found");
         }
 
-        const generateFObject = (x, y, width, height, src, oDim) => {
+        const generateFObject = (x, y, width, height, src, oDim, id) => {
+
           let newIframe = {
             element: "iframe",
+            namespace: NS.HTML,
             attr: {
               x: 0,
               y: 0,
@@ -457,28 +433,33 @@ export default {
 
           let newBody = {
             element: "body",
+            namespace: NS.HTML,
             attr: {
               id: svgCanvas.getNextId(),
               xmlns: NS.HTML,
+              width: oDim[0],
+              height: oDim[1],
             },
             children: [newIframe]
           };
 
           let newForeignObj = {
             element: "foreignObject",
+            namespace: NS.SVG,
             attr: {
               x: 0,
               y: 0,
               width: oDim[0],
               height: oDim[1],
               id: svgCanvas.getNextId(),
-              xmlns: NS.SVG,
+              "xmlns": NS.SVG,
             },
             children: [newBody]
           };
 
           let newSvg = {
             element: "svg",
+            namespace: NS.SVG,
             attr: {
               x: x,
               y: y,
@@ -486,7 +467,8 @@ export default {
               height: height,
               viewBox: `0 0 ${oDim[0]} ${oDim[1]}`,
               id: svgCanvas.getNextId(),
-              class: "figlinq-fobject",
+              class: "fq-fobj-cont",
+              "data-ref_id": id,
               xmlns: NS.SVG,
             },
             children: [newForeignObj]
@@ -499,38 +481,27 @@ export default {
 
           const _img = {
             element: "image",
+            namespace: NS.SVG,
             attr: {
               id: svgCanvas.getNextId(),
               style: "pointer-events:inherit",
               class: "fq-" + selectedType,
-              "xlink:href": url,
+              href: url,
               width: width,
               height: height,
-              "data-original_dimensions": `${width},${height}`,
-            }
-          };
-
-          const _svg = {
-            element: "svg",
-            attr: {
-              id: svgCanvas.getNextId(),
-              viewBox: `0 0 ${width} ${height}`,
               x: x,
               y: y,
-              width: width,
-              height: height,
-            },
-            children: [_img],
+              "data-original_dimensions": `${width},${height}`,
+              xmlns: NS.SVG,
+              preserveAspectRatio: "none",
+            }
           };
-
           const batchCmd = new BatchCommand('Insert plot');
-
           const newElem = svgCanvas.addSVGElementFromJson(_img);
           batchCmd.addSubCommand(new InsertElementCommand(newElem));
-          svgCanvas.undoMgr.addCommandToHistory(batchCmd);
+          svgCanvas.undoMgr.addCommandToHistory(batchCmd);          
           svgCanvas.call('changed', [newElem]);
           // document.activeElement.blur();
-          // ensureElementLowercase();
         };
 
         const getSvgFromEditor = () => {
@@ -726,7 +697,7 @@ export default {
         };
 
         const inlineRasterImage = async function(imgId) {
-          var imgUrl = jQuery("#" + imgId).attr("xlink:href");
+          var imgUrl = jQuery("#" + imgId).attr("href");
           
           let fetchResult = await fetch(imgUrl, {
             method: 'GET',
@@ -749,11 +720,11 @@ export default {
             reader.onload = () => resolve(reader.result);
             reader.readAsDataURL(fetchResult.blob);
           });
-          jQuery('#'+imgId).attr("xlink:href", dataUrl);
+          jQuery('#'+imgId).attr("href", dataUrl);
         };
 
         const inlineSvgImage = async function(imgId) {
-          var imgUrl = jQuery("#fq-svg-container").find('#'+imgId).attr("xlink:href");
+          var imgUrl = jQuery("#fq-svg-container").find('#'+imgId).attr("href");
           
           await fetch(imgUrl, {
             method: 'GET',
@@ -947,7 +918,7 @@ export default {
               var isImage = jQuery("#" + curId).hasClass("fq-image");
               curAttrObj = attrArray[curId];
               for (const curAttr in curAttrObj) {
-                if (!(curAttr == "xlink:href" && isImage)) {
+                if (!(curAttr == "href" && isImage)) {
                   jQuery("#" + curId).attr(curAttr, curAttrObj[curAttr]);
                 }
               }             
@@ -1602,7 +1573,6 @@ export default {
 
         // Init
         jQuery("#fq-menu-interact-switch").prop( "checked", false );
-        ensureElementLowercase();
         ensureRulesGrids();
         getFqUserId();
         setInteractiveOff();
