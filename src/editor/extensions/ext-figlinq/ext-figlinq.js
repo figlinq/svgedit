@@ -170,20 +170,6 @@ export default {
           });
         };
 
-        const ensureElementLowercase = () => {
-          
-          var str = svgCanvas.getSvgString();
-          
-          // if(str.includes("BODY")) {
-          //   str = str.replaceAll("BODY", "body");
-          // }
-          
-          // if(str.includes("IFRAME")) {
-          //   str = str.replaceAll("IFRAME", "iframe");
-          // }          
-          svgEditor.loadSvgString(str);
-        };
-
         const setInteractiveOff = () => {
           const fObjects = jQuery("svg[class='fq-fobj-cont']");
           fObjects.each(function() {
@@ -195,7 +181,7 @@ export default {
 
         const setInteractiveOn = () => {
           svgCanvas.clearSelection();
-          var currentUrl, src, height, width, x, y, newForeignObj, newElem, oDim, id;
+          var currentUrl, src, height, width, x, y, newForeignObj, newElem, oDim, id, fid;
           const plotImages = jQuery('.fq-plot');
           
           plotImages.each(function(){
@@ -207,8 +193,9 @@ export default {
             y = jQuery(this).attr("y");
             id = jQuery(this).attr("id");
             oDim = jQuery(this).data("original_dimensions").split(",");
+            fid = jQuery(this).data("fid");
 
-            newForeignObj = generateFObject(x, y, width, height, src, oDim, id);
+            newForeignObj = generateFObject(x, y, width, height, src, oDim, id, fid);
             newElem = svgCanvas.addSVGElementFromJson(newForeignObj);
             this.parentNode.insertBefore(newElem, this.nextSibling);
             this.setAttribute("visibility", "hidden");
@@ -415,7 +402,7 @@ export default {
           jQuery("#fq-modal-file-search-items-found").text(results.length + " " + items + " found");
         }
 
-        const generateFObject = (x, y, width, height, src, oDim, id) => {
+        const generateFObject = (x, y, width, height, src, oDim, id, fid) => {
 
           let newIframe = {
             element: "iframe",
@@ -469,6 +456,7 @@ export default {
               id: svgCanvas.getNextId(),
               class: "fq-fobj-cont",
               "data-ref_id": id,
+              "data-fid": fid,
               xmlns: NS.SVG,
             },
             children: [newForeignObj]
@@ -477,7 +465,7 @@ export default {
           return newSvg;
         };
 
-        const importImage = (url, width = "auto", height = "auto", x, y, selectedType) => {
+        const importImage = (url, width = "auto", height = "auto", x, y, selectedType, fid) => {
 
           const _img = {
             element: "image",
@@ -492,6 +480,7 @@ export default {
               x: x,
               y: y,
               "data-original_dimensions": `${width},${height}`,
+              "data-fid": fid,
               xmlns: NS.SVG,
               preserveAspectRatio: "none",
             }
@@ -1338,7 +1327,7 @@ export default {
                     ? data.figure.layout.height
                     : 400;
 
-                  importImage(importUrl, width, height, x, y, selectedType);
+                  importImage(importUrl, width, height, x, y, selectedType, selectedFid);
                   x += width;
                   curCol += 1;
                   if (curCol > colNumber) {
@@ -1355,7 +1344,7 @@ export default {
               const img = new Image();
               img.onload = function() {
                 // alert(this.width + 'x' + this.height);
-                importImage(importUrl, this.width, this.height, x, y, selectedType);
+                importImage(importUrl, this.width, this.height, x, y, selectedType, selectedFid);
                 x += 600;
                 curCol += 1;
                 if (curCol > colNumber) {
