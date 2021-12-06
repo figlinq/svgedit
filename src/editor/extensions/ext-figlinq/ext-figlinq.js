@@ -485,11 +485,11 @@ export default {
               preserveAspectRatio: "none",
             }
           };
-          // const batchCmd = new BatchCommand('Insert plot');
+          const batchCmd = new BatchCommand('Insert plot');
           const newElem = svgCanvas.addSVGElementFromJson(_img);
-          // batchCmd.addSubCommand(new InsertElementCommand(newElem));
-          // svgCanvas.undoMgr.addCommandToHistory(batchCmd);          
-          // svgCanvas.call('changed', [newElem]);
+          batchCmd.addSubCommand(new InsertElementCommand(newElem));
+          svgCanvas.undoMgr.addCommandToHistory(batchCmd);          
+          svgCanvas.call('changed', [newElem]);
           // document.activeElement.blur();
         };
 
