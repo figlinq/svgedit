@@ -171,7 +171,7 @@ export default {
         };
 
         const setInteractiveOff = () => {
-          const fObjects = jQuery("svg[class='fq-fobj-cont']");
+          const fObjects = jQuery("svg[class='fq-fobj-container']");
           fObjects.each(function() {
             var ref_id = jQuery(this).data("ref_id");
             jQuery("#"+ref_id).attr("visibility", "visible");
@@ -181,24 +181,13 @@ export default {
 
         const setInteractiveOn = () => {
           svgCanvas.clearSelection();
-          var currentUrl, src, height, width, x, y, newForeignObj, newElem, oDim, id, fid, contentHref;
           const plotImages = jQuery('.fq-plot');
           
+          var currentImg, newSvgObject, newElem;
           plotImages.each(function(){
-            // TODO automate attribute transfer to new SVG
-            currentUrl = jQuery(this).attr("href");
-            src = currentUrl.replace(".svg", ".embed");
-            height = jQuery(this).attr("height");
-            width = jQuery(this).attr("width");
-            x = jQuery(this).attr("x");
-            y = jQuery(this).attr("y");
-            id = jQuery(this).attr("id");
-            oDim = jQuery(this).data("original_dimensions").split(",");
-            contentHref = jQuery(this).data("content_href");
-            fid = jQuery(this).data("fid");
-
-            newForeignObj = generateFObject(x, y, width, height, src, oDim, id, fid, contentHref);
-            newElem = svgCanvas.addSVGElementFromJson(newForeignObj);
+            currentImg = jQuery(this);
+            newSvgObject = generateSvgObject(currentImg);
+            newElem = svgCanvas.addSVGElementFromJson(newSvgObject);
             this.parentNode.insertBefore(newElem, this.nextSibling);
             this.setAttribute("visibility", "hidden");
           });
@@ -262,27 +251,27 @@ export default {
           return false;
         };
 
+        /**
+         * Loads figure from url or opens content add modal
+         * @returns {Null}
+         */
         const loadFqFigure = () => {
-          // Load figure from url
-          var fid = getUrlParameter('fid');
+          const fid = getUrlParameter('fid');
+          const add = getUrlParameter('add');
           if(fid){
             svgCanvas.clear();
-            // Check fids
-            const fidArray = fid.split(',');
-            if(fidArray.length === 1){ // Just one fid, open it
-              openFigure({data: {fid: fid}});
-            } else { // multiple fids, open modal
-              var checked = jQuery("#fq-menu-interact-switch").is(":checked");
-              if(checked) jQuery("#fq-menu-interact-switch").click();
-    
-              jQuery(".modal-action-panel").addClass("is-hidden");
-              jQuery(".content-add-panel").removeClass("is-hidden");
-              jQuery("#file-panel-heading").html("Select content");
-    
-              fqModalMode = "addContent";
-              refreshModalContents(fidArray);
-            }
-            
+            openFigure({data: {fid: fid}});
+          } else if(add){ // preload multiple files, open modal
+            const fidArray = add.split(',');
+            var checked = jQuery("#fq-menu-interact-switch").is(":checked");
+            if(checked) jQuery("#fq-menu-interact-switch").click();
+  
+            jQuery(".modal-action-panel").addClass("is-hidden");
+            jQuery(".content-add-panel").removeClass("is-hidden");
+            jQuery("#file-panel-heading").html("Select content");
+  
+            fqModalMode = "addContent";
+            refreshModalContents(fidArray);
           }
         };
 
@@ -293,7 +282,7 @@ export default {
 
         const getFileDataFromFiglinQ = (fid) => {
           const url = `${baseUrl}v2/files/${fid}`;
-          return new Promise((resolve, reject) => {
+          return new Promise((resolve) => {
             jQuery
             .ajax({
               url: url,
@@ -404,9 +393,21 @@ export default {
           jQuery("#fq-modal-file-search-items-found").text(results.length + " " + items + " found");
         }
 
-        const generateFObject = (x, y, width, height, src, oDim, id, fid, contentHref) => {
+        const generateSvgObject = (currentImg) => {
 
-          const iframeSrc = contentHref == null ? src : contentHref;
+          const imgHref = currentImg.attr("href");
+          const contentHref = decodeURIComponent(currentImg.data("content_href"));
+
+          const contentHrefGuess = imgHref.replace(".svg", ".embed");
+          const iframeSrc = contentHref == null ? contentHrefGuess : contentHref;
+          
+          const height = currentImg.attr("height");
+          const width = currentImg.attr("width");
+          const x = currentImg.attr("x");
+          const y = currentImg.attr("y");
+          const id = currentImg.attr("id");
+          const originalDimensions = currentImg.data("original_dimensions").split(",");
+          const fid = currentImg.data("fid");
 
           let newIframe = {
             element: "iframe",
@@ -414,8 +415,8 @@ export default {
             attr: {
               x: 0,
               y: 0,
-              width: oDim[0],
-              height: oDim[1],
+              width: originalDimensions[0],
+              height: originalDimensions[1],
               id: svgCanvas.getNextId(),
               src: iframeSrc,
               xmlns: NS.HTML,
@@ -429,8 +430,6 @@ export default {
             attr: {
               id: svgCanvas.getNextId(),
               xmlns: NS.HTML,
-              width: oDim[0],
-              height: oDim[1],
             },
             children: [newIframe]
           };
@@ -441,8 +440,8 @@ export default {
             attr: {
               x: 0,
               y: 0,
-              width: oDim[0],
-              height: oDim[1],
+              width: originalDimensions[0],
+              height: originalDimensions[1],
               id: svgCanvas.getNextId(),
               "xmlns": NS.SVG,
             },
@@ -457,9 +456,10 @@ export default {
               y: y,
               width: width,
               height: height,
-              viewBox: `0 0 ${oDim[0]} ${oDim[1]}`,
+              viewBox: `0 0 ${originalDimensions[0]} ${originalDimensions[1]}`,
+              preserveAspectRatio: "none",
               id: svgCanvas.getNextId(),
-              class: "fq-fobj-cont",
+              class: "fq-fobj-container",
               "data-ref_id": id,
               "data-fid": fid,
               xmlns: NS.SVG,
@@ -470,26 +470,30 @@ export default {
           return newSvg;
         };
 
-        const importImage = (url, width = "auto", height = "auto", x, y, selectedType, fid) => {
+        const importImage = (url, width = "auto", height = "auto", x, y, selectedType, fid, contentHref = false) => {
+          var attr = {
+            id: svgCanvas.getNextId(),
+            style: "pointer-events:inherit",
+            class: "fq-" + selectedType,
+            href: url,
+            width: width,
+            height: height,
+            x: x,
+            y: y,
+            xmlns: NS.SVG,
+            preserveAspectRatio: "none",
+            "data-original_dimensions": `${width},${height}`,
+            "data-fid": fid,
+          }
+
+          if(contentHref) attr["data-content_href"] = contentHref;
 
           const _img = {
             element: "image",
             namespace: NS.SVG,
-            attr: {
-              id: svgCanvas.getNextId(),
-              style: "pointer-events:inherit",
-              class: "fq-" + selectedType,
-              href: url,
-              width: width,
-              height: height,
-              x: x,
-              y: y,
-              "data-original_dimensions": `${width},${height}`,
-              "data-fid": fid,
-              xmlns: NS.SVG,
-              preserveAspectRatio: "none",
-            }
+            attr: attr,
           };
+
           const batchCmd = new BatchCommand('Insert plot');
           const newElem = svgCanvas.addSVGElementFromJson(_img);
           batchCmd.addSubCommand(new InsertElementCommand(newElem));
@@ -1315,7 +1319,9 @@ export default {
             
             ext = selectedType === "plot" ? "svg" : "src";
 
-            const importUrl = `${baseUrl}~${userId}/${fileNumId}.${ext}`;
+            const baseHref = `${baseUrl}~${userId}/${fileNumId}.`;
+            const imgHref = baseHref + ext;
+            const contentHref = baseHref + "embed";
 
             if (selectedType === "plot"){
               jQuery
@@ -1333,7 +1339,7 @@ export default {
                     ? data.figure.layout.height
                     : 400;
 
-                  importImage(importUrl, width, height, x, y, selectedType, selectedFid);
+                  importImage(imgHref, width, height, x, y, selectedType, selectedFid, contentHref);
                   x += width;
                   curCol += 1;
                   if (curCol > colNumber) {
@@ -1341,16 +1347,16 @@ export default {
                     y += height;
                     x = 0;
                   }
+
                   jQuery(e.target).removeClass("is-loading");
                   jQuery("#fq-modal-file").removeClass("is-active");
                   setTimeout(function(){ svgEditor.zoomChanged(window, "layer"); }, 300);
                 })
             } else if (selectedType === "image"){
-              // Add width and height fields in v2
+              // TODO: Add width and height fields in v2?
               const img = new Image();
               img.onload = function() {
-                // alert(this.width + 'x' + this.height);
-                importImage(importUrl, this.width, this.height, x, y, selectedType, selectedFid);
+                importImage(imgHref, this.width, this.height, x, y, selectedType, selectedFid);
                 x += 600;
                 curCol += 1;
                 if (curCol > colNumber) {
@@ -1359,11 +1365,11 @@ export default {
                   x = 0;
                 }
               }
-              img.src = importUrl;
+              img.src = imgHref;
               
               jQuery(e.target).removeClass("is-loading");
               jQuery("#fq-modal-file").removeClass("is-active");
-              setTimeout(function(){ svgEditor.zoomChanged(window, "layer"); }, 300);              
+              setTimeout(function(){ svgEditor.zoomChanged(window, "layer"); }, 300);
             }
           });
         });
