@@ -181,10 +181,11 @@ export default {
 
         const setInteractiveOn = () => {
           svgCanvas.clearSelection();
-          var currentUrl, src, height, width, x, y, newForeignObj, newElem, oDim, id, fid;
+          var currentUrl, src, height, width, x, y, newForeignObj, newElem, oDim, id, fid, contentHref;
           const plotImages = jQuery('.fq-plot');
           
           plotImages.each(function(){
+            // TODO automate attribute transfer to new SVG
             currentUrl = jQuery(this).attr("href");
             src = currentUrl.replace(".svg", ".embed");
             height = jQuery(this).attr("height");
@@ -193,9 +194,10 @@ export default {
             y = jQuery(this).attr("y");
             id = jQuery(this).attr("id");
             oDim = jQuery(this).data("original_dimensions").split(",");
+            contentHref = jQuery(this).data("content_href");
             fid = jQuery(this).data("fid");
 
-            newForeignObj = generateFObject(x, y, width, height, src, oDim, id, fid);
+            newForeignObj = generateFObject(x, y, width, height, src, oDim, id, fid, contentHref);
             newElem = svgCanvas.addSVGElementFromJson(newForeignObj);
             this.parentNode.insertBefore(newElem, this.nextSibling);
             this.setAttribute("visibility", "hidden");
@@ -402,7 +404,9 @@ export default {
           jQuery("#fq-modal-file-search-items-found").text(results.length + " " + items + " found");
         }
 
-        const generateFObject = (x, y, width, height, src, oDim, id, fid) => {
+        const generateFObject = (x, y, width, height, src, oDim, id, fid, contentHref) => {
+
+          const iframeSrc = contentHref == null ? src : contentHref;
 
           let newIframe = {
             element: "iframe",
@@ -413,8 +417,9 @@ export default {
               width: oDim[0],
               height: oDim[1],
               id: svgCanvas.getNextId(),
-              src: src,
+              src: iframeSrc,
               xmlns: NS.HTML,
+              allow: "fullscreen",
             }
           };
 
@@ -1184,6 +1189,7 @@ export default {
 
         jQuery(document).on("click", ".fq-modal-file-tab", (e) => {
           jQuery(".fq-modal-file-tab").removeClass("is-active");
+          jQuery("#fq-modal-add-confirm-btn, #col_select").prop("disabled", true);
           jQuery(e.currentTarget).addClass("is-active");
 
           fqModalFileTabMode = jQuery(e.currentTarget).data("mode");
