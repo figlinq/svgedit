@@ -17,3 +17,5 @@ package-lock.json
 package-lock.json
 package-lock.json
 package-lock.json
+deploy-prod.sh
+deploy-stage.sh

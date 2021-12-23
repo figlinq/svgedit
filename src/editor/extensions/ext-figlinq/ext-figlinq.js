@@ -14,7 +14,7 @@ const {
  */
 
 const name = "figlinq";
-const baseUrl = location.hostname == "localhost" ? "https://plotly.local/" : "https://create.figlinq.com/";
+const baseUrl = location.hostname == "localhost" ? "https://plotly.local/" : "https://" + location.hostname + "/";
 
 export default {
   name,
