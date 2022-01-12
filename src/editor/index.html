@@ -118,13 +118,13 @@
                 <span>Open figure</span>
               </span>     
             </a>
-            <a id="fq-menu-item-save-figure" class="navbar-item is-hidden is-disabled">
+            <a id="fq-menu-item-save-figure" class="navbar-item is-hidden">
               <span class="icon-text">
                 <span class="icon">
                   <i class="fas fa-save"></i>
                 </span>
                 <span>Save figure</span>
-              </span>    
+              </span>
             </a>
             <a id="fq-menu-item-save-figure-as" class="navbar-item is-hidden">
               <span class="icon-text">
@@ -230,9 +230,12 @@
           <p id="file-panel-heading" class="panel-heading is-size-6">
             Select content
           </p>
-          <div class="panel-block">
+          <div id="fq-modal-file-search-block" class="panel-block">
             <fieldset id="fq-modal-file-search-wrapper" style="width:100%;">
-              <div class="field">
+              <div class="field is-horizontal">
+                <div class="field-label is-normal mr-2" style="flex-grow: 0;">
+                  <label class="label is-size-7">Search:</label>
+                </div>
                 <p class="control is-expanded has-icons-right">
                   <input id="fq-modal-file-search-input" class="input is-small" type="text" placeholder="Search (>2 characters)">
                   <span class="icon is-right">

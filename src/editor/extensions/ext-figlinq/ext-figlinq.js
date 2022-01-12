@@ -645,7 +645,6 @@ export default {
           window.history.pushState(null, null, currentUrl.href);
 
           fqCurrentFigData = false;
-          jQuery("#fq-menu-item-save-figure").addClass("is-disabled");
 
           const [ x, y ] = svgEditor.configObj.curConfig.dimensions;
           svgEditor.leftPanel.clickSelect();
@@ -687,7 +686,6 @@ export default {
             currentUrl.searchParams.set("fid", data.fid);
             window.history.pushState(null, null, decodeURIComponent(currentUrl.href));
 
-            jQuery("#fq-menu-item-save-figure").removeClass("is-disabled");
           })
           .fail(function(data) {
             showToast('This file could not be loaded', 'is-danger');
@@ -978,7 +976,6 @@ export default {
               var currentUrl = new URL(document.location);
               currentUrl.searchParams.set("fid", response.file.fid);
               window.history.pushState(null, null, decodeURIComponent(currentUrl.href));
-              jQuery("#fq-menu-item-save-figure").removeClass("is-disabled");
             }
             
             showToast("File " + response.file.filename + " saved", "is-success");            
@@ -998,6 +995,25 @@ export default {
             jQuery("#fq-modal-save-confirm-btn").removeClass("is-loading");
             showToast("Error - file was not saved", "is-danger");
           });
+        }
+
+        const showSaveFigureAsDialog = () => {
+          jQuery(".modal-action-panel, #fq-modal-file-search-block").addClass("is-hidden");
+          jQuery(".file-save-panel").removeClass("is-hidden");
+          jQuery("#file-panel-heading").html("Save figure");
+
+          if(fqCurrentFigData){
+            var fName = fqCurrentFigData.filename.replace(/\.[^/.]+$/, "");
+            jQuery("#fq-modal-save-name-input").val(fName);
+          } else {
+            jQuery("#fq-modal-save-name-input").val("");
+          }
+
+          jQuery("#fq-modal-file").addClass("is-active");
+          jQuery("#fq-modal-save-confirm-btn").prop("disabled", true);
+
+          fqModalMode = "saveFigure";
+          refreshModalContents();
         }
 
         jQuery(document).on("change", "#fq-modal-export-format-select", () => {
@@ -1490,7 +1506,7 @@ export default {
           if(checked) jQuery("#fq-menu-interact-switch").click();
 
           jQuery(".modal-action-panel").addClass("is-hidden");
-          jQuery(".content-add-panel").removeClass("is-hidden");
+          jQuery(".content-add-panel, #fq-modal-file-search-block").removeClass("is-hidden");
           jQuery("#file-panel-heading").html("Select content");
 
           fqModalMode = "addContent";
@@ -1500,16 +1516,17 @@ export default {
 
         jQuery(document).on("click", "#fq-menu-item-save-figure", async (event) => {
 
+          if(!fqCurrentFigData){
+            showSaveFigureAsDialog();
+            return;
+          }
+
           jQuery("#fq-menu-item-save-figure")
             .find("i")
             .removeClass("fa-save")
             .addClass("fa-spinner fa-pulse");
           event.target.blur();
 
-          if(!fqCurrentFigData){
-            showToast("Error - figure data could not be found", "is-danger");
-            return;
-          }
 
           setInteractiveOff();
           jQuery("#fq-menu-interact-switch").prop( "checked", false );
@@ -1544,19 +1561,8 @@ export default {
         })
 
         jQuery(document).on("click", "#fq-menu-item-save-figure-as", () => {
-         
-          jQuery(".modal-action-panel").addClass("is-hidden");
-          jQuery("#file-panel-heading").html("Save figure");
-          jQuery(".file-save-panel").removeClass("is-hidden");
-
-          jQuery("#fq-modal-file").addClass("is-active");
-          jQuery("#fq-modal-save-confirm-btn").prop("disabled", true);
-          jQuery("#fq-modal-save-name-input").val("");
-
-          fqModalMode = "saveFigure";
-          refreshModalContents();
-
-        });
+          showSaveFigureAsDialog();
+        }); 
 
         jQuery(document).on("click", "#fq-menu-item-open-figure", () => {
          
@@ -1569,7 +1575,6 @@ export default {
 
           fqModalMode = "openFigure";
           refreshModalContents();
-
         });
 
         // Init
