@@ -156,7 +156,7 @@ export default {
               fqUserData = data;
               // console.log(fqCsrfToken);
             } else {
-              showToast("Getting current user failed", "is-danger");
+              showToast("Could not retrieve current user data, are you logged in to FiglinQ in this browser?", "is-danger");
             }
           })
           .fail(function() {
@@ -166,7 +166,7 @@ export default {
             jQuery(".fq-menu-add-content-btn").addClass("is-hidden");
             jQuery(".fq-menu-add-content-btn").addClass("is-hidden");
             jQuery(".fq-menu-add-content-btn").addClass("is-hidden");
-            showToast("Connecting to FiglinQ failed", "is-danger");
+            showToast("Could not connect to FiglinQ!", "is-danger");
           });
         };
 
