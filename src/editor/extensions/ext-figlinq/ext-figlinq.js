@@ -1330,7 +1330,7 @@ export default {
             fileNumId = getNumIdFromFid(selectedFid, 1);
 
             var selectedType = jQuery(selectedItems[index]).data("ftype");
-
+ 
             var imgDataUrl = `${baseUrl}v2/plots/${selectedFid}`;
             
             ext = selectedType === "plot" ? "svg" : "src";

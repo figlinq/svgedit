@@ -44,6 +44,9 @@
       extensions: [],
       noDefaultExtensions: false,
       userExtensions: ['./extensions/ext-figlinq/ext-figlinq.js'],
+      noStorageOnLoad: true,
+      forceStorage: true,
+      baseUnit: "mm",      
     });
 
     // Variable XDOMAIN below is created by Rollup for the Xdomain build (see rollup.config.js)
@@ -229,7 +232,7 @@
         <nav class="panel is-shadowless">
           <p id="file-panel-heading" class="panel-heading is-size-6">
             Select content
-          </p>
+          </p> 
           <div id="fq-modal-file-search-block" class="panel-block">
             <fieldset id="fq-modal-file-search-wrapper" style="width:100%;">
               <div class="field is-horizontal">
