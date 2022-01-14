@@ -46,7 +46,8 @@
       userExtensions: ['./extensions/ext-figlinq/ext-figlinq.js'],
       noStorageOnLoad: true,
       forceStorage: true,
-      baseUnit: "mm",      
+      baseUnit: "mm",
+      // dimensions: [210,297],
     });
 
     // Variable XDOMAIN below is created by Rollup for the Xdomain build (see rollup.config.js)
@@ -231,7 +232,7 @@
       <div class="box">
         <nav class="panel is-shadowless">
           <p id="file-panel-heading" class="panel-heading is-size-6">
-            Select content
+            Select content to add
           </p> 
           <div id="fq-modal-file-search-block" class="panel-block">
             <fieldset id="fq-modal-file-search-wrapper" style="width:100%;">
@@ -249,7 +250,7 @@
             </fieldset>
           </div>
           <p id="panel_tabs" class="panel-tabs">
-            <a href="#" id="fq-modal-file-tab-preloaded" class="fq-modal-file-tab is-hidden" data-mode="preloaded">Preloaded</a>
+            <a href="#" id="fq-modal-file-tab-preloaded" class="fq-modal-file-tab is-hidden" data-mode="preloaded">Preselected</a>
             <a href="#" id="fq-modal-file-tab-my" class="fq-modal-file-tab is-active" data-mode="my">My files</a>
             <a href="#" id="fq-modal-file-tab-shared" class="fq-modal-file-tab" data-mode="shared">Shared with me</a>
           </p>
@@ -424,8 +425,8 @@
                       <div class="select is-small">
                         <select id="fq-doc-size">
                           <option value="">Select</option>
-                          <option value="210mmx297mm">A4 format</option>
-                          <option value="215.9mmx279.4mm">Letter format</option>
+                          <option value="793.7007874015749x1122.5196850393702">A4</option>
+                          <option value="816.0000000000001x1056">Letter</option>
                           <option value="800x600">600 x 800px</option>
                           <option value="1200x1600">1200 x 1600px</option>
                           <!-- <option value="fit">Fit to content</option> -->

@@ -97,6 +97,18 @@ export default {
           "4x": 4,
           "8x": 8,
         }
+
+        const _typeMap = {
+          "%": 0,
+          cm: 37.79527559055118,
+          em: 16,
+          ex: 8.316666603088379,
+          in: 96,
+          mm: 3.7795275590551185,
+          pc: 16,
+          pt: 1.3333333333333333,
+          px: 1
+        };
         
         // To use this function we need to get content_type field into the "children" object returned from v2 
         // const getExt = (contentType) => {
@@ -268,8 +280,13 @@ export default {
   
             jQuery(".modal-action-panel").addClass("is-hidden");
             jQuery(".content-add-panel").removeClass("is-hidden");
-            jQuery("#file-panel-heading").html("Select content");
-  
+            jQuery("#file-panel-heading").html("Select content to add");
+
+            // svgEditor.configObj.curConfig.baseUnit = "mm";
+            // svgEditor.configObj.curConfig.dimensions = [210,297];
+            // svgCanvas.setConfig(svgEditor.configObj.curConfig);
+            // svgEditor.updateCanvas();
+              
             fqModalMode = "addContent";
             refreshModalContents(fidArray);
           }
@@ -998,9 +1015,9 @@ export default {
         }
 
         const showSaveFigureAsDialog = () => {
-          jQuery(".modal-action-panel, #fq-modal-file-search-block").addClass("is-hidden");
+          jQuery(".modal-action-panel, #fq-modal-file-search-block, #fq-modal-file-tab-preloaded").addClass("is-hidden");
           jQuery(".file-save-panel").removeClass("is-hidden");
-          jQuery("#file-panel-heading").html("Save figure");
+          jQuery("#file-panel-heading").html("Save figure as");
 
           if(fqCurrentFigData){
             var fName = fqCurrentFigData.filename.replace(/\.[^/.]+$/, "");
@@ -1009,7 +1026,7 @@ export default {
             jQuery("#fq-modal-save-name-input").val("");
           }
 
-          jQuery("#fq-modal-file").addClass("is-active");
+          jQuery("#fq-modal-file, #fq-modal-file-tab-my").addClass("is-active");
           jQuery("#fq-modal-save-confirm-btn").prop("disabled", true);
 
           fqModalMode = "saveFigure";
@@ -1021,20 +1038,28 @@ export default {
         });
 
         jQuery(document).on("change", "#fq-doc-baseunit", (e) => {
-          let baseUnit = jQuery(e.target).val();
+          
+          let curUnit = svgEditor.configObj.curConfig.baseUnit;
+          let targetUnit = jQuery(e.target).val();
+          
           var w = jQuery("#fq-doc-setup-width").val();
           var h = jQuery("#fq-doc-setup-height").val();
 
-          svgEditor.configObj.curConfig.baseUnit = baseUnit;
+          var wNum = w.match(/\d+/)[0];
+          var hNum = h.match(/\d+/)[0];
+
+          var wToPx = wNum * _typeMap[curUnit];
+          var wToTargetUnit = wToPx / _typeMap[targetUnit];
+          var hToPx = hNum * _typeMap[curUnit];
+          var hToTargetUnit = hToPx / _typeMap[targetUnit];
+
+          svgEditor.configObj.curConfig.baseUnit = targetUnit;
           svgCanvas.setConfig(svgEditor.configObj.curConfig);
           svgEditor.updateCanvas();
-          const resolution = svgEditor.svgCanvas.getResolution();
-          w = convertUnit(resolution.w) + baseUnit;
-          h = convertUnit(resolution.h) + baseUnit;
 
           // Update inputs
-          jQuery("#fq-doc-setup-width").val(w);
-          jQuery("#fq-doc-setup-height").val(h);
+          jQuery("#fq-doc-setup-width").val("" + wToTargetUnit + targetUnit);
+          jQuery("#fq-doc-setup-height").val("" + hToTargetUnit + targetUnit);
           jQuery("#fq-doc-size").val("");
         });
 
@@ -1062,17 +1087,12 @@ export default {
           // w = convertUnit(resolution.w) + baseUnit;
         });
         
-        jQuery(document).on("change", "#fq-doc-setup-height", (e) => {
-          jQuery("#fq-doc-size").val("");
-        });
-
         jQuery(document).on("change", "#fq-doc-size", (e) => {
           var w, h, val = jQuery(e.target).val();          
           if(val){
             const dims = val.split("x");
             w = dims[0];
             h = w === 'fit' ? 'fit' : dims[1];
-            // const resolution = svgEditor.svgCanvas.getResolution();
             if (svgEditor.configObj.curConfig.baseUnit !== "px") {
               w = convertUnit(w) + svgEditor.configObj.curConfig.baseUnit;
               h = convertUnit(h) + svgEditor.configObj.curConfig.baseUnit;
@@ -1083,7 +1103,7 @@ export default {
 
             jQuery("#fq-doc-setup-width").val(w);
             jQuery("#fq-doc-setup-height").val(h);
-            jQuery("#fq-doc-baseunit").val("mm");
+            // jQuery("#fq-doc-baseunit").val("mm");
           }
         });
 
@@ -1507,7 +1527,7 @@ export default {
 
           jQuery(".modal-action-panel").addClass("is-hidden");
           jQuery(".content-add-panel, #fq-modal-file-search-block").removeClass("is-hidden");
-          jQuery("#file-panel-heading").html("Select content");
+          jQuery("#file-panel-heading").html("Select content to add");
 
           fqModalMode = "addContent";
           refreshModalContents();
