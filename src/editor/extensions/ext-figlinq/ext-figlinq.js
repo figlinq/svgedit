@@ -14,7 +14,7 @@ const {
  */
 
 const name = "figlinq";
-const baseUrl = location.hostname == "localhost" ? "https://plotly.local/" : "https://" + location.hostname + "/";
+const baseUrl = location.hostname == "svgedit.plotly.local" ? "https://plotly.local/" : "https://" + location.hostname + "/";
 
 export default {
   name,
