@@ -1307,11 +1307,11 @@ export const DOMMouseScrollEvent = function (e) {
   const currentZoom = eventContext_.getCurrentZoom();
   const svgCanvas = eventContext_.getCanvas();
   const { $id } = svgCanvas;
+  if (e.ctrlKey) { e.preventDefault(); return false; }
   if (!e.shiftKey) { return; }
 
   e.preventDefault();
   const evt = e;
-  console.log(e);
 
   eventContext_.setRootSctm($id('svgcontent').querySelector('g').getScreenCTM().inverse());
 

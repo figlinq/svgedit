@@ -43,20 +43,7 @@ export default {
           else if( e.originalEvent.ctrlKey && e.originalEvent.keyCode == 89 ) {
             clickRedo();
           }
-          // else if (e.originalEvent.ctrlKey==true && (e.originalEvent.which == '61' || e.originalEvent.which == '107' || e.originalEvent.which == '173' || e.originalEvent.which == '109'  || e.originalEvent.which == '187'  || e.originalEvent.which == '189'  ) ) {
-          //   console.log("zoom1");
-          //   e.preventDefault();
-          //   e.stopPropagation();
-          // }          
         });
-        // jQuery(window).bind('mousewheel DOMMouseScroll', function (event) {
-        //   if (event.ctrlKey == true) {
-        //     console.log("zoom2");
-        //     event.preventDefault();
-        //     event.stopPropagation();
-        //     return false;
-        //   }
-        // }, false);
         
         // Initiate global vars
         var fqItemListFolder,
@@ -99,17 +86,6 @@ export default {
           "8x": 8,
         }
         const NSSVG = 'http://www.w3.org/2000/svg';
-        //  = {
-        //   "%": 0,
-        //   cm: 37.79527559055118,
-        //   em: 16,
-        //   ex: 8.316666603088379,
-        //   in: 96,
-        //   mm: 3.7795275590551185,
-        //   pc: 16,
-        //   pt: 1.3333333333333333,
-        //   px: 1
-        // };
         
         // To use this function we need to get content_type field into the "children" object returned from v2 
         // const getExt = (contentType) => {
