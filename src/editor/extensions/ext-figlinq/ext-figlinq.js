@@ -1,6 +1,6 @@
 import { folderItem, plotItem, imageItem, breadcrumb } from "./elements";
 import { NS } from "./namespaces.js";
-import { convertUnit, isValidUnit } from '../../../common/units.js';
+import { isValidUnit } from '../../../common/units.js';
 import * as hstry from '../../../svgcanvas/history';
 
 const {
@@ -43,6 +43,21 @@ export default {
           else if( e.originalEvent.ctrlKey && e.originalEvent.keyCode == 89 ) {
             clickRedo();
           }
+        });
+
+        jQuery(window).bind('mousewheel DOMMouseScroll', function(event) {
+            if(event.ctrlKey == true){
+              event.preventDefault();
+              showZoomWarning();
+              return false;
+            }
+        });
+
+        jQuery(".modal").bind('mousewheel DOMMouseScroll', function(event) {
+            if(event.ctrlKey == true){
+              event.preventDefault();
+              return false;
+            }
         });
         
         // Initiate global vars
@@ -119,6 +134,11 @@ export default {
         // Fitting to content does not work 
         // <option value="layer">Fit to layer content</option>
         // <option value="content">Fit to all content</option>
+
+        const showZoomWarning = () => {
+          jQuery("#fq-modal-warning-zoom").addClass("is-active");
+          setTimeout(function(){ jQuery("#fq-modal-warning-zoom").removeClass("is-active"); }, 1250);
+        }
 
         const getFqUserId = () => {
           jQuery
@@ -1082,9 +1102,6 @@ export default {
           var resolution = svgEditor.svgCanvas.getResolution();
           var x = w;
           svgEditor.svgCanvas.setResolution(x, resolution.h);
-
-          // var baseUnit = svgEditor.configObj.curConfig.baseUnit;
-          // w = convertUnit(resolution.w) + baseUnit;
         });
 
         jQuery(document).on("change", "#fq-doc-setup-height", (e) => {
@@ -1094,9 +1111,6 @@ export default {
           var resolution = svgEditor.svgCanvas.getResolution();
           var y = h;
           svgEditor.svgCanvas.setResolution(resolution.w, y);
-
-          // var baseUnit = svgEditor.configObj.curConfig.baseUnit;
-          // w = convertUnit(resolution.w) + baseUnit;
         });
         
         jQuery(document).on("change", "#fq-doc-size", (e) => {
@@ -1176,12 +1190,6 @@ export default {
           jQuery("#fq-doc-size").val("");
           const baseUnit = svgEditor.configObj.curConfig.baseUnit;
           const resolution = svgEditor.svgCanvas.getResolution();
-          // if (baseUnit !== "px") {
-          //   resolution.w =
-          //   convertUnit(resolution.w, baseUnit) + baseUnit;
-          //   resolution.h =
-          //   convertUnit(resolution.h, baseUnit) + baseUnit;
-          // }
 
           jQuery("#fq-doc-baseunit").val(baseUnit);
 
