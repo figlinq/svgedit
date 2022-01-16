@@ -79,7 +79,8 @@ export default {
           fqExportDocSize,
           fqExportDocFname,
           fqExportMode,
-          fqThumbWidth = 1000;
+          fqThumbWidth = 1000,
+          _typeMap;
         const svgAttrWhitelist = ["class", "height", "width", "x", "y", "id"];
         const fqPdfPageSizes = {
           A0: "2383.94x3370.39",
@@ -97,18 +98,18 @@ export default {
           "4x": 4,
           "8x": 8,
         }
-
-        const _typeMap = {
-          "%": 0,
-          cm: 37.79527559055118,
-          em: 16,
-          ex: 8.316666603088379,
-          in: 96,
-          mm: 3.7795275590551185,
-          pc: 16,
-          pt: 1.3333333333333333,
-          px: 1
-        };
+        const NSSVG = 'http://www.w3.org/2000/svg';
+        //  = {
+        //   "%": 0,
+        //   cm: 37.79527559055118,
+        //   em: 16,
+        //   ex: 8.316666603088379,
+        //   in: 96,
+        //   mm: 3.7795275590551185,
+        //   pc: 16,
+        //   pt: 1.3333333333333333,
+        //   px: 1
+        // };
         
         // To use this function we need to get content_type field into the "children" object returned from v2 
         // const getExt = (contentType) => {
@@ -582,11 +583,19 @@ export default {
           }
         };
 
+        const closeModalOnEscape = (e) => {
+          if (e.key === "Escape") {
+            jQuery("#fq-modal-file").removeClass("is-active");
+            jQuery(document).unbind("keyup", closeModalOnEscape);
+          }          
+        }
+
         const refreshModalContents = (fidArray=false) => {
 
           fqItemListFolder = "";
           fqItemListFile = "";
           jQuery("#fq-modal-file").addClass("is-active");
+          jQuery(document).keyup(closeModalOnEscape);
 
           let q = jQuery("#fq-modal-file-search-input").val();
           if(q && fqModalFileTabMode == "my"){
@@ -990,6 +999,7 @@ export default {
               fqItemListFile = "";
               updateItemList(fqLastFolderId[fqModalFileTabMode], 1);
               jQuery("#fq-modal-file").removeClass("is-active");
+              jQuery(document).unbind("keyup", closeModalOnEscape);
               var currentUrl = new URL(document.location);
               currentUrl.searchParams.set("fid", response.file.fid);
               window.history.pushState(null, null, decodeURIComponent(currentUrl.href));
@@ -1031,6 +1041,32 @@ export default {
 
           fqModalMode = "saveFigure";
           refreshModalContents();
+        }
+
+        const createUnitMap = () => {
+          // Get correct em/ex values by creating a temporary SVG.
+          const svg = document.createElementNS(NSSVG, 'svg');
+          document.body.append(svg);
+          const rect = document.createElementNS(NSSVG, 'rect');
+          rect.setAttribute('width', '1em');
+          rect.setAttribute('height', '1ex');
+          rect.setAttribute('x', '1in');
+          svg.append(rect);
+          const bb = rect.getBBox();
+          svg.remove();
+
+          const inch = bb.x;
+          _typeMap = {
+            em: bb.width,
+            ex: bb.height,
+            in: inch,
+            cm: inch / 2.54,
+            mm: inch / 25.4,
+            pt: inch / 72,
+            pc: inch / 6,
+            px: 1,
+            '%': 0
+          };
         }
 
         jQuery(document).on("change", "#fq-modal-export-format-select", () => {
@@ -1090,20 +1126,15 @@ export default {
         jQuery(document).on("change", "#fq-doc-size", (e) => {
           var w, h, val = jQuery(e.target).val();          
           if(val){
-            const dims = val.split("x");
-            w = dims[0];
-            h = w === 'fit' ? 'fit' : dims[1];
-            if (svgEditor.configObj.curConfig.baseUnit !== "px") {
-              w = convertUnit(w) + svgEditor.configObj.curConfig.baseUnit;
-              h = convertUnit(h) + svgEditor.configObj.curConfig.baseUnit;
-            }
+            const baseUnit = svgEditor.configObj.curConfig.baseUnit;
+            var [w, h] = val.split("x");
+            w = w / _typeMap[baseUnit] + baseUnit;
+            h = h / _typeMap[baseUnit] + baseUnit;
 
-            w = w === 'fit' ? 'Fit contents' : w;
-            h = h === 'fit' ? 'Fit contents' : h;
+            svgEditor.svgCanvas.setResolution(w, h);
 
             jQuery("#fq-doc-setup-width").val(w);
             jQuery("#fq-doc-setup-height").val(h);
-            // jQuery("#fq-doc-baseunit").val("mm");
           }
         });
 
@@ -1167,16 +1198,16 @@ export default {
 
         jQuery(document).on("click", "#fq-menu-item-doc-properties", () => {
           jQuery("#fq-doc-size").val("");
+          const baseUnit = svgEditor.configObj.curConfig.baseUnit;
           const resolution = svgEditor.svgCanvas.getResolution();
-          if (svgEditor.configObj.curConfig.baseUnit !== "px") {
-            resolution.w =
-            convertUnit(resolution.w) + svgEditor.configObj.curConfig.baseUnit;
-            resolution.h =
-            convertUnit(resolution.h) + svgEditor.configObj.curConfig.baseUnit;
-          }
+          // if (baseUnit !== "px") {
+          //   resolution.w =
+          //   convertUnit(resolution.w, baseUnit) + baseUnit;
+          //   resolution.h =
+          //   convertUnit(resolution.h, baseUnit) + baseUnit;
+          // }
 
-          const baseunit = svgEditor.configObj.curConfig.baseUnit;
-          jQuery("#fq-doc-baseunit").val(baseunit);
+          jQuery("#fq-doc-baseunit").val(baseUnit);
 
           const gridSnappingOn = svgEditor.configObj.curConfig.gridSnapping;
           const gridSnappingStep = svgEditor.configObj.curConfig.snappingStep;
@@ -1184,8 +1215,8 @@ export default {
           jQuery("#fq-doc-setup-snapping-enabled").prop('checked', gridSnappingOn);
           jQuery("#fq-doc-setup-snapping-step").val(gridSnappingStep);
 
-          jQuery("#fq-doc-setup-width").val(resolution.w);
-          jQuery("#fq-doc-setup-height").val(resolution.h);
+          jQuery("#fq-doc-setup-width").val(resolution.w / _typeMap[baseUnit] + baseUnit);
+          jQuery("#fq-doc-setup-height").val(resolution.h / _typeMap[baseUnit] + baseUnit);
           jQuery("#fq-modal-doc-setup").addClass("is-active");
           
         });
@@ -1386,6 +1417,7 @@ export default {
 
                   jQuery(e.target).removeClass("is-loading");
                   jQuery("#fq-modal-file").removeClass("is-active");
+                  jQuery(document).unbind("keyup", closeModalOnEscape);
                   setTimeout(function(){ svgEditor.zoomChanged(window, "layer"); }, 300);
                 })
             } else if (selectedType === "image"){
@@ -1405,6 +1437,7 @@ export default {
               
               jQuery(e.target).removeClass("is-loading");
               jQuery("#fq-modal-file").removeClass("is-active");
+              jQuery(document).unbind("keyup", closeModalOnEscape);
               setTimeout(function(){ svgEditor.zoomChanged(window, "layer"); }, 300);
             }
           });
@@ -1431,6 +1464,7 @@ export default {
 
         jQuery(document).on("click", "#fq-modal-files-btn-openfig", () => {
           jQuery("#fq-modal-file").removeClass("is-active");
+          jQuery(document).unbind("keyup", closeModalOnEscape);
           jQuery("#fq-modal-confirm-btn-ok").html("Open figure");
           jQuery("#fq-modal-confirm").addClass("is-active");
           let fid = jQuery(".fq-modal-image-item.is-active").data("fid");
@@ -1599,6 +1633,7 @@ export default {
 
         // Init
         jQuery("#fq-menu-interact-switch").prop( "checked", false );
+        createUnitMap();
         ensureRulesGrids();
         getFqUserId();
         setInteractiveOff();

@@ -667,6 +667,7 @@ class EditorStartup {
       this.workarea.addEventListener('drop', importImage);
       const imgImport = document.createElement('input');
       imgImport.type="file";
+      imgImport.accept="image/png, image/jpeg, image/svg, image/bmp";
       imgImport.addEventListener('change', importImage);
       window.addEventListener('importImages', () => imgImport.click());
     }

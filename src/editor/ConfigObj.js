@@ -422,6 +422,8 @@ export default class ConfigObj {
         } else {
           this.pref(key, val);
         }
+      } else if ([ 'dimensions' ].includes(key)) {
+        this.curConfig[key] = val;
       } else if ([ 'extensions', 'userExtensions', 'allowedOrigins' ].includes(key)) {
         if (cfgCfg.overwrite === false &&
           (

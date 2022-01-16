@@ -40,14 +40,19 @@
     const svgEditor = new Editor(document.getElementById('container'));
     svgEditor.init();
     svgEditor.setConfig({
-      allowInitialUserOverride: true,
+      
       extensions: [],
       noDefaultExtensions: false,
       userExtensions: ['./extensions/ext-figlinq/ext-figlinq.js'],
       noStorageOnLoad: true,
       forceStorage: true,
       baseUnit: "mm",
-      // dimensions: [210,297],
+      dimensions: [ 793.7007874015749, 1122.5196850393702 ], // A4 format
+      // overwrite: true,
+    }, 
+    {
+      allowInitialUserOverride: true,
+      overwrite: true,
     });
 
     // Variable XDOMAIN below is created by Rollup for the Xdomain build (see rollup.config.js)
@@ -279,7 +284,7 @@
           </div>
           <div id="fq-modal-item-list-container" style="border-bottom: 1px solid #ededed; max-height: calc(100vh - 400px); overflow-y: auto; ">            
           </div>
-          <div class="panel-block modal-action-panel content-add-panel is-hidden pt-5">
+          <div class="panel-block modal-action-panel content-add-panel is-hidden pt-5 is-flex is-justify-content-center">
             <div class="field is-grouped">
               <div class="control">
                 <button id="fq-modal-add-confirm-btn" class="button is-link is-small" disabled>
@@ -310,7 +315,7 @@
               </div>
             </div>
           </div>
-          <div class="panel-block modal-action-panel file-save-panel is-hidden">
+          <div class="panel-block modal-action-panel file-save-panel is-hidden pt-5 is-flex is-justify-content-center">
             <div class="control">
               <div class="field is-horizontal">
                 <div class="field-label is-normal mr-2" style="padding-top: .5em;">
@@ -329,7 +334,7 @@
               </div>              
             </div>
           </div>
-          <div class="panel-block modal-action-panel file-save-panel is-hidden">
+          <div class="panel-block modal-action-panel file-save-panel is-hidden pt-5 is-flex is-justify-content-center">
             <div class="field is-grouped">
               <div class="control">
                 <div class="select is-small">
