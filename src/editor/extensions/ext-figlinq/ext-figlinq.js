@@ -155,6 +155,7 @@ export default {
               jQuery("#fq-menu-item-open-figure").removeClass("is-hidden");
               jQuery("#fq-menu-item-save-figure").removeClass("is-hidden");
               jQuery("#fq-menu-item-save-figure-as").removeClass("is-hidden");
+              jQuery("#fq-menu-item-import-local-content").removeClass("is-hidden");
               jQuery("#fq-breadcrumb-item-home")
                 .data("fid", `${data.username}:-1`)
                 .find(".fq-modal-folder-item")
@@ -378,7 +379,7 @@ export default {
           
           results.forEach(result => {
             const isSvg = getFileExt(result.filename) === "svg";
-            const includeNonSvg = fqModalMode === "addContent";
+            const includeNonSvg = fqModalMode === "addContent" || fqModalMode === "upload";
             
             if (result.filetype === "fold" && !result.deleted) {
               fqItemListFolder += folderItem(result.filename, result.fid);
@@ -969,9 +970,20 @@ export default {
         }
 
         const uploadFileToFiglinQ = (formData, apiEndpoint, world_readable, updateModal, parentId=false) => {
+          var xFileName, successMsg, errorMsg;
           
+          if(fqExportMode === "upload"){
+            xFileName = fqExportDocFname;
+            successMsg = " uploaded";
+            errorMsg = " uploaded";
+          } else {
+            xFileName = fqExportDocFname + ".svg";
+            successMsg = " saved";
+            errorMsg = " saved";
+          } 
+
           var headers = {
-            'X-File-Name': fqExportDocFname + ".svg",
+            'X-File-Name': xFileName,
             'Plotly-World-Readable': world_readable,
             'X-CSRFToken': fqCsrfToken,
           };
@@ -993,15 +1005,18 @@ export default {
               jQuery("#fq-modal-refresh-btn").addClass("is-loading");
               fqItemListFolder = "";
               fqItemListFile = "";
-              updateItemList(fqLastFolderId[fqModalFileTabMode], 1);
-              jQuery("#fq-modal-file").removeClass("is-active");
-              jQuery(document).unbind("keyup", closeModalOnEscape);
-              var currentUrl = new URL(document.location);
-              currentUrl.searchParams.set("fid", response.file.fid);
-              window.history.pushState(null, null, decodeURIComponent(currentUrl.href));
+              refreshModalContents();
+              // updateItemList(fqLastFolderId[fqModalFileTabMode], 1);
+              if(fqExportMode != "upload"){
+                jQuery("#fq-modal-file").removeClass("is-active");
+                jQuery(document).unbind("keyup", closeModalOnEscape);
+                var currentUrl = new URL(document.location);
+                currentUrl.searchParams.set("fid", response.file.fid);
+                window.history.pushState(null, null, decodeURIComponent(currentUrl.href));
+              }
             }
             
-            showToast("File " + response.file.filename + " saved", "is-success");            
+            showToast("File " + response.file.filename + successMsg, "is-success");            
             fqCurrentFigData = response.file;
             jQuery("#fq-menu-item-save-figure")
               .find("i")
@@ -1016,7 +1031,7 @@ export default {
               .removeClass("fa-spinner fa-pulse")
               .addClass("fa-save");
             jQuery("#fq-modal-save-confirm-btn").removeClass("is-loading");
-            showToast("Error - file was not saved", "is-danger");
+            showToast("Error - file was not" + errorMsg, "is-danger");
           });
         }
 
@@ -1064,6 +1079,33 @@ export default {
             '%': 0
           };
         }
+
+        jQuery(document).on("change", "#fq-file-upload-input", () => {
+          var fileName = jQuery('#fq-file-upload-input')[0].files.length ? jQuery('#fq-file-upload-input')[0].files[0].name : false;
+          if(fileName){
+            jQuery("#fq-modal-upload-confirm-btn").prop("disabled", false);
+            jQuery("#fq-file-upload-input-label").html(fileName);
+          } else {
+            jQuery("#fq-modal-upload-confirm-btn").prop("disabled", true);
+          }
+        });
+
+        jQuery(document).on("click", "#fq-modal-upload-confirm-btn", () => {
+          if(!jQuery('#fq-file-upload-input')[0].files.length) {
+            showToast('Please select the file first!', 'is-warning');
+            return;
+          }
+          const apiEndpoint = 'upload';          
+          var world_readable = jQuery("#fq-file-upload-world-readable").val();
+          var imageFile = jQuery("#fq-file-upload-input")[0].files[0];
+          fqExportDocFname = jQuery("#fq-file-upload-input-label").html();
+          fqExportMode = "upload";
+
+          var formData = new FormData();
+          formData.append("files", imageFile);
+
+          uploadFileToFiglinQ(formData, apiEndpoint, world_readable, true, getNumIdFromFid(fqLastFolderId[fqModalFileTabMode], 1));
+        });
 
         jQuery(document).on("change", "#fq-modal-export-format-select", () => {
           updateExportFormState();
@@ -1141,6 +1183,23 @@ export default {
           jQuery("#fq-modal-export-quality-input").val(newValue);
         });
         
+        jQuery(document).on("click", "#fq-modal-btn-confirm-save-figure", (e) => {
+          jQuery("#fq-modal-import-newfig").removeClass("is-active");
+          showSaveFigureAsDialog();
+        });
+
+        jQuery(document).on("click", "#fq-menu-item-import-local-content", (e) => {
+          fqModalMode = "upload";
+          jQuery("#fq-file-upload-input").val("");
+          jQuery("#fq-file-upload-input-label").html("");
+          jQuery("#file-panel-heading").html("Import local content");
+          jQuery(".modal-action-panel, #fq-modal-file-tab-shared, #fq-modal-file-tab-preloaded").addClass("is-hidden");
+          jQuery(".file-upload-panel").removeClass("is-hidden");
+          jQuery("#fq-modal-file, #fq-modal-file-tab-my").addClass("is-active");
+          jQuery("#fq-modal-upload-confirm-btn").prop("disabled", true);
+          refreshModalContents();
+        });
+
         jQuery(document).on("click", "#fq-modal-export-btn-export", async (e) => {
           jQuery(e.currentTarget).addClass("is-loading");
           fqExportMode = "download";
@@ -1471,9 +1530,9 @@ export default {
           fqExportDocFname = jQuery("#fq-modal-save-name-input").val();
           fqExportDocSize = parseInt(jQuery("#fq-modal-export-size-select").val());            
 
-          const world_readable = jQuery("#world_readable").val();
+          const world_readable = jQuery("#file_upload_world_readable").val();
           
-          // Check if file name exists
+          // TODO *properly* check if file name exists via API
           var replacedFid, nameExists = false;
           jQuery(".fq-modal-image-item").each(function() {
             if(jQuery(this).find(".fq-list-item-text").html() == fqExportDocFname + ".svg") {

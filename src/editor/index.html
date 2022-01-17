@@ -142,7 +142,15 @@
                 <span>Save figure as...</span>
               </span>    
             </a>
-            <a id="tool_import" class="navbar-item">
+            <a id="tool_import_fq" class="navbar-item is-hidden">
+              <span class="icon-text">
+                <span class="icon">
+                  <i class="fas fa-file-import"></i>
+                </span>
+                <span>Import local content</span>
+              </span>
+            </a>
+            <a id="fq-menu-item-import-local-content" class="navbar-item is-hidden">
               <span class="icon-text">
                 <span class="icon">
                   <i class="fas fa-file-import"></i>
@@ -335,6 +343,11 @@
           </div>
           <div class="panel-block modal-action-panel file-save-panel is-hidden pt-5 is-flex is-justify-content-center">
             <div class="field is-grouped">
+              <div class="control mr-0">
+                <div class="field-label is-normal mr-2">
+                  <label class="label is-size-7">Sharing:</label>
+                </div>
+              </div>
               <div class="control">
                 <div class="select is-small">
                   <select id="world_readable">
@@ -346,6 +359,63 @@
               <div class="control">
                 <button id="fq-modal-save-confirm-btn" class="button is-link is-small" disabled>
                   Save
+                </button>
+              </div>
+              <div class="control">
+                <button class="button is-link is-outlined fq-modal-cancel-btn is-small">
+                  Cancel
+                </button>
+              </div>
+              <div class="control">
+                <button id="fq-modal-refresh-btn" class="button is-small">
+                  <span class="icon is-small">
+                    <i class="fas fa-sync-alt"></i>
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-block modal-action-panel file-upload-panel pt-5 is-flex is-justify-content-center">
+            <div class="field is-grouped">
+              <div class="control">
+                <div class="file is-small">
+                  <label class="file-label">
+                    <input class="file-input" type="file" id="fq-file-upload-input" accept="image/png, image/jpeg, image/svg, image/bmp, image/gif">
+                    <span class="file-cta">
+                      <span class="file-icon">
+                        <i class="fas fa-upload"></i>
+                      </span>
+                      <span class="file-label">
+                        Browse…
+                      </span>
+                    </span>
+                    <span class="file-name" id="fq-file-upload-input-label">
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>              
+          </div>
+
+          <div class="panel-block modal-action-panel file-upload-panel pt-5 is-flex is-justify-content-center">
+            <div class="field is-grouped">
+              <div class="control mr-0">
+                <div class="field-label is-normal mr-2">
+                  <label class="label is-size-7">Sharing:</label>
+                </div>
+              </div>
+              <div class="control">
+                <div class="select is-small">
+                  <select id="fq-file-upload-world-readable">
+                    <option value="false">Private</option>
+                    <option value="true">Public</option>
+                  </select>
+                </div>
+              </div>
+              <div class="control">
+                <button id="fq-modal-upload-confirm-btn" class="button is-link is-small">
+                  Upload
                 </button>
               </div>
               <div class="control">
@@ -506,6 +576,28 @@
           <p class="control">
             <a id="fq-modal-confirm-btn-ok" class="button is-link is-small">
               Open
+            </a>
+          </p>
+          <p class="control">
+            <a class="button is-link is-outlined fq-modal-cancel-btn is-small">
+              Cancel
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import local content - save figure first modal -->
+  <div id="fq-modal-import-newfig" class="modal modal-fx-normal">
+    <div class="modal-background"></div>
+    <div class="modal-content" style="max-width: 400px;">
+      <div class="box">
+        <p class="mb-5 is-size-7">Please save the figure before importing local content.</p>
+        <div class="field is-grouped is-grouped-centered">
+          <p class="control">
+            <a id="fq-modal-btn-confirm-save-figure" class="button is-link is-small">
+              Save now
             </a>
           </p>
           <p class="control">
