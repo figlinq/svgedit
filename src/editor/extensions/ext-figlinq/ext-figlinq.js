@@ -1191,7 +1191,7 @@ export default {
         jQuery(document).on("click", "#fq-menu-item-import-local-content", (e) => {
           fqModalMode = "upload";
           jQuery("#fq-file-upload-input").val("");
-          jQuery("#fq-file-upload-input-label").html("");
+          jQuery("#fq-file-upload-input-label").html("No file selected");
           jQuery("#file-panel-heading").html("Import local content");
           jQuery(".modal-action-panel, #fq-modal-file-tab-shared, #fq-modal-file-tab-preloaded").addClass("is-hidden");
           jQuery(".file-upload-panel").removeClass("is-hidden");
