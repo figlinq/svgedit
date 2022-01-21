@@ -76,6 +76,7 @@ export default {
             preloaded: false,
           },
           fqSearchMode = false,
+          fqPreselectedFids = false,
           fqExportDocType,
           fqExportDocQuality,
           fqExportDocSize,
@@ -346,10 +347,12 @@ export default {
           const fid = getNumIdFromFid(dataFid);
           var url;
 
+          const myFileTypes = fqModalMode == "upload" ? "filetype=fold" : "filetype=plot&filetype=fold&filetype=external_image"
+
           if (fqModalFileTabMode == "my") {
             url = searchQuery ?
             `${baseUrl}v2/folders/all?s=${searchQuery}&filetype=plot&filetype=external_image&page_size=1000` :
-            `${baseUrl}v2/folders/${dataFid}?page=${page}&filetype=plot&filetype=fold&filetype=external_image&order_by=filename&page_size=1000`;
+            `${baseUrl}v2/folders/${dataFid}?page=${page}&${myFileTypes}&order_by=filename&page_size=1000`;
           } else if(fqModalFileTabMode == "shared") {            
             if(fid == -1){
               url = `${baseUrl}v2/folders/shared?filetype=fold&filetype=plot&filetype=external_image&order_by=filename&page_size=1000`;
@@ -372,7 +375,7 @@ export default {
             .always(function() {});
         };
 
-        const populateFileModal = (data) => {
+        const populateFileModal = (data, selectedFids = false) => {
           jQuery("#fq-modal-files-btn-openfig").prop("disabled", true);
           jQuery("#fq-modal-save-confirm-btn").prop("disabled", true);
           var index = 0, results = data.children.results;
@@ -406,6 +409,13 @@ export default {
           }
           var items = results.length == 1 ? "item" : "items";
           jQuery("#fq-modal-file-search-items-found").text(results.length + " " + items + " found");
+          if(fqPreselectedFids){
+            fqPreselectedFids.forEach(fid => {
+              jQuery("*[data-fid='" + fid + "']").addClass("is-active");
+              jQuery("#fq-modal-add-confirm-btn").prop("disabled", false);
+            });
+            fqPreselectedFids = false;
+          }
         }
 
         const generateSvgObject = (currentImg) => {
@@ -1005,15 +1015,24 @@ export default {
               jQuery("#fq-modal-refresh-btn").addClass("is-loading");
               fqItemListFolder = "";
               fqItemListFile = "";
-              refreshModalContents();
-              // updateItemList(fqLastFolderId[fqModalFileTabMode], 1);
-              if(fqExportMode != "upload"){
+              if(fqExportMode == "upload"){
+                jQuery("#fq-file-upload-input").val("");
+                jQuery("#fq-file-upload-input-label").html("No file selected");
+                jQuery("#file-panel-heading").html("Select content to add");
+                jQuery(".content-add-panel, #fq-modal-file-tab-shared").removeClass("is-hidden");
+                jQuery(".file-upload-panel").addClass("is-hidden");
+                jQuery("#fq-modal-file-tab-my").addClass("is-active");
+                fqModalFileTabMode = "my";
+                fqModalMode = "addContent";
+                fqPreselectedFids = [response.file.fid];
+              } else {
                 jQuery("#fq-modal-file").removeClass("is-active");
                 jQuery(document).unbind("keyup", closeModalOnEscape);
                 var currentUrl = new URL(document.location);
                 currentUrl.searchParams.set("fid", response.file.fid);
                 window.history.pushState(null, null, decodeURIComponent(currentUrl.href));
               }
+              refreshModalContents();
             }
             
             showToast("File " + response.file.filename + successMsg, "is-success");            
@@ -1192,7 +1211,7 @@ export default {
           fqModalMode = "upload";
           jQuery("#fq-file-upload-input").val("");
           jQuery("#fq-file-upload-input-label").html("No file selected");
-          jQuery("#file-panel-heading").html("Import local content");
+          jQuery("#file-panel-heading").html("Select destination folder in FiglinQ");
           jQuery(".modal-action-panel, #fq-modal-file-tab-shared, #fq-modal-file-tab-preloaded").addClass("is-hidden");
           jQuery(".file-upload-panel").removeClass("is-hidden");
           jQuery("#fq-modal-file, #fq-modal-file-tab-my").addClass("is-active");
