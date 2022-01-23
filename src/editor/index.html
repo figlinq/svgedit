@@ -67,7 +67,7 @@
     } catch (error) {/* empty fn */ }
   </script>
 
-  <title>Figure editor | FiglinQ</title>
+  <title>FiglinQ | Figure editor</title>
 </head>
 
 <body style="margin:0">
@@ -110,7 +110,7 @@
             File
           </a>
           <div class="navbar-dropdown" style="min-width: 240px;">
-            <a id="fq-menu-file-item-newfig" class="navbar-item">
+            <a id="fq-menu-file-item-newfig" class="navbar-item fq-menu-item">
               <span class="icon-text">
                 <span class="icon">
                   <i class="far fa-file"></i>
@@ -118,7 +118,7 @@
                 <span>New figure</span>
               </span>              
             </a>
-            <a id="fq-menu-item-open-figure" class="navbar-item is-hidden">
+            <a id="fq-menu-item-open-figure" class="navbar-item fq-menu-item is-hidden">
               <span class="icon-text">
                 <span class="icon">
                   <i class="far fa-folder-open"></i>
@@ -126,7 +126,7 @@
                 <span>Open figure</span>
               </span>     
             </a>
-            <a id="fq-menu-item-save-figure" class="navbar-item is-hidden">
+            <a id="fq-menu-item-save-figure" class="navbar-item fq-menu-item is-hidden">
               <span class="icon-text">
                 <span class="icon">
                   <i class="fas fa-save"></i>
@@ -134,7 +134,7 @@
                 <span>Save figure</span>
               </span>
             </a>
-            <a id="fq-menu-item-save-figure-as" class="navbar-item is-hidden">
+            <a id="fq-menu-item-save-figure-as" class="navbar-item fq-menu-item is-hidden">
               <span class="icon-text">
                 <span class="icon">
                   <i class="far fa-save"></i>
@@ -142,7 +142,7 @@
                 <span>Save figure as...</span>
               </span>    
             </a>
-            <a id="fq-menu-item-import-local-content" class="navbar-item is-hidden">
+            <a id="fq-menu-item-import-local-content" class="navbar-item fq-menu-item is-hidden">
               <span class="icon-text">
                 <span class="icon">
                   <i class="fas fa-file-import"></i>
@@ -150,7 +150,7 @@
                 <span>Import local content</span>
               </span>
             </a>
-            <a id="fq-menu-file-item-export" class="navbar-item">
+            <a id="fq-menu-file-item-export" class="navbar-item fq-menu-item">
               <span class="icon-text">
                 <span class="icon">
                   <i class="fas fa-file-export"></i>
@@ -158,7 +158,7 @@
                 <span>Export figure</span>
               </span>    
             </a>
-            <a id="fq-menu-add-content-btn_menu" class="navbar-item fq-menu-add-content-btn is-hidden">
+            <a id="fq-menu-add-content-btn_menu" class="navbar-item fq-menu-item fq-menu-add-content-btn is-hidden">
               <image style="margin-left:2px; margin-right:8px;" src="./images/figlinq/logo_gray.svg" width="16"/>
               Add FiglinQ content
             </a>
@@ -254,9 +254,9 @@
             </fieldset>
           </div>
           <p id="panel_tabs" class="panel-tabs">
-            <a href="#" id="fq-modal-file-tab-preloaded" class="fq-modal-file-tab is-hidden" data-mode="preloaded">Preselected</a>
-            <a href="#" id="fq-modal-file-tab-my" class="fq-modal-file-tab is-active" data-mode="my">My files</a>
-            <a href="#" id="fq-modal-file-tab-shared" class="fq-modal-file-tab" data-mode="shared">Shared with me</a>
+            <a href="#" id="fq-modal-file-tab-preselected" class="fq-modal-file-tab is-hidden" data-mode="preselected">Preselected</a>
+            <a href="#" id="fq-modal-file-tab-my" class="fq-modal-file-tab is-hidden" data-mode="my">My files</a>
+            <a href="#" id="fq-modal-file-tab-shared" class="fq-modal-file-tab is-hidden" data-mode="shared">Shared with me</a>
           </p>
           <div id="fq-modal-file-panel-breadcrumb" class="panel-block pl-0">
             <div class="breadcrumb is-size-7" aria-label="breadcrumbs">
@@ -272,6 +272,7 @@
               </ul>
             </div>
           </div>
+
           <div id="fq-modal-file-search-title" class="panel-block pl-0 is-hidden">
             <div class="breadcrumb is-size-7" aria-label="breadcrumbs">
               <span class="icon-text">
@@ -282,8 +283,10 @@
               </span>
             </div>
           </div>
+
           <div id="fq-modal-item-list-container" style="border-bottom: 1px solid #ededed; max-height: calc(100vh - 400px); overflow-y: auto; ">            
           </div>
+
           <div class="panel-block modal-action-panel content-add-panel is-hidden pt-5 is-flex is-justify-content-center">
             <div class="field is-grouped">
               <div class="control">
@@ -315,6 +318,7 @@
               </div>
             </div>
           </div>
+
           <div class="panel-block modal-action-panel file-save-panel is-hidden pt-5 is-flex is-justify-content-center">
             <div class="control">
               <div class="field is-horizontal">
@@ -334,6 +338,7 @@
               </div>              
             </div>
           </div>
+
           <div class="panel-block modal-action-panel file-save-panel is-hidden pt-5 is-flex is-justify-content-center">
             <div class="field is-grouped">
               <div class="control mr-0">
@@ -427,10 +432,10 @@
             </div>
           </div>
 
-          <div class="panel-block modal-action-panel figure-open-panel is-hidden pt-5">
+          <div class="panel-block modal-action-panel figure-open-panel is-hidden pt-5 is-flex is-justify-content-center">
             <div class="field is-grouped">
               <div class="control">
-                <button id="fq-modal-files-btn-openfig" class="button is-link is-small" disabled>
+                <button id="fq-modal-files-open-figure-confirm" class="button is-link is-small" disabled>
                   Open
                 </button>
               </div>
@@ -582,7 +587,7 @@
     </div>
   </div>
 
-  <!-- Import local content - save figure first modal -->
+  <!-- Import local content - save figure first modal
   <div id="fq-modal-import-newfig" class="modal modal-fx-normal">
     <div class="modal-background"></div>
     <div class="modal-content" style="max-width: 400px;">
@@ -602,7 +607,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </div> -->
 
   <!-- Zoom warning modal -->
   <div id="fq-modal-warning-zoom" class="modal modal-fx-normal">

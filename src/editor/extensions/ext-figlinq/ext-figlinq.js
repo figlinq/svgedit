@@ -63,7 +63,7 @@ export default {
         // Initiate global vars
         var fqItemListFolder,
           fqItemListFile,
-          fqItemListPreloaded,
+          fqItemListPreselected,
           fqUserId,
           fqUserData,
           fqCurrentFigData = false,
@@ -73,7 +73,7 @@ export default {
           fqLastFolderId = {
             my: false,
             shared: false,
-            preloaded: false,
+            preselected: false,
           },
           fqSearchMode = false,
           fqPreselectedFids = false,
@@ -332,13 +332,13 @@ export default {
                   next: null,
                 }
               };
-              fqItemListPreloaded = {
+              fqItemListPreselected = {
                 data: dataFormatted,
                 fids: dataFid,
               };
               jQuery(".fq-modal-file-tab").removeClass("is-active");
-              jQuery("#fq-modal-file-tab-preloaded").removeClass("is-hidden");
-              jQuery("#fq-modal-file-tab-preloaded").addClass("is-active");
+              jQuery("#fq-modal-file-tab-preselected").removeClass("is-hidden");
+              jQuery("#fq-modal-file-tab-preselected").addClass("is-active");
               populateFileModal(dataFormatted);
             });
             return;
@@ -376,7 +376,7 @@ export default {
         };
 
         const populateFileModal = (data, selectedFids = false) => {
-          jQuery("#fq-modal-files-btn-openfig").prop("disabled", true);
+          jQuery("#fq-modal-files-open-figure-confirm").prop("disabled", true);
           jQuery("#fq-modal-save-confirm-btn").prop("disabled", true);
           var index = 0, results = data.children.results;
           
@@ -1015,7 +1015,7 @@ export default {
               jQuery("#fq-modal-refresh-btn").addClass("is-loading");
               fqItemListFolder = "";
               fqItemListFile = "";
-              if(fqExportMode == "upload"){
+              if(fqExportMode === "upload"){
                 jQuery("#fq-file-upload-input").val("");
                 jQuery("#fq-file-upload-input-label").html("No file selected");
                 jQuery("#file-panel-heading").html("Select content to add");
@@ -1036,12 +1036,13 @@ export default {
             }
             
             showToast("File " + response.file.filename + successMsg, "is-success");            
-            fqCurrentFigData = response.file;
+            if(fqExportMode !== "upload") fqCurrentFigData = response.file;
             jQuery("#fq-menu-item-save-figure")
               .find("i")
               .removeClass("fa-spinner fa-pulse")
               .addClass("fa-save");
             jQuery("#fq-modal-save-confirm-btn").removeClass("is-loading");
+            if(fqExportMode !== "upload") jQuery("#fq-modal-file").removeClass("is-active");
 
           })
           .fail(function() {
@@ -1055,21 +1056,13 @@ export default {
         }
 
         const showSaveFigureAsDialog = () => {
-          jQuery(".modal-action-panel, #fq-modal-file-search-block, #fq-modal-file-tab-preloaded").addClass("is-hidden");
-          jQuery(".file-save-panel").removeClass("is-hidden");
-          jQuery("#file-panel-heading").html("Save figure as");
-
           if(fqCurrentFigData){
             var fName = fqCurrentFigData.filename.replace(/\.[^/.]+$/, "");
             jQuery("#fq-modal-save-name-input").val(fName);
           } else {
             jQuery("#fq-modal-save-name-input").val("");
           }
-
-          jQuery("#fq-modal-file, #fq-modal-file-tab-my").addClass("is-active");
-          jQuery("#fq-modal-save-confirm-btn").prop("disabled", true);
-
-          fqModalMode = "saveFigure";
+          prepareFileModal("saveFigureAs");
           refreshModalContents();
         }
 
@@ -1097,6 +1090,63 @@ export default {
             px: 1,
             '%': 0
           };
+        }
+
+        const prepareFileModal = (mode, launchModal = true) => {
+          var elements = [];
+          var heading = "";
+          switch (mode) {
+            case "openFigure":
+              elements.hide = ".modal-action-panel, .fq-modal-file-tab";
+              elements.reveal = ".figure-open-panel, #fq-modal-file-tab-my, #fq-modal-file-tab-shared";
+              elements.disable = "#fq-modal-files-open-figure-confirm";
+              elements.activate = "#fq-modal-file-tab-my";
+              heading = "Open figure";
+              fqModalMode = "openFigure";
+              break;
+          
+            case "saveFigure":
+              
+              break;
+          
+            case "saveFigureAs":
+              elements.hide = ".modal-action-panel, .fq-modal-file-tab, #fq-modal-file-search-block, #fq-modal-file-tab-preselected, #fq-modal-file-tab-shared";
+              elements.reveal = ".file-save-panel, #fq-modal-file-tab-my";
+              elements.disable = "#fq-modal-save-confirm-btn";
+              elements.activate = "#fq-modal-file-tab-my";
+              heading = "Save figure as";    
+              fqModalMode = "saveFigure";
+              break;
+          
+            case "importLocalContent":
+              elements.hide = ".modal-action-panel, .fq-modal-file-tab, #fq-modal-file-search-block, #fq-modal-file-tab-preselected, #fq-modal-file-tab-shared";
+              elements.reveal = ".file-upload-panel, #fq-modal-file-tab-my";
+              elements.disable = "#fq-modal-upload-confirm-btn";
+              elements.activate = "#fq-modal-file-tab-my";
+              heading = "Select destination folder in FiglinQ";    
+              fqModalMode = "upload";
+              fqExportMode = "upload";
+              break;
+          
+            case "addFiglinqContent":
+   
+              elements.hide = ".modal-action-panel, .fq-modal-file-tab, #fq-modal-file-tab-preselected";
+              elements.reveal = ".content-add-panel, #fq-modal-file-tab-my, #fq-modal-file-tab-shared";
+              elements.disable = "#fq-modal-add-confirm-btn";
+              elements.activate = "#fq-modal-file-tab-my";
+              heading = "Select content to add to this figure";    
+              fqModalMode = "addContent";
+              break;
+            default:
+              break;
+          }
+
+          jQuery("#file-panel-heading").html(heading);
+          jQuery(elements.hide).addClass("is-hidden");
+          jQuery(elements.disable).prop("disabled", true);
+          jQuery(elements.reveal).removeClass("is-hidden");          
+          jQuery(elements.activate).addClass("is-active");
+          if(launchModal) jQuery("#fq-modal-file").addClass("is-active");
         }
 
         jQuery(document).on("change", "#fq-file-upload-input", () => {
@@ -1208,14 +1258,7 @@ export default {
         });
 
         jQuery(document).on("click", "#fq-menu-item-import-local-content", (e) => {
-          fqModalMode = "upload";
-          jQuery("#fq-file-upload-input").val("");
-          jQuery("#fq-file-upload-input-label").html("No file selected");
-          jQuery("#file-panel-heading").html("Select destination folder in FiglinQ");
-          jQuery(".modal-action-panel, #fq-modal-file-tab-shared, #fq-modal-file-tab-preloaded").addClass("is-hidden");
-          jQuery(".file-upload-panel").removeClass("is-hidden");
-          jQuery("#fq-modal-file, #fq-modal-file-tab-my").addClass("is-active");
-          jQuery("#fq-modal-upload-confirm-btn").prop("disabled", true);
+          prepareFileModal("importLocalContent");
           refreshModalContents();
         });
 
@@ -1330,16 +1373,16 @@ export default {
             jQuery("#fq-modal-file-search-wrapper").prop( "disabled", true );
           } else if(fqModalFileTabMode == "my"){
             jQuery("#fq-modal-file-search-wrapper").prop( "disabled", false );
-          } else if(fqModalFileTabMode == "preloaded"){
+          } else if(fqModalFileTabMode == "preselected"){
             jQuery("#fq-modal-file-search-wrapper").prop( "disabled", true );
-            refreshModalContents(fqItemListPreloaded.fids);
+            refreshModalContents(fqItemListPreselected.fids);
             return;
           }
 
           fqLastFolderId = {
             my: false,
             shared: false,
-            preloaded: false,
+            preselected: false,
           },
           refreshModalContents();
         })
@@ -1355,9 +1398,11 @@ export default {
               jQuery(".fq-modal-plot-item, .fq-modal-image-item").removeClass("is-active");
               jQuery(e.target).addClass("is-active");
               var text = jQuery(e.target).find(".fq-list-item-text").html();
-              text = text.replace(/\.[^/.]+$/, "");
-              jQuery("#fq-modal-save-name-input").val(text);
-              jQuery("#fq-modal-save-confirm-btn").prop("disabled", false);
+              if(text.toLowerCase().endsWith(".svg")){
+                text = text.replace(/\.[^/.]+$/, "");
+                jQuery("#fq-modal-save-name-input").val(text);
+                jQuery("#fq-modal-save-confirm-btn").prop("disabled", false);
+              }
             }
             return
           }
@@ -1365,7 +1410,7 @@ export default {
           if(fqModalMode === "openFigure"){
             jQuery(".fq-modal-plot-item, .fq-modal-image-item").removeClass("is-active");
             jQuery(e.target).addClass("is-active");
-            jQuery("#fq-modal-files-btn-openfig").prop("disabled", false);
+            jQuery("#fq-modal-files-open-figure-confirm").prop("disabled", false);
             return
           }
 
@@ -1426,7 +1471,8 @@ export default {
         });
 
         jQuery(document).on("click", "#fq-modal-add-confirm-btn", e => {          
-       
+          svgCanvas.clearSelection();
+          e.target.blur();
           jQuery(e.target).addClass("is-loading");
           const selector = ".fq-modal-plot-item.is-active, .fq-modal-image-item.is-active";
           const selectedItems = getSortedElems(selector, "data-index");
@@ -1500,7 +1546,7 @@ export default {
               jQuery(e.target).removeClass("is-loading");
               jQuery("#fq-modal-file").removeClass("is-active");
               jQuery(document).unbind("keyup", closeModalOnEscape);
-              setTimeout(function(){ svgEditor.zoomChanged(window, "layer"); }, 300);
+              setTimeout(function(){ svgEditor.zoomChanged(window, "layer");}, 300);
             }
           });
         });
@@ -1524,7 +1570,7 @@ export default {
           }
         });
 
-        jQuery(document).on("click", "#fq-modal-files-btn-openfig", () => {
+        jQuery(document).on("click", "#fq-modal-files-open-figure-confirm", () => {
           jQuery("#fq-modal-file").removeClass("is-active");
           jQuery(document).unbind("keyup", closeModalOnEscape);
           jQuery("#fq-modal-confirm-btn-ok").html("Open figure");
@@ -1620,14 +1666,8 @@ export default {
         jQuery(document).on("click", ".fq-menu-add-content-btn", () => {
           var checked = jQuery("#fq-menu-interact-switch").is(":checked");
           if(checked) jQuery("#fq-menu-interact-switch").click();
-
-          jQuery(".modal-action-panel").addClass("is-hidden");
-          jQuery(".content-add-panel, #fq-modal-file-search-block").removeClass("is-hidden");
-          jQuery("#file-panel-heading").html("Select content to add");
-
-          fqModalMode = "addContent";
+          prepareFileModal("addFiglinqContent");
           refreshModalContents();
-
         });
 
         jQuery(document).on("click", "#fq-menu-item-save-figure", async (event) => {
@@ -1681,15 +1721,7 @@ export default {
         }); 
 
         jQuery(document).on("click", "#fq-menu-item-open-figure", () => {
-         
-          jQuery(".modal-action-panel").addClass("is-hidden");
-          jQuery("#file-panel-heading").html("Open figure");
-          jQuery(".figure-open-panel").removeClass("is-hidden");
-
-          jQuery("#fq-modal-file").addClass("is-active");
-          jQuery("#fq-modal-files-btn-openfig").prop("disabled", true);
-
-          fqModalMode = "openFigure";
+          prepareFileModal("openFigure");          
           refreshModalContents();
         });
 
