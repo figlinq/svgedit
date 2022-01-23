@@ -153,10 +153,10 @@ export default {
               jQuery("#fq-menu-signup-btn").addClass("is-hidden");
               jQuery(".fq-menu-add-content-btn").removeClass("is-hidden");
               jQuery("#fq-menu-interact-switch-item").removeClass("is-hidden");
-              jQuery("#fq-menu-item-open-figure").removeClass("is-hidden");
-              jQuery("#fq-menu-item-save-figure").removeClass("is-hidden");
-              jQuery("#fq-menu-item-save-figure-as").removeClass("is-hidden");
-              jQuery("#fq-menu-item-import-local-content").removeClass("is-hidden");
+              jQuery("#fq-menu-file-open-figure").removeClass("is-hidden");
+              jQuery("#fq-menu-file-save-figure").removeClass("is-hidden");
+              jQuery("#fq-menu-file-save-figure-as").removeClass("is-hidden");
+              jQuery("#fq-menu-file-import-local-content").removeClass("is-hidden");
               jQuery("#fq-breadcrumb-item-home")
                 .data("fid", `${data.username}:-1`)
                 .find(".fq-modal-folder-item")
@@ -577,16 +577,16 @@ export default {
 
           let showGrid = svgEditor.configObj.curConfig.showGrid;
           if(showGrid){
-            jQuery("#fq-menu-show-grid").find("i").removeClass("fa-square").addClass("fa-check-square");
+            jQuery("#fq-menu-view-show-grid").find("i").removeClass("fa-square").addClass("fa-check-square");
           } else {
-            jQuery("#fq-menu-show-grid").find("i").addClass("fa-square").removeClass("fa-check-square");
+            jQuery("#fq-menu-view-show-grid").find("i").addClass("fa-square").removeClass("fa-check-square");
           }
 
           let showRulers = svgEditor.configObj.curConfig.showRulers;
           if(showRulers){
-            jQuery("#fq-menu-show-rulers").find("i").removeClass("fa-square").addClass("fa-check-square");
+            jQuery("#fq-menu-view-show-rulers").find("i").removeClass("fa-square").addClass("fa-check-square");
           } else {
-            jQuery("#fq-menu-show-rulers").find("i").addClass("fa-square").removeClass("fa-check-square");
+            jQuery("#fq-menu-view-show-rulers").find("i").addClass("fa-square").removeClass("fa-check-square");
           }
         };
 
@@ -1037,7 +1037,7 @@ export default {
             
             showToast("File " + response.file.filename + successMsg, "is-success");            
             if(fqExportMode !== "upload") fqCurrentFigData = response.file;
-            jQuery("#fq-menu-item-save-figure")
+            jQuery("#fq-menu-file-save-figure")
               .find("i")
               .removeClass("fa-spinner fa-pulse")
               .addClass("fa-save");
@@ -1046,7 +1046,7 @@ export default {
 
           })
           .fail(function() {
-            jQuery("#fq-menu-item-save-figure")
+            jQuery("#fq-menu-file-save-figure")
               .find("i")
               .removeClass("fa-spinner fa-pulse")
               .addClass("fa-save");
@@ -1131,7 +1131,7 @@ export default {
             case "addFiglinqContent":
    
               elements.hide = ".modal-action-panel, .fq-modal-file-tab, #fq-modal-file-tab-preselected";
-              elements.reveal = ".content-add-panel, #fq-modal-file-tab-my, #fq-modal-file-tab-shared";
+              elements.reveal = ".content-add-panel, #fq-modal-file-search-block, #fq-modal-file-tab-my, #fq-modal-file-tab-shared";
               elements.disable = "#fq-modal-add-confirm-btn";
               elements.activate = "#fq-modal-file-tab-my";
               heading = "Select content to add to this figure";    
@@ -1239,7 +1239,7 @@ export default {
           }
         });
 
-        jQuery(document).on("click", "#fq-menu-file-item-export", () => {          
+        jQuery(document).on("click", "#fq-menu-file-export", () => {
           jQuery("#fq-modal-export").addClass("is-active");
         });
 
@@ -1256,8 +1256,16 @@ export default {
           jQuery("#fq-modal-import-newfig").removeClass("is-active");
           showSaveFigureAsDialog();
         });
+        
+        jQuery(document).on("click", ".navbar-dropdown .navbar-item", (e) => {
+          e.target.blur();
+          jQuery(e.target).parents(".navbar-item.has-dropdown").removeClass("is-hoverable");
+          setTimeout(function(){ 
+            jQuery(e.target).parents(".navbar-item.has-dropdown").addClass("is-hoverable");
+          }, 100);
+        });
 
-        jQuery(document).on("click", "#fq-menu-item-import-local-content", (e) => {
+        jQuery(document).on("click", "#fq-menu-file-import-local-content", () => {
           prepareFileModal("importLocalContent");
           refreshModalContents();
         });
@@ -1286,28 +1294,28 @@ export default {
           jQuery(e.target).val(newValue);
         });
 
-        jQuery(document).on("click", "#fq-menu-show-grid", () => {
+        jQuery(document).on("click", "#fq-menu-view-show-grid", () => {
           jQuery("#view_grid").click();
           let showGrid = svgEditor.configObj.curConfig.showGrid;
           if(showGrid){
-            jQuery("#fq-menu-show-grid").find("i").removeClass("fa-square").addClass("fa-check-square");
+            jQuery("#fq-menu-view-show-grid").find("i").removeClass("fa-square").addClass("fa-check-square");
           } else {
-            jQuery("#fq-menu-show-grid").find("i").addClass("fa-square").removeClass("fa-check-square");
+            jQuery("#fq-menu-view-show-grid").find("i").addClass("fa-square").removeClass("fa-check-square");
           }
         });
         
-        jQuery(document).on("click", "#fq-menu-show-rulers", () => {
+        jQuery(document).on("click", "#fq-menu-view-show-rulers", () => {
           let showRulers = svgEditor.configObj.curConfig.showRulers;
           if(!showRulers){
-            jQuery("#fq-menu-show-rulers").find("i").removeClass("fa-square").addClass("fa-check-square");
+            jQuery("#fq-menu-view-show-rulers").find("i").removeClass("fa-square").addClass("fa-check-square");
           } else {
-            jQuery("#fq-menu-show-rulers").find("i").addClass("fa-square").removeClass("fa-check-square");
+            jQuery("#fq-menu-view-show-rulers").find("i").addClass("fa-square").removeClass("fa-check-square");
           }
           svgEditor.configObj.curConfig.showRulers = !showRulers;
           svgEditor.rulers.display(!showRulers);
         });
 
-        jQuery(document).on("click", "#fq-menu-item-doc-properties", () => {
+        jQuery(document).on("click", "#fq-menu-file-document-properties", () => {
           jQuery("#fq-doc-size").val("");
           const baseUnit = svgEditor.configObj.curConfig.baseUnit;
           const resolution = svgEditor.svgCanvas.getResolution();
@@ -1581,7 +1589,7 @@ export default {
           jQuery("#fq-modal-confirm-btn-ok").on("click", {fid: fid}, openFigure);
         });
 
-        jQuery(document).on("click", "#fq-menu-file-item-newfig", () => {
+        jQuery(document).on("click", "#fq-menu-file-new-figure", () => {
           jQuery("#fq-modal-confirm-btn-ok").html("New figure");
           jQuery("#fq-modal-confirm-btn-ok").on("click", onConfirmClear);
           jQuery("#fq-modal-confirm").addClass("is-active");
@@ -1670,14 +1678,14 @@ export default {
           refreshModalContents();
         });
 
-        jQuery(document).on("click", "#fq-menu-item-save-figure", async (event) => {
+        jQuery(document).on("click", "#fq-menu-file-save-figure", async (event) => {
 
           if(!fqCurrentFigData){
             showSaveFigureAsDialog();
             return;
           }
 
-          jQuery("#fq-menu-item-save-figure")
+          jQuery("#fq-menu-file-save-figure")
             .find("i")
             .removeClass("fa-save")
             .addClass("fa-spinner fa-pulse");
@@ -1716,11 +1724,11 @@ export default {
           uploadFileToFiglinQ(formData, apiEndpoint, world_readable, false, parentId);
         })
 
-        jQuery(document).on("click", "#fq-menu-item-save-figure-as", () => {
+        jQuery(document).on("click", "#fq-menu-file-save-figure-as", () => {
           showSaveFigureAsDialog();
         }); 
 
-        jQuery(document).on("click", "#fq-menu-item-open-figure", () => {
+        jQuery(document).on("click", "#fq-menu-file-open-figure", () => {
           prepareFileModal("openFigure");          
           refreshModalContents();
         });
