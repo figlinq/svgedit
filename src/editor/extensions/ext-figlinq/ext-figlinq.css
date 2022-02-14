@@ -30,6 +30,7 @@
 #fq-modal-item-list-container {
   max-height: calc(100vh - 270px);
   overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 #main_button {
@@ -116,4 +117,18 @@ html {
 
 .navbar-item span{
   pointer-events: none;
+}
+
+
+.panel-list-item .fa-stack{
+  vertical-align: middle;
+  font-size: 8px;
+  width: 1.8em !important;
+  margin-right: 1.25em;
+}
+
+.panel-list-explanation{
+  display: block;
+  position: absolute;
+  right: 25px;
 }

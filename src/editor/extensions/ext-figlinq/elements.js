@@ -25,6 +25,22 @@ export function imageItem(name, fid, index){
     </a>`;
 }
 
+export function figureItem(name, fid, index, haslinkedcontent=false){
+    const disabledStr = haslinkedcontent ? "is-disabled" : "";
+    const explanation = haslinkedcontent ? 
+        `<span class="fq-list-item-text panel-list-explanation"><i class="fas fa-exclamation-triangle mr-2"></i>Figure with linked content cannot be added to another figure.</span>` : 
+        "";
+    return `
+    <a class="panel-block panel-list-item fq-modal-figure-item noselect is-size-7 ${disabledStr}" data-ftype="figure" data-fid="${fid}" data-index="${index}">
+        <span class="panel-icon fa-stack">
+            <i class="fas fa-shapes fa-stack-1x"></i>
+            <i class="far fa-square fa-stack-2x"></i>
+        </span>
+        <span class="fq-list-item-text">${name}</span>
+        ${explanation}
+    </a>`;
+}
+
 export function breadcrumb(dataFid, fname){
     const fid = dataFid.includes(":")
         ? dataFid.substring(dataFid.indexOf(":") + 1)
