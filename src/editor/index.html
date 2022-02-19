@@ -90,20 +90,20 @@
   </a>
 
   <!-- Navbar -->
-  <nav class="navbar is-info" role="navigation" aria-label="main navigation" style="background-color: rgb(8, 84, 125);">
+  <nav id="fq-main-navbar" class="navbar is-info" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
       <a class="navbar-item" href="https://figlinq.com">
         <img src="images/figlinq/logo_text_dark.svg" width="80">
       </a>
   
-      <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+      <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="fq-main-navbar-menu">
         <span aria-hidden="true"></span>
         <span aria-hidden="true"></span>
         <span aria-hidden="true"></span>
       </a>
     </div>
   
-    <div id="navbar" class="navbar-menu">
+    <div id="fq-main-navbar-menu" class="navbar-menu">
       <div class="navbar-start">
         <div class="navbar-item has-dropdown is-hoverable">
           <a class="navbar-link">
@@ -176,7 +176,7 @@
         </div>
 
         <div class="navbar-item has-dropdown is-hoverable">
-          <a class="navbar-link">
+          <a class="navbar-link has-text-5">
             View
           </a>
           <div class="navbar-dropdown" style="min-width: 200px;">
@@ -210,20 +210,53 @@
       <div class="navbar-end">
         <div class="navbar-item">
           <div class="buttons">
-            <a id="fq-menu-add-content-btn_btn" class="button is-light is-small is-hidden fq-menu-add-content-btn is-hidden">
+            <a id="fq-menu-add-content-btn_btn" class="button fq-navbar-button is-light is-small is-hidden fq-menu-add-content-btn is-hidden">
               <span class="icon">
                 <i class="fas fa-plus"></i>
               </span>
-              <span><strong>Add content</strong></span>
+              <span>Add content</span>
             </a>
-            <a href="https://figlinq.com/sign-up" id="fq-menu-signup-btn" class="button is-light is-small is-hidden">
-              <strong>Sign up</strong>
+            <a href="https://figlinq.com/sign-up" id="fq-menu-signup-btn" class="button fq-navbar-text-button is-ghost is-hidden">
+              Sign up
             </a>
-            <a href="https://create.figlinq.com/organize/home/" id="fq-menu-login-btn" class="button is-light is-small is-hidden">
-              Log in
+            <a href="https://create.figlinq.com/organize/home/" id="fq-menu-login-btn" class="button is-light is-small fq-navbar-button is-hidden">
+              Sign in
             </a>
           </div>
         </div>
+
+        <div id="fq-menu-account-navbar-item" class="navbar-item has-dropdown is-hoverable mr-3 is-hidden">
+          <a class="navbar-link has-text-5">
+            <span id="fq-menu-account-user-name">Account</span>
+          </a>
+          <div class="navbar-dropdown" style="min-width: 200px;">
+            <a id="fq-menu-account-my-files" class="navbar-item" target="_blank">
+              <span class="icon-text">
+                <span class="icon">
+                  <i class="fas fa-folder"></i>
+                </span>
+                <span>My files</span>
+              </span>
+            </a>
+            <a id="fq-menu-account-settings" class="navbar-item" target="_blank">
+              <span class="icon-text">
+                <span class="icon">
+                  <i class="fas fa-cogs"></i>
+                </span>
+                <span>Settings</span>
+              </span>
+            </a>
+            <a id="fq-menu-account-sign-out" class="navbar-item">
+              <span class="icon-text">
+                <span class="icon">
+                  <i class="fas fa-sign-out-alt"></i>
+                </span>
+                <span>Sign out</span>
+              </span>              
+            </a>
+          </div>
+        </div>
+        
       </div>
     </div>
   </nav>

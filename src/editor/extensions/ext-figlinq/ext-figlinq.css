@@ -132,3 +132,27 @@ html {
   position: absolute;
   right: 25px;
 }
+
+.fq-navbar-button{
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  color: #08547d !important;
+  border-radius: 5px !important;
+  padding: 9px 18px !important;
+  height: 2.3em !important;
+}
+.fq-navbar-text-button{
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  color: white !important;
+}
+
+.fq-navbar-button:hover, .fq-navbar-text-button:hover{
+  color: #55bbe7 !important;
+  text-decoration: none !important;
+}
+
+#fq-main-navbar{
+  box-shadow: rgb(0 0 0 / 35%) 0px 2px 5px 0px !important;
+  background-color: rgb(8, 84, 125);
+}

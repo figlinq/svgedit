@@ -158,14 +158,18 @@ export default {
               jQuery("#fq-menu-file-save-figure-as").removeClass("is-hidden");
               jQuery("#fq-menu-file-import-local-content").removeClass("is-hidden");
               jQuery("#fq-breadcrumb-item-home")
-                .data("fid", `${data.username}:-1`)
-                .find(".fq-modal-folder-item")
-                .data("fid", `${data.username}:-1`);
+              .data("fid", `${data.username}:-1`)
+              .find(".fq-modal-folder-item")
+              .data("fid", `${data.username}:-1`);
               
               fqUserId = data.username;
+              jQuery("#fq-menu-account-user-name").html(fqUserId);
+              jQuery("#fq-menu-account-navbar-item").removeClass("is-hidden");
+              jQuery("#fq-menu-account-my-files").attr("href", baseUrl + "/organize/home");
+              jQuery("#fq-menu-account-sign-out").attr("href", baseUrl + "/signout");
+              jQuery("#fq-menu-account-settings").attr("href", baseUrl + "/settings/profile");
               fqCsrfToken = data.csrf_token;
               fqUserData = data;
-              // console.log(fqCsrfToken);
             } else {
               showToast("Could not retrieve current user data, are you logged in to FiglinQ in this browser?", "is-danger");
             }
@@ -1797,6 +1801,11 @@ export default {
         jQuery(document).on("click", "#fq-menu-file-save-figure-as", () => {
           showSaveFigureAsDialog();
         }); 
+
+        jQuery(document).on("click", ".navbar-burger", () => {
+          jQuery(".navbar-burger").toggleClass("is-active");
+          jQuery(".navbar-menu").toggleClass("is-active");
+        });
 
         jQuery(document).on("click", "#fq-menu-file-open-figure", () => {
           prepareFileModal("openFigure");          
