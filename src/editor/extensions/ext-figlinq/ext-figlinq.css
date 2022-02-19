@@ -156,3 +156,9 @@ html {
   box-shadow: rgb(0 0 0 / 35%) 0px 2px 5px 0px !important;
   background-color: rgb(8, 84, 125);
 }
+
+#fq-menu-switch-label{
+    position:absolute;
+    top: -1px;
+    font-size: 1.25em;
+}
