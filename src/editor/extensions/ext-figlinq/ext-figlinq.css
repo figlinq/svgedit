@@ -162,3 +162,11 @@ html {
     top: -1px;
     font-size: 1.25em;
 }
+
+.switch[type="checkbox"].is-small + label::after, .switch[type="checkbox"].is-small + label::after {
+  background: white !important;
+}
+
+.switch[type="checkbox"].is-small + label::before, .switch[type="checkbox"].is-small + label::before{
+  /* border-color: white !important; */
+}

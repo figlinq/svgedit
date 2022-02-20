@@ -165,9 +165,9 @@ export default {
               fqUserId = data.username;
               jQuery("#fq-menu-account-user-name").html(fqUserId);
               jQuery("#fq-menu-account-navbar-item").removeClass("is-hidden");
-              jQuery("#fq-menu-account-my-files").attr("href", baseUrl + "/organize/home");
-              jQuery("#fq-menu-account-sign-out").attr("href", baseUrl + "/signout");
-              jQuery("#fq-menu-account-settings").attr("href", baseUrl + "/settings/profile");
+              jQuery("#fq-menu-account-my-files").attr("href", baseUrl + "organize/home");
+              jQuery("#fq-menu-account-sign-out").attr("href", baseUrl + "signout");
+              jQuery("#fq-menu-account-settings").attr("href", baseUrl + "settings/profile");
               fqCsrfToken = data.csrf_token;
               fqUserData = data;
             } else {
@@ -387,12 +387,12 @@ export default {
           var index = 0, results = data.children.results;
           
           results.forEach(result => {
-
-            const isSvg = getFileExt(result.filename) === "svg";
+            const isFigure = ('svgedit' in result.metadata);
+            // const isSvg = getFileExt(result.filename) === "svg";
             const includeNonSvg = fqModalMode === "addContent" || fqModalMode === "upload";
             if (result.filetype === "fold" && !result.deleted) {
               fqItemListFolder += folderItem(result.filename, result.fid);
-            } else if (isSvg && result.filetype === "external_image" && !result.deleted) {
+            } else if (isFigure && result.filetype === "external_image" && !result.deleted) {
               // TODO importing figures with external links into other figures is currently disabled, but could be enabled if they are inlined
               var haslinkedcontent = false;
               if(fqModalMode === "addContent" 
@@ -405,7 +405,7 @@ export default {
                 }
               fqItemListFile += figureItem(result.filename, result.fid, index, haslinkedcontent);
               index += 1;
-            } else if (includeNonSvg && !isSvg && result.filetype === "external_image" && !result.deleted) {
+            } else if (includeNonSvg && !isFigure && result.filetype === "external_image" && !result.deleted) {
               fqItemListFile += imageItem(result.filename, result.fid, index);
               index += 1;
             } else if (includeNonSvg && result.filetype === "plot" && !result.deleted) {
@@ -1016,7 +1016,7 @@ export default {
             successMsg = " uploaded";
             errorMsg = " uploaded";
           } else {
-            xFileName = fqExportDocFname + ".svg";
+            xFileName = fqExportDocFname;
             successMsg = " saved";
             errorMsg = " saved";
           } 
