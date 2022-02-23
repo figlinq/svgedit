@@ -186,6 +186,7 @@ export default {
         };
 
         const setInteractiveOff = () => {
+          jQuery("#fq-menu-interact-switch").prop( "checked", false );
           const fObjects = jQuery("svg[class='fq-fobj-container']");
           fObjects.each(function() {
             var ref_id = jQuery(this).data("ref_id");
@@ -1732,14 +1733,15 @@ export default {
         });
 
         jQuery(document).on("click", ".fq-menu-add-content-btn", () => {
-          var checked = jQuery("#fq-menu-interact-switch").is(":checked");
-          if(checked) jQuery("#fq-menu-interact-switch").click();
+          setInteractiveOff();
           prepareFileModal("addFiglinqContent");
           refreshModalContents();
         });
 
         jQuery(document).on("click", "#fq-menu-file-save-figure", async (event) => {
-
+          
+          setInteractiveOff();
+          
           if(!fqCurrentFigData){
             showSaveFigureAsDialog();
             return;
@@ -1750,10 +1752,6 @@ export default {
             .removeClass("fa-save")
             .addClass("fa-spinner fa-pulse");
           event.target.blur();
-
-
-          setInteractiveOff();
-          jQuery("#fq-menu-interact-switch").prop( "checked", false );
           
           fqExportMode = "thumb";
           fqExportDocType = "png";
@@ -1799,6 +1797,7 @@ export default {
         })
 
         jQuery(document).on("click", "#fq-menu-file-save-figure-as", () => {
+          setInteractiveOff();
           showSaveFigureAsDialog();
         }); 
 
@@ -1813,7 +1812,6 @@ export default {
         });
 
         // Init
-        jQuery("#fq-menu-interact-switch").prop( "checked", false );
         createUnitMap();
         ensureRulesGrids();
         getFqUserId();
