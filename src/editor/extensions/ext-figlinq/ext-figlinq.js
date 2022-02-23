@@ -634,7 +634,7 @@ export default {
             jQuery("#fq-modal-file-search-icon").addClass("fas fa-search");
           }
 
-          q = q.length >= 3 ? q : false;
+          q = q.length >= 2 ? q : false;
 
           if(fidArray) { // Open specific fids in modal
             updateItemList(fidArray, 1, q);
