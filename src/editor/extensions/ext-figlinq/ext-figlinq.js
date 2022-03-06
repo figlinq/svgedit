@@ -76,7 +76,7 @@ export default {
             preselected: false,
           },
           fqSearchMode = false,
-          // fqPreselectedFids = false,
+          fqHighlightedFids = false,
           fqExportDocType,
           fqExportDocQuality,
           fqExportDocSize,
@@ -192,7 +192,7 @@ export default {
             var ref_id = jQuery(this).data("ref_id");
             jQuery("#"+ref_id).attr("visibility", "visible");
             this.remove();
-          });
+          });          
         };
 
         const setInteractiveOn = () => {
@@ -204,7 +204,7 @@ export default {
             currentImg = jQuery(this);
             newSvgObject = generateSvgObject(currentImg);
             newElem = svgCanvas.addSVGElementFromJson(newSvgObject);
-            this.parentNode.insertBefore(newElem, this.nextSibling);
+            // this.parentNode.insertAfter(newElem, this.nextSibling);
             this.setAttribute("visibility", "hidden");
           });
         };
@@ -298,8 +298,8 @@ export default {
           return dataFid.split(":")[index];
         }
 
-        const getFileDataFromFiglinQ = (fid) => {
-          const url = `${baseUrl}v2/files/${fid}`;
+        const getFileDataFromFiglinQ = (fid, endpoint="files") => {
+          const url = `${baseUrl}v2/${endpoint}/${fid}`;
           return new Promise((resolve) => {
             jQuery
             .ajax({
@@ -389,7 +389,6 @@ export default {
           
           results.forEach(result => {
             const isFigure = ('svgedit' in result.metadata);
-            // const isSvg = getFileExt(result.filename) === "svg";
             const includeNonSvg = fqModalMode === "addContent" || fqModalMode === "upload";
             if (result.filetype === "fold" && !result.deleted) {
               fqItemListFolder += folderItem(result.filename, result.fid);
@@ -429,13 +428,21 @@ export default {
           }
           var items = results.length == 1 ? "item" : "items";
           jQuery("#fq-modal-file-search-items-found").text(results.length + " " + items + " found");
-          
           if(fqItemListPreselected && fqModalFileTabMode === "preselected"){
             fqItemListPreselected.fids.forEach(fid => {
+              console.log(fid)
               const isDisabled = jQuery("*[data-fid='" + fid + "']").hasClass("is-disabled"); 
               if(!isDisabled) jQuery("*[data-fid='" + fid + "']").addClass("is-active");
+              
               jQuery("#fq-modal-add-confirm-btn").prop("disabled", false);
             });
+          }
+
+          if(fqHighlightedFids){
+            fqHighlightedFids.forEach(fid => {
+              jQuery("*[data-fid='" + fid + "']").addClass("is-active");
+            })
+            fqHighlightedFids = false;
           }
         }
 
@@ -516,23 +523,24 @@ export default {
           return newSvg;
         };
 
-        const importImage = (url, width = "auto", height = "auto", x, y, selectedType, fid, contentHref = false) => {
+        const importImage = (imgProps) => {
+
           var attr = {
-            id: svgCanvas.getNextId(),
-            style: "pointer-events:inherit",
-            class: "fq-" + selectedType,
-            href: url,
-            width: width,
-            height: height,
-            x: x,
-            y: y,
             xmlns: NS.SVG,
             preserveAspectRatio: "none",
-            "data-original_dimensions": `${width},${height}`,
-            "data-fid": fid,
+            id: svgCanvas.getNextId(),
+            style: "pointer-events:inherit",
+            class: "fq-" + imgProps.filetype,
+            href: imgProps.imgHref,
+            width: imgProps.width,
+            height: imgProps.height,
+            x: imgProps.x,
+            y: imgProps.y,
+            "data-original_dimensions": `${imgProps.widthOriginal},${imgProps.heightOriginal}`,
+            "data-fid": imgProps.fid,
           }
 
-          if(contentHref) attr["data-content_href"] = contentHref;
+          if(imgProps.filetype == "plot") attr["data-content_href"] = imgProps.contentHref;
 
           const _img = {
             element: "image",
@@ -543,9 +551,8 @@ export default {
           const batchCmd = new BatchCommand('Insert plot');
           const newElem = svgCanvas.addSVGElementFromJson(_img);
           batchCmd.addSubCommand(new InsertElementCommand(newElem));
-          svgCanvas.undoMgr.addCommandToHistory(batchCmd);          
+          svgCanvas.undoMgr.addCommandToHistory(batchCmd);
           svgCanvas.call('changed', [newElem]);
-          // document.activeElement.blur();
         };
 
         const getSvgFromEditor = () => {
@@ -1048,13 +1055,13 @@ export default {
               if(fqExportMode === "upload"){
                 jQuery("#fq-file-upload-input").val("");
                 jQuery("#fq-file-upload-input-label").html("No file selected");
-                jQuery("#file-panel-heading").html("Select content to add");
-                jQuery(".content-add-panel, #fq-modal-file-tab-shared").removeClass("is-hidden");
+                jQuery("#file-panel-heading").html("Select content you want to add to the figure");
+                jQuery(".content-a  dd-panel, #fq-modal-file-tab-shared").removeClass("is-hidden");
                 jQuery(".file-upload-panel").addClass("is-hidden");
                 jQuery("#fq-modal-file-tab-my").addClass("is-active");
                 fqModalFileTabMode = "my";
                 fqModalMode = "addContent";
-                // fqPreselectedFids = [response.file.fid];
+                fqHighlightedFids = [response.file.fid];
               } else {
                 jQuery("#fq-modal-file").removeClass("is-active");
                 jQuery(document).unbind("keyup", closeModalOnEscape);
@@ -1193,6 +1200,20 @@ export default {
           jQuery(elements.activate).addClass("is-active");
           if(launchModal) jQuery("#fq-modal-file").addClass("is-active");
         }
+
+        const scaleElement = (fixedDim, elemWidth, elemHeight, refWidth, refHeight) => {
+          
+          var scaledDims = {};
+
+          if (fixedDim === "width"){
+            scaledDims.width = refWidth;
+            scaledDims.height = Math.round(elemHeight * refWidth / elemWidth);
+          } else if (fixedDim === "height"){
+            scaledDims.width = Math.round(elemWidth * refHeight / elemHeight);
+            scaledDims.height = refHeight;
+          }
+          return scaledDims;
+      }
 
         jQuery(document).on("change", "#fq-file-upload-input", () => {
           var fileName = jQuery('#fq-file-upload-input')[0].files.length ? jQuery('#fq-file-upload-input')[0].files[0].name : false;
@@ -1515,7 +1536,8 @@ export default {
           jQuery("#fq-modal-refresh-btn").addClass("is-loading");
         });
     
-        jQuery(document).on("click", "#fq-menu-interact-switch", () => {
+        jQuery(document).on("click", "#fq-menu-interact-switch", (e) => {
+          e.target.blur();
           var checked = jQuery("#fq-menu-interact-switch").is(":checked");
           if (checked) {
             setInteractiveOn();
@@ -1530,78 +1552,130 @@ export default {
           jQuery(e.target).addClass("is-loading");
           const selector = ".fq-modal-plot-item.is-active, .fq-modal-image-item.is-active, .fq-modal-figure-item.is-active";
           const selectedItems = getSortedElems(selector, "data-index");
-          var x = 0,
-            y = 0,
-            colNumber = jQuery("#col_select").val(),
-            curCol = 1,
-            selectedFid, ext, userId, fileNumId;
-
+          const fixedDim = "height";
+          const columnNumber = jQuery("#col_select").val();
+          var pageDims = svgEditor.svgCanvas.getResolution();
+        
+          var elementProps = [];
           jQuery.each(selectedItems, index => {
-            
-            selectedFid = jQuery(selectedItems[index]).data("fid");
-            userId = getNumIdFromFid(selectedFid, 0);
-            fileNumId = getNumIdFromFid(selectedFid, 1);
+            elementProps[index] = {
+              fid: jQuery(selectedItems[index]).data("fid"),
+              endpoint: jQuery(selectedItems[index]).data("ftype") == "plot" ? "plots" : "files"
+            };
+          });
 
-            var selectedType = jQuery(selectedItems[index]).data("ftype");
- 
-            var imgDataUrl = `${baseUrl}v2/plots/${selectedFid}`;
-            
-            ext = selectedType === "plot" ? "svg" : "src";
-
-            const baseHref = `${baseUrl}~${userId}/${fileNumId}.`;
-            const imgHref = baseHref + ext;
-            const contentHref = baseHref + "embed";
-
-            if (selectedType === "plot"){
-              jQuery
-                .ajax({
-                  url: imgDataUrl,
-                  xhrFields: {
-                    withCredentials: true
-                  }
-                })
-                .done(function(data) {
-                  var width = data.figure.layout.width
-                    ? data.figure.layout.width
-                    : 400;
-                  var height = data.figure.layout.height
-                    ? data.figure.layout.height
-                    : 400;
-
-                  importImage(imgHref, width, height, x, y, selectedType, selectedFid, contentHref);
-                  x += width;
-                  curCol += 1;
-                  if (curCol > colNumber) {
-                    curCol = 1;
-                    y += height;
-                    x = 0;
-                  }
-
-                  jQuery(e.target).removeClass("is-loading");
-                  jQuery("#fq-modal-file").removeClass("is-active");
-                  jQuery(document).unbind("keyup", closeModalOnEscape);
-                  setTimeout(function(){ svgEditor.zoomChanged(window, "layer"); }, 300);
-                })
-            } else if (selectedType === "image" || selectedType === "figure"){
-              // TODO: Add width and height fields in v2?
-              const img = new Image();
-              img.onload = function() {
-                importImage(imgHref, this.width, this.height, x, y, selectedType, selectedFid);
-                x += 600;
-                curCol += 1;
-                if (curCol > colNumber) {
-                  curCol = 1;
-                  y += 400;
-                  x = 0;
-                }
-              }
-              img.src = imgHref;
-              
-              jQuery(e.target).removeClass("is-loading");
-              jQuery("#fq-modal-file").removeClass("is-active");
-              jQuery(document).unbind("keyup", closeModalOnEscape);
-              setTimeout(function(){ svgEditor.zoomChanged(window, "layer");}, 300);
+          var actions = elementProps.map(
+            function(prop) { 
+              return getFileDataFromFiglinQ(prop.fid, prop.endpoint);
             }
+          );
+          var results = Promise.all(actions); // pass array of promises
+          results.then(data => {
+
+            var x = 0, y = 0, curColumn = 1;
+
+            // Default plot width / height
+            const wDefault = 400;
+            const hDefault = 360;
+
+            // Reference plot width / height
+            var wRef = wDefault;
+            var hRef = hDefault;
+            
+            // Check if there is at least 1 plot for scaling reference
+            var plotPresent = false;
+            var imgPresent = false;
+            var refPlotIndex = false;
+            data.some((element, index) => {
+              // Get dimensions of the first selected plot, either from layout or from template (if not defined in layout) 
+              const userId = getNumIdFromFid(element.fid, 0);
+              const fileNumId = getNumIdFromFid(element.fid, 1); 
+              const baseHref = `${baseUrl}~${userId}/${fileNumId}.`;
+              var w, h;
+
+              if(element.filetype == "plot") {
+                w = element.figure.layout.hasOwnProperty('width') ? element.figure.layout.width : 
+                  ( element.figure.layout.template.layout.hasOwnProperty('width') ? element.figure.layout.template.layout.width : w);
+                h = element.figure.layout.hasOwnProperty('height') ? element.figure.layout.height : 
+                  ( element.figure.layout.template.layout.hasOwnProperty('height') ? element.figure.layout.template.layout.height : h);                
+                plotPresent = true;
+                if(refPlotIndex === false) {
+                  refPlotIndex = index;
+                  wRef = w;
+                  hRef = h;
+                }
+                data[index].imgHref = baseHref + "svg";
+                data[index].svgeditFiletype = "plot";
+              } else if(element.filetype == "external_image") {
+                w = element.metadata.width;
+                h = element.metadata.height;
+                imgPresent = true;
+                data[index].imgHref = baseHref + "src";                
+                data[index].svgeditFiletype = "image";
+              };
+              data[index].width = w ? w : wDefault;
+              data[index].height = h ? h : hDefault;   
+              data[index].contentHref = baseHref + "embed";
+            });
+
+            // Find the maximum width of all elements after applying the column layout
+            var maxX = 0;
+            data.some((element) => {
+              const scaledDims = scaleElement(fixedDim, element.width, element.height, wRef, hRef)
+              element.widthScaled = scaledDims.width;
+              element.heightScaled = scaledDims.height;
+              
+              x += scaledDims.width;
+              maxX = Math.max(maxX, x);
+              curColumn += 1;
+              if(curColumn > columnNumber) {
+                curColumn = 1;
+                x = 0;
+                y += hRef;
+              }
+            })
+
+            // Calculate scaling page factor
+            const pageScaleFactor = pageDims.w / maxX;
+            const hRefScaled = hRef * pageScaleFactor;
+
+            // Reset positioning
+            curColumn = 1;
+            x = 0;
+            y = 0;
+            data.some((element) => {
+              element.widthScaled = element.widthScaled * pageScaleFactor;
+              element.heightScaled = element.heightScaled * pageScaleFactor;
+
+              var imgProps = {
+                width: element.widthScaled,
+                height: element.heightScaled,
+                widthOriginal: element.width,
+                heightOriginal: element.height,
+                x: x,
+                y: y,
+                filetype: element.svgeditFiletype,
+                fid: element.fid,
+                contentHref: element.contentHref,
+                imgHref: element.imgHref
+              }
+
+              importImage(imgProps);
+              
+              x += element.widthScaled;
+              curColumn += 1;
+              if(curColumn > columnNumber) {
+                curColumn = 1;
+                x = 0;
+                y += hRefScaled;
+              }
+            })
+            
+            jQuery(e.target).removeClass("is-loading");
+            jQuery("#fq-modal-file").removeClass("is-active");
+            jQuery(document).unbind("keyup", closeModalOnEscape);
+            setTimeout(function(){ svgEditor.zoomChanged(window, "layer");}, 500);
+  
           });
         });
 
