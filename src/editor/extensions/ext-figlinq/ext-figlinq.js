@@ -83,7 +83,17 @@ export default {
           fqExportDocFname,
           fqExportMode,
           fqThumbWidth = 1000,
-          _typeMap;
+          _typeMap,
+          fqDefaultMargins = { // in mm
+            left: 15,
+            top: 15,
+            right: 15,
+            bottom: 15,
+          },
+          fqDefaultSpacing = { // in mm
+            horizontal: 5,
+            vertical: 5,
+          };
         const svgAttrWhitelist = ["class", "height", "width", "x", "y", "id"];
         const fqPdfPageSizes = {
           A0: "2383.94x3370.39",
@@ -324,8 +334,21 @@ export default {
 
         const updateItemList = (dataFid, page, searchQuery=false) => {
           if(Array.isArray(dataFid)){
-            // Get data for each file 
-            var actions = dataFid.map(getFileDataFromFiglinQ);
+            // Get data for each file
+            var elementProps = [];
+            dataFid.forEach(fid => {
+              elementProps.push(
+                {
+                  fid: fid,
+                  endpoint: "files"
+                }
+              )
+            });
+            var actions = elementProps.map(
+              function(prop) { 
+                return getFileDataFromFiglinQ(prop.fid, prop.endpoint);
+              }
+            );
             var results = Promise.all(actions); // pass array of promises
             results.then(data => {
               var dataFormatted = {
@@ -430,7 +453,6 @@ export default {
           jQuery("#fq-modal-file-search-items-found").text(results.length + " " + items + " found");
           if(fqItemListPreselected && fqModalFileTabMode === "preselected"){
             fqItemListPreselected.fids.forEach(fid => {
-              console.log(fid)
               const isDisabled = jQuery("*[data-fid='" + fid + "']").hasClass("is-disabled"); 
               if(!isDisabled) jQuery("*[data-fid='" + fid + "']").addClass("is-active");
               
@@ -523,7 +545,7 @@ export default {
           return newSvg;
         };
 
-        const importImage = (imgProps) => {
+        const placeElement = (imgProps) => {
 
           var attr = {
             xmlns: NS.SVG,
@@ -1053,23 +1075,35 @@ export default {
               fqItemListFolder = "";
               fqItemListFile = "";
               if(fqExportMode === "upload"){
-                jQuery("#fq-file-upload-input").val("");
-                jQuery("#fq-file-upload-input-label").html("No file selected");
-                jQuery("#file-panel-heading").html("Select content you want to add to the figure");
-                jQuery(".content-a  dd-panel, #fq-modal-file-tab-shared").removeClass("is-hidden");
-                jQuery(".file-upload-panel").addClass("is-hidden");
-                jQuery("#fq-modal-file-tab-my").addClass("is-active");
-                fqModalFileTabMode = "my";
-                fqModalMode = "addContent";
-                fqHighlightedFids = [response.file.fid];
+
+                const userId = getNumIdFromFid(response.file.fid, 0);
+                const fileNumId = getNumIdFromFid(response.file.fid, 1); 
+                const baseHref = `${baseUrl}~${userId}/${fileNumId}.`;
+
+                const ext = response.file.filetype === "plot" ? "svg" : "src";
+                var elementProps = {
+                  width: response.file.metadata.width,
+                  height: response.file.metadata.height,
+                  widthOriginal: response.file.metadata.width,
+                  heightOriginal: response.file.metadata.height,
+                  x: 0,
+                  y: 0,
+                  filetype: getSvgeditFiletype(response.file.filetype),
+                  fid: response.file.fid,
+                  contentHref: baseHref + "embed",
+                  imgHref: baseHref + ext
+                }  
+                
+                placeElement(elementProps);
+  
               } else {
                 jQuery("#fq-modal-file").removeClass("is-active");
                 jQuery(document).unbind("keyup", closeModalOnEscape);
                 var currentUrl = new URL(document.location);
                 currentUrl.searchParams.set("fid", response.file.fid);
                 window.history.pushState(null, null, decodeURIComponent(currentUrl.href));
+                refreshModalContents();
               }
-              refreshModalContents();
             }
             
             showToast("File " + response.file.filename + successMsg, "is-success");            
@@ -1175,12 +1209,38 @@ export default {
             case "addFiglinqContent":
    
               elements.hide = ".modal-action-panel, .fq-modal-file-tab, #fq-modal-file-tab-preselected";
-              elements.reveal = ".content-add-panel, #fq-modal-file-search-block, #fq-modal-file-tab-my, #fq-modal-file-tab-shared";
+              elements.reveal = ".content-add-panel, .content-add-options-panel, #fq-modal-file-search-block, #fq-modal-file-tab-my, #fq-modal-file-tab-shared";
               elements.disable = "#fq-modal-add-confirm-btn";
               elements.activate = "#fq-modal-file-tab-my";
-              heading = "Select content to add to this figure";    
+              heading = "Select content to add to this figure";
               fqModalMode = "addContent";
+
+              // Update margin/spacing unit and values
+              let curUnit = svgEditor.configObj.curConfig.baseUnit;
+              var mlPx = fqDefaultMargins.left * _typeMap["mm"];
+              var mtPx = fqDefaultMargins.top * _typeMap["mm"];
+              var mrPx = fqDefaultMargins.right * _typeMap["mm"];
+              var mbPx = fqDefaultMargins.bottom * _typeMap["mm"];
+              var shPx = fqDefaultSpacing.horizontal * _typeMap["mm"];
+              var svPx = fqDefaultSpacing.vertical * _typeMap["mm"];
+              
+
+              var mlTarget = Math.round(mlPx / _typeMap[curUnit] * 100) / 100;
+              var mtTarget = Math.round(mtPx / _typeMap[curUnit] * 100) / 100;
+              var mrTarget = Math.round(mrPx / _typeMap[curUnit] * 100) / 100;
+              var mbTarget = Math.round(mbPx / _typeMap[curUnit] * 100) / 100;
+              var shTarget = Math.round(shPx / _typeMap[curUnit] * 100) / 100;
+              var svTarget = Math.round(svPx / _typeMap[curUnit] * 100) / 100;
+
+              jQuery(".margin-unit").html(curUnit);
+              jQuery("#fq-content-add-magin-left").val(mlTarget);
+              jQuery("#fq-content-add-magin-top").val(mtTarget);
+              jQuery("#fq-content-add-magin-right").val(mrTarget);
+              jQuery("#fq-content-add-magin-bottom").val(mbTarget);
+              jQuery("#fq-content-add-spacing-horizontal").val(shTarget);
+              jQuery("#fq-content-add-spacing-vertical").val(svTarget);
               break;
+
             case "addFiglinqPreselectedContent":
               elements.hide = ".modal-action-panel, #fq-modal-file-panel-breadcrumb";
               elements.reveal = ".content-add-panel, #fq-modal-file-tab-my, #fq-modal-file-tab-shared";
@@ -1213,7 +1273,29 @@ export default {
             scaledDims.height = refHeight;
           }
           return scaledDims;
-      }
+        }
+
+        const getSvgeditFiletype = (filetype) => {
+          switch (filetype) {
+            case "external_image":
+              return "image";
+            case "plot":
+              return "plot";
+            default:
+              return false;
+          } 
+        }
+
+        const getPlotProp = (element, propName, defaultPropValue) => {
+
+          // If property is not defined in figure layout, look in template
+          return element.figure.layout.hasOwnProperty(propName) ? 
+            element.figure.layout[propName] : 
+            ( element.figure.layout.template.layout.hasOwnProperty(propName) ? 
+              element.figure.layout.template.layout[propName] : 
+              defaultPropValue
+            );
+        }
 
         jQuery(document).on("change", "#fq-file-upload-input", () => {
           var fileName = jQuery('#fq-file-upload-input')[0].files.length ? jQuery('#fq-file-upload-input')[0].files[0].name : false;
@@ -1225,12 +1307,13 @@ export default {
           }
         });
 
-        jQuery(document).on("click", "#fq-modal-upload-confirm-btn", () => {
+        jQuery(document).on("click", "#fq-modal-upload-confirm-btn", (e) => {
+          e.target.blur();
           if(!jQuery('#fq-file-upload-input')[0].files.length) {
             showToast('Please select the file first!', 'is-warning');
             return;
           }
-          const apiEndpoint = 'upload';          
+          const apiEndpoint = 'upload';
           var world_readable = jQuery("#fq-file-upload-world-readable").val();
           var imageFile = jQuery("#fq-file-upload-input")[0].files[0];
           fqExportDocFname = jQuery("#fq-file-upload-input-label").html();
@@ -1238,7 +1321,7 @@ export default {
 
           var formData = new FormData();
           formData.append("files", imageFile);
-
+          jQuery("#fq-modal-file").removeClass("is-active");
           uploadFileToFiglinQ(formData, apiEndpoint, world_readable, true, getNumIdFromFid(fqLastFolderId[fqModalFileTabMode], 1));
         });
 
@@ -1258,9 +1341,9 @@ export default {
           var hNum = h.match(/\d+/)[0];
 
           var wToPx = wNum * _typeMap[curUnit];
-          var wToTargetUnit = wToPx / _typeMap[targetUnit];
+          var wToTargetUnit = Math.round(wToPx / _typeMap[targetUnit] * 100) / 100;
           var hToPx = hNum * _typeMap[curUnit];
-          var hToTargetUnit = hToPx / _typeMap[targetUnit];
+          var hToTargetUnit = Math.round(hToPx / _typeMap[targetUnit] * 100) / 100;
 
           svgEditor.configObj.curConfig.baseUnit = targetUnit;
           svgCanvas.setConfig(svgEditor.configObj.curConfig);
@@ -1546,24 +1629,48 @@ export default {
           }
         });
 
-        jQuery(document).on("click", "#fq-modal-add-confirm-btn", e => {          
+        jQuery(document).on("click", "#fq-modal-add-confirm-btn", e => {
+
           svgCanvas.clearSelection();
           e.target.blur();
           jQuery(e.target).addClass("is-loading");
+
           const selector = ".fq-modal-plot-item.is-active, .fq-modal-image-item.is-active, .fq-modal-figure-item.is-active";
           const selectedItems = getSortedElems(selector, "data-index");
-          const fixedDim = "height";
           const columnNumber = jQuery("#col_select").val();
-          var pageDims = svgEditor.svgCanvas.getResolution();
+          var margins = {
+            left: jQuery("#fq-content-add-magin-left").val(),
+            top: jQuery("#fq-content-add-magin-top").val(),
+            right: jQuery("#fq-content-add-magin-right").val(),
+            bottom: jQuery("#fq-content-add-magin-bottom").val(),
+          }
+          var spacing = {
+            horizontal: jQuery("#fq-content-add-spacing-horizontal").val(),
+            vertical: jQuery("#fq-content-add-spacing-vertical").val(),
+          }
+
+          // Calculate margins/spacing in pixels
+          let curUnit = svgEditor.configObj.curConfig.baseUnit;
+          if(curUnit !== "px"){
+            margins.left = margins.left * _typeMap[curUnit];
+            margins.top = margins.top * _typeMap[curUnit];
+            margins.right = margins.right * _typeMap[curUnit];
+            margins.bottom = margins.bottom * _typeMap[curUnit];
+
+            spacing.horizontal = spacing.horizontal * _typeMap[curUnit];
+            spacing.vertical = spacing.vertical * _typeMap[curUnit];
+          }
         
           var elementProps = [];
-          jQuery.each(selectedItems, index => {
+          jQuery.each(selectedItems, (index) => {
             elementProps[index] = {
               fid: jQuery(selectedItems[index]).data("fid"),
               endpoint: jQuery(selectedItems[index]).data("ftype") == "plot" ? "plots" : "files"
             };
           });
-
+          
+          const fixedDim = "height";
+          var pageDims = svgEditor.svgCanvas.getResolution();
           var actions = elementProps.map(
             function(prop) { 
               return getFileDataFromFiglinQ(prop.fid, prop.endpoint);
@@ -1572,7 +1679,9 @@ export default {
           var results = Promise.all(actions); // pass array of promises
           results.then(data => {
 
-            var x = 0, y = 0, curColumn = 1;
+            var x = 0;
+            var y = 0;
+            var curColumn = 1;
 
             // Default plot width / height
             const wDefault = 400;
@@ -1582,9 +1691,7 @@ export default {
             var wRef = wDefault;
             var hRef = hDefault;
             
-            // Check if there is at least 1 plot for scaling reference
-            var plotPresent = false;
-            var imgPresent = false;
+            // If there is at least 1 plot, use it as size reference
             var refPlotIndex = false;
             data.some((element, index) => {
               // Get dimensions of the first selected plot, either from layout or from template (if not defined in layout) 
@@ -1594,23 +1701,22 @@ export default {
               var w, h;
 
               if(element.filetype == "plot") {
-                w = element.figure.layout.hasOwnProperty('width') ? element.figure.layout.width : 
-                  ( element.figure.layout.template.layout.hasOwnProperty('width') ? element.figure.layout.template.layout.width : w);
-                h = element.figure.layout.hasOwnProperty('height') ? element.figure.layout.height : 
-                  ( element.figure.layout.template.layout.hasOwnProperty('height') ? element.figure.layout.template.layout.height : h);                
-                plotPresent = true;
+                w = getPlotProp(element, "width", wRef);
+                h = getPlotProp(element, "height", hRef);
+                
+                // Set dimensions of the first plot as reference
                 if(refPlotIndex === false) {
                   refPlotIndex = index;
                   wRef = w;
                   hRef = h;
                 }
+
                 data[index].imgHref = baseHref + "svg";
                 data[index].svgeditFiletype = "plot";
               } else if(element.filetype == "external_image") {
                 w = element.metadata.width;
                 h = element.metadata.height;
-                imgPresent = true;
-                data[index].imgHref = baseHref + "src";                
+                data[index].imgHref = baseHref + "src";
                 data[index].svgeditFiletype = "image";
               };
               data[index].width = w ? w : wDefault;
@@ -1618,36 +1724,42 @@ export default {
               data[index].contentHref = baseHref + "embed";
             });
 
-            // Find the maximum width of all elements after applying the column layout
-            var maxX = 0;
+            // Find the maximum width of all elements after applying the multi-column layout
+            const pageWidthUsable = pageDims.w - margins.left - margins.right;
+            var maxX = pageWidthUsable; // Only scale if layout is wider than the page minus margins, otherwise keep original plot dimensions
             data.some((element) => {
               const scaledDims = scaleElement(fixedDim, element.width, element.height, wRef, hRef)
               element.widthScaled = scaledDims.width;
               element.heightScaled = scaledDims.height;
               
-              x += scaledDims.width;
+              x += scaledDims.width + spacing.horizontal;
               maxX = Math.max(maxX, x);
               curColumn += 1;
               if(curColumn > columnNumber) {
                 curColumn = 1;
                 x = 0;
-                y += hRef;
+                y += hRef + spacing.vertical;
               }
             })
 
+            // Subtract the final spacing
+            maxX = maxX - spacing.horizontal;
+
             // Calculate scaling page factor
-            const pageScaleFactor = pageDims.w / maxX;
+            const pageScaleFactor = pageWidthUsable / maxX;
             const hRefScaled = hRef * pageScaleFactor;
 
-            // Reset positioning
+            // Reset positioning, this time including margins
             curColumn = 1;
-            x = 0;
-            y = 0;
+            x = 0 + margins.left;
+            y = 0 + margins.top;
+
+            // Finally, place new elements
             data.some((element) => {
               element.widthScaled = element.widthScaled * pageScaleFactor;
               element.heightScaled = element.heightScaled * pageScaleFactor;
 
-              var imgProps = {
+              var elementProps = {
                 width: element.widthScaled,
                 height: element.heightScaled,
                 widthOriginal: element.width,
@@ -1660,14 +1772,14 @@ export default {
                 imgHref: element.imgHref
               }
 
-              importImage(imgProps);
+              placeElement(elementProps);
               
-              x += element.widthScaled;
+              x += element.widthScaled + spacing.horizontal;
               curColumn += 1;
               if(curColumn > columnNumber) {
                 curColumn = 1;
-                x = 0;
-                y += hRefScaled;
+                x = 0 + margins.left;
+                y += hRefScaled + spacing.vertical;
               }
             })
             

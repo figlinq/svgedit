@@ -320,7 +320,36 @@
           <div id="fq-modal-item-list-container" style="border-bottom: 1px solid #ededed; max-height: calc(100vh - 400px); overflow-y: auto; ">            
           </div>
 
-          <div class="panel-block modal-action-panel content-add-panel is-hidden pt-5 is-flex is-justify-content-center">
+          <div class="panel-block modal-action-panel content-add-options-panel is-hidden pt-5 is-flex is-justify-content-left">
+            <fieldset>
+              <div class="field is-horizontal">
+                <div class="field-label is-normal mr-2">
+                  <label class="label is-size-7">Margin (left, top, right, bottom), in <span class="fq-margin-unit">mm</span>:</label>
+                </div>                
+                <p class="control is-expanded has-icons-left">
+                  <input id="fq-content-add-magin-left" class="input is-small" type="text" style="width: 4em;">
+                  <input id="fq-content-add-magin-top" class="input is-small" type="text" style="width: 4em;">
+                  <input id="fq-content-add-magin-right" class="input is-small" type="text" style="width: 4em;">
+                  <input id="fq-content-add-magin-bottom" class="input is-small" type="text" style="width: 4em;">
+                </p>
+              </div>
+            </fieldset>
+          </div>
+          <div class="panel-block modal-action-panel content-add-options-panel is-hidden is-flex is-justify-content-left">
+            <fieldset>
+              <div class="field is-horizontal">
+                <div class="field-label is-normal mr-2">
+                  <label class="label is-size-7">Spacing (horizontal, vertical), in <span class="fq-margin-unit">mm</span>:</label>
+                </div>                
+                <p class="control is-expanded has-icons-left">
+                  <input id="fq-content-add-spacing-horizontal" class="input is-small" type="text" style="width: 4em;">
+                  <input id="fq-content-add-spacing-vertical" class="input is-small" type="text" style="width: 4em;">
+                </p>
+              </div>
+            </fieldset>
+          </div>
+
+          <div class="panel-block modal-action-panel content-add-panel is-hidden is-flex is-justify-content-center">
             <div class="field is-grouped">
               <div class="control">
                 <button id="fq-modal-add-confirm-btn" class="button is-link is-small" disabled>
@@ -588,7 +617,7 @@
               </div> -->
               <div class="control">
                 <button class="button is-link fq-modal-cancel-btn is-small">
-                  OK
+                  Close
                 </button>
               </div>
             </div>
