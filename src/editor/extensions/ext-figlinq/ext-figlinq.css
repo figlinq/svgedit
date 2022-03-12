@@ -38,10 +38,12 @@
 }
 
 #tool_image {
-    display: none;
+  display: none;
 }
 
-.noselect, .navbar .navbar-item, .navbar .navbar-link {
+.noselect,
+.navbar .navbar-item,
+.navbar .navbar-link {
   -webkit-touch-callout: none; /* iOS Safari */
   -webkit-user-select: none; /* Safari */
   -khtml-user-select: none; /* Konqueror HTML */
@@ -72,21 +74,21 @@
   height: calc(100vh - 52px);
   justify-content: center;
   align-items: center;
-    pointer-events: none;
+  pointer-events: none;
 }
 
-#zoom{
-    margin-right: 4px;
-    background-color: var(--input-color);
-    border-radius: 3px;
+#zoom {
+  margin-right: 4px;
+  background-color: var(--input-color);
+  border-radius: 3px;
 }
 
-#zoom select{
-    background-color: #b2b2b2;
-    border: 0;
+#zoom select {
+  background-color: #b2b2b2;
+  border: 0;
 }
 
-.panel-block label{
+.panel-block label {
   font-weight: normal;
 }
 
@@ -106,34 +108,33 @@ html {
   align-items: center !important;
 }
 
-#cmenu_canvas li{
+#cmenu_canvas li {
   min-width: 240px !important;
 }
 
-.is-disabled{
+.is-disabled {
   pointer-events: none;
   opacity: 0.5;
 }
 
-.navbar-item span{
+.navbar-item span {
   pointer-events: none;
 }
 
-
-.panel-list-item .fa-stack{
+.panel-list-item .fa-stack {
   vertical-align: middle;
   font-size: 8px;
   width: 1.8em !important;
   margin-right: 1.25em;
 }
 
-.panel-list-explanation{
+.panel-list-explanation {
   display: block;
   position: absolute;
   right: 25px;
 }
 
-.fq-navbar-button{
+.fq-navbar-button {
   font-weight: 600 !important;
   font-size: 14px !important;
   color: #08547d !important;
@@ -141,32 +142,49 @@ html {
   padding: 9px 18px !important;
   height: 2.3em !important;
 }
-.fq-navbar-text-button{
+.fq-navbar-text-button {
   font-weight: 600 !important;
   font-size: 14px !important;
   color: white !important;
 }
 
-.fq-navbar-button:hover, .fq-navbar-text-button:hover{
+.fq-navbar-button:hover,
+.fq-navbar-text-button:hover {
   color: #55bbe7 !important;
   text-decoration: none !important;
 }
 
-#fq-main-navbar{
+#fq-main-navbar {
   box-shadow: rgb(0 0 0 / 35%) 0px 2px 5px 0px !important;
   background-color: rgb(8, 84, 125);
 }
 
-#fq-menu-switch-label{
-    position:absolute;
-    top: -1px;
-    font-size: 1.25em;
+#fq-menu-switch-label {
+  position: absolute;
+  top: -1px;
+  font-size: 1.25em;
 }
 
-.switch[type="checkbox"].is-small + label::after, .switch[type="checkbox"].is-small + label::after {
+.switch[type="checkbox"].is-small + label::after,
+.switch[type="checkbox"].is-small + label::after {
   background: white !important;
 }
 
-.switch[type="checkbox"].is-small + label::before, .switch[type="checkbox"].is-small + label::before{
+.switch[type="checkbox"].is-small + label::before,
+.switch[type="checkbox"].is-small + label::before {
   /* border-color: white !important; */
+}
+
+.fq-margin-input-link {
+  line-height: 28px;
+  color: white;
+}
+
+.fq-margin-input-link.is-active {
+  color: lightgray;
+}
+
+.fq-spacing-input-link {
+  line-height: 28px;
+  color: white;
 }
