@@ -170,7 +170,9 @@ export default {
         // }
 
         // Replace the broken zoom functionality in v7
-        const replaceZoom = () => {
+        const upgradeUi = () => {
+          
+          // Replace zoom button
           const element = `        
           <div id="zoom" class="select is-small" title="Hold shift while scrolling your mouse to zoom dynamically">
             <select>
@@ -1488,6 +1490,44 @@ export default {
           }
         };
 
+        const adjustStyles = () => {
+          var style, ids;
+
+          // Top panel input labels
+          ids = ["selected_x", "selected_y", "rect_width", "rect_height", "path_node_x", "path_node_y", "starNumPoints", "RadiusMultiplier", "radialShift", "ellipse_cx", "ellipse_cy", "ellipse_rx", "ellipse_ry", "circle_cx", "circle_cy", "circle_r", "line_x1", "line_x2", "line_y1", "line_y2", "polySides"];
+          ids.forEach(id => {
+            style = document.createElement("style");
+            style.innerHTML =
+              "#label{ top: 4px; margin-right: 2px; margin-left: 2px; font-size: 12px; text-transform: capitalize;} #label:after{ content: ':' }";
+            document.getElementById(id).shadowRoot.appendChild(style);
+          });
+          
+          // Top panel position input
+          style = document.createElement("style");
+          style.innerHTML =
+            "elix-dropdown-list{ margin-left: 4px; margin-right: 4px} elix-dropdown-list:hover{ cursor: pointer; }";
+          document
+            .getElementById("tool_position")
+            .shadowRoot.appendChild(style);
+
+          // Symbol library menu
+          style = document.createElement("style");
+          style.innerHTML =
+            ".menu-item{background-color: var(--main-bg-color); color: white; text-transform: capitalize;} .menu-item:hover{ cursor: pointer; } .image-lib{background-color: var(--main-bg-color)}";
+          document
+            .getElementById("tool_shapelib")
+            .shadowRoot.appendChild(style);
+
+          // Dropdowns
+          ids = ["seg_type", "tool_font_family"];
+          ids.forEach(id => {
+            style = document.createElement("style");
+            style.innerHTML =
+            "select{margin-top: 10px; margin-right: 4px; border: none; border-radius: 3px; cursor: pointer;} .menu-item:hover{ cursor: pointer; }";
+            document.getElementById(id).shadowRoot.appendChild(style);
+          });
+        };
+
         const getPlotProp = (element, propName, defaultPropValue) => {
           // If property is not defined in figure layout, look in template
           return element.figure.layout.hasOwnProperty(propName)
@@ -2380,7 +2420,8 @@ export default {
         ensureRulesGrids();
         getFqUserId();
         setInteractiveOff();
-        replaceZoom();
+        upgradeUi();
+        adjustStyles();
         loadFqFigure();
         updateExportFormState();
       }

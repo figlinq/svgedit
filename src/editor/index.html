@@ -39,7 +39,7 @@
     const svgEditor = new Editor(document.getElementById('container'));
     svgEditor.init();
     svgEditor.setConfig({
-      
+      imgPath: './extensions/ext-figlinq/images',
       extensions: [],
       noDefaultExtensions: false,
       userExtensions: ['./extensions/ext-figlinq/ext-figlinq.js'],
@@ -47,6 +47,16 @@
       forceStorage: true,
       baseUnit: "mm",
       dimensions: [ 793.7007874015749, 1122.5196850393702 ], // A4 format
+      initFill: {
+        color: '08547d', // FiglinQ brand
+        opacity: 1
+      },
+      initStroke: {
+        width: 1,
+        color: '000000', // solid black
+        opacity: 1
+      },
+
       // overwrite: true,
     }, 
     {

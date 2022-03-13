@@ -296,14 +296,14 @@ export class ExplorerButton extends HTMLElement {
       const json = await response.json();
       this.data = json.data;
       const size = json.size ?? 300;
-      const fill = json.fill ? '#333' : 'none';
+      const fill = json.fill ? 'white' : 'none';
       const off = size * 0.05;
       const vb = [ -off, -off, size + off * 2, size + off * 2 ].join(' ');
-      const stroke = json.fill ? 0 : (size / 30);
+      const stroke = json.fill ? 0 : (size / 20);
       this.$lib.innerHTML = Object.entries(this.data).map(([ key, path ]) => {
         const encoded = btoa(`
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
-          <svg viewBox="${vb}"><path fill="${fill}" stroke="#f8bb00" stroke-width="${stroke}" d="${path}"></path></svg>
+          <svg viewBox="${vb}"><path fill="${fill}" stroke="white" stroke-width="${stroke}" d="${path}"></path></svg>
         </svg>`);
         return `<se-button data-shape="${key}"src="data:image/svg+xml;base64,${encoded}"></se-button>`;
       }).join('');
