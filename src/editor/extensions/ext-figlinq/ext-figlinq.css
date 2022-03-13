@@ -156,7 +156,7 @@ html {
 
 #fq-main-navbar {
   box-shadow: rgb(0 0 0 / 35%) 0px 2px 5px 0px !important;
-  background-color: rgb(8, 84, 125);
+  background-color: #08547d;
 }
 
 #fq-menu-switch-label {
@@ -187,4 +187,25 @@ html {
 .fq-spacing-input-link {
   line-height: 28px;
   color: white;
+}
+
+#tool_position:hover {
+  cursor: pointer !important;
+}
+
+se-button{
+  padding-top:3px;
+}
+
+se-select{
+  font-size: 12px !important;
+  color: white;
+}
+/* se-spin-input{
+  font-size: 12px !important;
+  color: white;
+} */
+
+.tool_sep {
+  margin: 5px 3px !important;
 }
