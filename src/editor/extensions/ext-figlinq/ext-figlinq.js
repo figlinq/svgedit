@@ -1365,6 +1365,32 @@ export default {
           };
         };
 
+        const updateMarginsSpacingInputs = () => {
+          // Update margin/spacing unit and values
+          let curUnit = svgEditor.configObj.curConfig.baseUnit;
+          var mlPx = fqDefaultMargins.left * _typeMap["mm"];
+          var mtPx = fqDefaultMargins.top * _typeMap["mm"];
+          var mrPx = fqDefaultMargins.right * _typeMap["mm"];
+          var mbPx = fqDefaultMargins.bottom * _typeMap["mm"];
+          var shPx = fqDefaultSpacing.horizontal * _typeMap["mm"];
+          var svPx = fqDefaultSpacing.vertical * _typeMap["mm"];
+
+          var mlTarget = Math.round((mlPx / _typeMap[curUnit]) * 100) / 100;
+          var mtTarget = Math.round((mtPx / _typeMap[curUnit]) * 100) / 100;
+          var mrTarget = Math.round((mrPx / _typeMap[curUnit]) * 100) / 100;
+          var mbTarget = Math.round((mbPx / _typeMap[curUnit]) * 100) / 100;
+          var shTarget = Math.round((shPx / _typeMap[curUnit]) * 100) / 100;
+          var svTarget = Math.round((svPx / _typeMap[curUnit]) * 100) / 100;
+
+          jQuery(".margin-unit").html(curUnit);
+          jQuery("#fq-content-add-magin-left").val(mlTarget);
+          jQuery("#fq-content-add-magin-top").val(mtTarget);
+          jQuery("#fq-content-add-magin-right").val(mrTarget);
+          jQuery("#fq-content-add-magin-bottom").val(mbTarget);
+          jQuery("#fq-content-add-spacing-horizontal").val(shTarget);
+          jQuery("#fq-content-add-spacing-vertical").val(svTarget);        
+        }
+
         const prepareFileModal = (mode, launchModal = true) => {
           var elements = [];
           var heading = "";
@@ -1412,41 +1438,19 @@ export default {
               elements.activate = "#fq-modal-file-tab-my";
               heading = "Select content to add to this figure";
               fqModalMode = "addContent";
-
-              // Update margin/spacing unit and values
-              let curUnit = svgEditor.configObj.curConfig.baseUnit;
-              var mlPx = fqDefaultMargins.left * _typeMap["mm"];
-              var mtPx = fqDefaultMargins.top * _typeMap["mm"];
-              var mrPx = fqDefaultMargins.right * _typeMap["mm"];
-              var mbPx = fqDefaultMargins.bottom * _typeMap["mm"];
-              var shPx = fqDefaultSpacing.horizontal * _typeMap["mm"];
-              var svPx = fqDefaultSpacing.vertical * _typeMap["mm"];
-
-              var mlTarget = Math.round((mlPx / _typeMap[curUnit]) * 100) / 100;
-              var mtTarget = Math.round((mtPx / _typeMap[curUnit]) * 100) / 100;
-              var mrTarget = Math.round((mrPx / _typeMap[curUnit]) * 100) / 100;
-              var mbTarget = Math.round((mbPx / _typeMap[curUnit]) * 100) / 100;
-              var shTarget = Math.round((shPx / _typeMap[curUnit]) * 100) / 100;
-              var svTarget = Math.round((svPx / _typeMap[curUnit]) * 100) / 100;
-
-              jQuery(".margin-unit").html(curUnit);
-              jQuery("#fq-content-add-magin-left").val(mlTarget);
-              jQuery("#fq-content-add-magin-top").val(mtTarget);
-              jQuery("#fq-content-add-magin-right").val(mrTarget);
-              jQuery("#fq-content-add-magin-bottom").val(mbTarget);
-              jQuery("#fq-content-add-spacing-horizontal").val(shTarget);
-              jQuery("#fq-content-add-spacing-vertical").val(svTarget);
+              updateMarginsSpacingInputs();
               break;
 
             case "addFiglinqPreselectedContent":
               elements.hide =
                 ".modal-action-panel, #fq-modal-file-panel-breadcrumb";
               elements.reveal =
-                ".content-add-panel, #fq-modal-file-tab-my, #fq-modal-file-tab-shared";
+                ".content-add-panel, .content-add-options-panel, #fq-modal-file-tab-my, #fq-modal-file-tab-shared";
               elements.disable = "#fq-modal-add-confirm-btn";
               elements.activate = "#fq-modal-file-tab-preselected";
               heading = "Select content to add to this figure";
               fqModalMode = "addContent";
+              updateMarginsSpacingInputs();
               break;
             default:
               break;
