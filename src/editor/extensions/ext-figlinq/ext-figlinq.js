@@ -189,6 +189,9 @@ export default {
             </select>
           </div>`;
           jQuery("#zoom").replaceWith(element);
+
+          // Hide image URL input
+          jQuery("#image_url").hide();
         };
 
         // Fitting to content does not work
@@ -1498,7 +1501,7 @@ export default {
           var style, ids;
 
           // Top panel input labels
-          ids = ["selected_x", "selected_y", "rect_width", "rect_height", "path_node_x", "path_node_y", "starNumPoints", "RadiusMultiplier", "radialShift", "ellipse_cx", "ellipse_cy", "ellipse_rx", "ellipse_ry", "circle_cx", "circle_cy", "circle_r", "line_x1", "line_x2", "line_y1", "line_y2", "polySides"];
+          ids = ["selected_x", "selected_y", "rect_width", "rect_height", "path_node_x", "path_node_y", "starNumPoints", "RadiusMultiplier", "radialShift", "ellipse_cx", "ellipse_cy", "ellipse_rx", "ellipse_ry", "circle_cx", "circle_cy", "circle_r", "line_x1", "line_x2", "line_y1", "line_y2", "polySides", "image_width", "image_height"];
           ids.forEach(id => {
             style = document.createElement("style");
             style.innerHTML =
@@ -1772,6 +1775,22 @@ export default {
             jQuery("#fq-modal-doc-setup").addClass("is-active");
           }
         );
+
+        jQuery(document).on("change", "#fq-doc-setup-snapping-enabled", (e) => {
+          const gridSnappingOn = jQuery(e.target).prop(
+            "checked"
+          );
+          svgEditor.configObj.curConfig.gridSnapping = gridSnappingOn;
+          svgCanvas.setConfig(svgEditor.configObj.curConfig);
+          svgEditor.updateCanvas();
+        });
+
+        jQuery(document).on("keyup", "#fq-doc-setup-snapping-step", (e) => {          
+          const snappingStep = parseInt(jQuery(e.target).val());
+          svgEditor.configObj.curConfig.snappingStep = snappingStep;
+          svgCanvas.setConfig(svgEditor.configObj.curConfig);
+          svgEditor.updateCanvas();
+        });
 
         jQuery(document).on("click", "#fq-doc-setup-save-btn", () => {
           const predefined = jQuery("#fq-doc-size").val();
