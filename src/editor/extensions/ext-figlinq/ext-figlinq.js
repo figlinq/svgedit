@@ -80,7 +80,7 @@ export default {
         // Initiate global vars
         var fqItemListFolder,
           fqItemListFile,
-          fqItemListPreselected,
+          fqItemListPreselected = false,
           fqUserId,
           fqUserData,
           fqCurrentFigData = false,
@@ -111,7 +111,7 @@ export default {
           fqDefaultSpacing = {
             // in mm
             horizontal: 5,
-            vertical: 5
+            vertical: 10
           };
         const svgAttrWhitelist = ["class", "height", "width", "x", "y", "id"];
         const fqPdfPageSizes = {
@@ -367,6 +367,7 @@ export default {
             var checked = jQuery("#fq-menu-interact-switch").is(":checked");
             if (checked) jQuery("#fq-menu-interact-switch").click();
             fqModalFileTabMode = "preselected";
+            showModalSpinner();
             prepareFileModal("addFiglinqPreselectedContent");
             refreshModalContents(fidArray);
           }
@@ -564,6 +565,7 @@ export default {
             });
             fqHighlightedFids = false;
           }
+          hideModalSpinner();
         };
 
         const generateForeignObject = currentImg => {
@@ -1329,6 +1331,15 @@ export default {
             });
         };
 
+        const showModalSpinner = () => {
+          console.log("show")
+          jQuery("#fq-loading-overlay").show();
+        }
+        const hideModalSpinner = () => {
+          console.log("hide")
+          jQuery("#fq-loading-overlay").hide();
+        }
+
         const showSaveFigureAsDialog = () => {
           if (fqCurrentFigData) {
             var fName = fqCurrentFigData.filename.replace(/\.[^/.]+$/, "");
@@ -1395,8 +1406,10 @@ export default {
         }
 
         const prepareFileModal = (mode, launchModal = true) => {
+          showModalSpinner();
           var elements = [];
           var heading = "";
+          jQuery(".fq-modal-file-tab").removeClass("is-active");
           switch (mode) {
             case "openFigure":
               elements.hide = ".modal-action-panel, .fq-modal-file-tab";
@@ -1437,6 +1450,10 @@ export default {
                 ".modal-action-panel, .fq-modal-file-tab, #fq-modal-file-tab-preselected";
               elements.reveal =
                 ".content-add-panel, .content-add-options-panel, #fq-modal-file-search-block, #fq-modal-file-tab-my, #fq-modal-file-tab-shared";
+              if(fqItemListPreselected){
+                elements.reveal += ", #fq-modal-file-tab-preselected";
+              }
+  
               elements.disable = "#fq-modal-add-confirm-btn";
               elements.activate = "#fq-modal-file-tab-my";
               heading = "Select content to add to this figure";
@@ -1680,6 +1697,7 @@ export default {
           "click",
           "#fq-menu-file-import-local-content",
           () => {
+            fqModalFileTabMode = "my";
             prepareFileModal("importLocalContent");
             refreshModalContents();
           }
@@ -1834,6 +1852,7 @@ export default {
         });
 
         jQuery(document).on("click", ".fq-modal-file-tab", e => {
+          showModalSpinner();
           jQuery(".fq-modal-file-tab").removeClass("is-active");
           jQuery("#fq-modal-add-confirm-btn, #col_select").prop(
             "disabled",
@@ -1858,10 +1877,11 @@ export default {
             shared: false,
             preselected: false
           }),
-            refreshModalContents();
+          refreshModalContents();
         });
 
         jQuery(document).on("click", "#fq-modal-refresh-btn", () => {
+          showModalSpinner();
           refreshModalContents();
         });
 
@@ -2342,6 +2362,7 @@ export default {
         jQuery(document).on("click", ".fq-menu-add-content-btn", () => {
           setInteractiveOff();
           prepareFileModal("addFiglinqContent");
+          fqModalFileTabMode = "my";
           refreshModalContents();
         });
 
