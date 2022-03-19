@@ -22,3 +22,4 @@ package-lock.json
 deploy-prod.sh
 deploy-stage.sh
 editor.zip
+web-dev-server.config.mjs
