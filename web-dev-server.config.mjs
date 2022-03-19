@@ -10,5 +10,8 @@ export default {
     commonjs({
       exclude: [ 'src', 'dist', 'instrumented' ]
     })
-  ]
+  ],
+  http2: true,
+  sslKey: "C:/Users/versa/Documents/GitHub/key.pem",
+  sslCert: "C:/Users/versa/Documents/GitHub/cert.pem"
 };
