@@ -12,6 +12,8 @@ export default {
     })
   ],
   http2: true,
-  sslKey: "C:/Users/versa/Documents/GitHub/key.pem",
-  sslCert: "C:/Users/versa/Documents/GitHub/cert.pem"
+  // sslKey: "C:/Users/versa/Documents/GitHub/key.pem",
+  // sslCert: "C:/Users/versa/Documents/GitHub/cert.pem"
+  sslKey: "C:/WINDOWS/system32/key.pem",
+  sslCert: "C:/WINDOWS/system32/cert.pem"
 };

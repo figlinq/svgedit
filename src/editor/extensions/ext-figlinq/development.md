@@ -29,5 +29,6 @@ To verify run `netsh interface portproxy show v4tov4`
 ### Linux
 
 1. Add `127.65.43.21 svgedit.plotly.local` to /etc/hosts
-2. Run `sudo iptables -t nat -A OUTPUT -p tcp --dport 80 -d 127.65.43.21 -j DNAT --to-destination 127.0.0.1:8000`
-3. Install and enable CORS Everywhere extension
+2. Run `sudo iptables -t nat -A OUTPUT -p tcp --dport 80 -d 127.65.43.21 -j DNAT --to-destination 127.0.0.1:8000` (for http)
+3. Run `sudo iptables -t nat -A OUTPUT -p tcp --dport 443 -d 127.65.43.21 -j DNAT --to-destination 127.0.0.1:8000` (for https)
+4. Install and enable CORS Everywhere extension
