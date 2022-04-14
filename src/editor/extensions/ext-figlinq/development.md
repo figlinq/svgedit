@@ -2,7 +2,7 @@
 
 ## SVGedit redirects 
 
-For API communication, SVGedit and FiglinQ must me on the same domain, so let's add some redirects in Windows to run SVGedit at http://svgedit.plotly.local/src/editor/ and FiglinQ at https://plotly.local.
+For API communication, SVGedit and FiglinQ must me on the same domain, so let's add some redirects in Windows to run SVGedit at https://svgedit.plotly.local/src/editor/ and FiglinQ at https://plotly.local.
 
 ### Windows/WSL
 

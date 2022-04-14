@@ -2266,7 +2266,8 @@ export default {
             }
 
             const svg = getSvgFromEditor();
-            const apiEndpoint = nameExists ? "replace" : "upload";
+            // const apiEndpoint = nameExists ? "replace" : "upload";
+            const apiEndpoint = "upload";
 
             var imageBlob = new Blob([svg], { type: "image/svg+xml" });
             var imageFile = new File([imageBlob], fqExportDocFname + ".svg");
