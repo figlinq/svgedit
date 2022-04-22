@@ -54,7 +54,7 @@
 
 #fq-powered-by-svgedit {
   position: fixed;
-  top: 57px;
+  top: 65px;
   left: 10px;
   color: white !important;
   font-size: 11px;
@@ -119,6 +119,12 @@ html {
 
 .navbar-item span {
   pointer-events: none;
+}
+
+@media screen and (min-width: 1024px){
+  .navbar {
+    min-height: 60px !important;
+  }
 }
 
 .panel-list-item .fa-stack {
