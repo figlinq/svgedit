@@ -171,7 +171,6 @@ export default {
 
         // Replace the broken zoom functionality in v7
         const upgradeUi = () => {
-          
           // Replace zoom button
           const element = `        
           <div id="zoom" class="select is-small" title="Hold shift while scrolling your mouse to zoom dynamically">
@@ -1332,13 +1331,13 @@ export default {
         };
 
         const showModalSpinner = () => {
-          console.log("show")
+          console.log("show");
           jQuery("#fq-loading-overlay").show();
-        }
+        };
         const hideModalSpinner = () => {
-          console.log("hide")
+          console.log("hide");
           jQuery("#fq-loading-overlay").hide();
-        }
+        };
 
         const showSaveFigureAsDialog = () => {
           if (fqCurrentFigData) {
@@ -1402,8 +1401,8 @@ export default {
           jQuery("#fq-content-add-magin-right").val(mrTarget);
           jQuery("#fq-content-add-magin-bottom").val(mbTarget);
           jQuery("#fq-content-add-spacing-horizontal").val(shTarget);
-          jQuery("#fq-content-add-spacing-vertical").val(svTarget);        
-        }
+          jQuery("#fq-content-add-spacing-vertical").val(svTarget);
+        };
 
         const prepareFileModal = (mode, launchModal = true) => {
           showModalSpinner();
@@ -1450,10 +1449,10 @@ export default {
                 ".modal-action-panel, .fq-modal-file-tab, #fq-modal-file-tab-preselected";
               elements.reveal =
                 ".content-add-panel, .content-add-options-panel, #fq-modal-file-search-block, #fq-modal-file-tab-my, #fq-modal-file-tab-shared";
-              if(fqItemListPreselected){
+              if (fqItemListPreselected) {
                 elements.reveal += ", #fq-modal-file-tab-preselected";
               }
-  
+
               elements.disable = "#fq-modal-add-confirm-btn";
               elements.activate = "#fq-modal-file-tab-my";
               heading = "Select content to add to this figure";
@@ -1518,14 +1517,38 @@ export default {
           var style, ids;
 
           // Top panel input labels
-          ids = ["selected_x", "selected_y", "rect_width", "rect_height", "path_node_x", "path_node_y", "starNumPoints", "RadiusMultiplier", "radialShift", "ellipse_cx", "ellipse_cy", "ellipse_rx", "ellipse_ry", "circle_cx", "circle_cy", "circle_r", "line_x1", "line_x2", "line_y1", "line_y2", "polySides", "image_width", "image_height"];
+          ids = [
+            "selected_x",
+            "selected_y",
+            "rect_width",
+            "rect_height",
+            "path_node_x",
+            "path_node_y",
+            "starNumPoints",
+            "RadiusMultiplier",
+            "radialShift",
+            "ellipse_cx",
+            "ellipse_cy",
+            "ellipse_rx",
+            "ellipse_ry",
+            "circle_cx",
+            "circle_cy",
+            "circle_r",
+            "line_x1",
+            "line_x2",
+            "line_y1",
+            "line_y2",
+            "polySides",
+            "image_width",
+            "image_height"
+          ];
           ids.forEach(id => {
             style = document.createElement("style");
             style.innerHTML =
               "#label{ top: 4px; margin-right: 2px; margin-left: 2px; font-size: 12px; text-transform: capitalize;} #label:after{ content: ':' }";
             document.getElementById(id).shadowRoot.appendChild(style);
           });
-          
+
           // Top panel position input
           style = document.createElement("style");
           style.innerHTML =
@@ -1547,7 +1570,7 @@ export default {
           ids.forEach(id => {
             style = document.createElement("style");
             style.innerHTML =
-            "select{margin-top: 10px; margin-right: 4px; border: none; border-radius: 3px; cursor: pointer;} .menu-item:hover{ cursor: pointer; }";
+              "select{margin-top: 10px; margin-right: 4px; border: none; border-radius: 3px; cursor: pointer;} .menu-item:hover{ cursor: pointer; }";
             document.getElementById(id).shadowRoot.appendChild(style);
           });
         };
@@ -1794,16 +1817,14 @@ export default {
           }
         );
 
-        jQuery(document).on("change", "#fq-doc-setup-snapping-enabled", (e) => {
-          const gridSnappingOn = jQuery(e.target).prop(
-            "checked"
-          );
+        jQuery(document).on("change", "#fq-doc-setup-snapping-enabled", e => {
+          const gridSnappingOn = jQuery(e.target).prop("checked");
           svgEditor.configObj.curConfig.gridSnapping = gridSnappingOn;
           svgCanvas.setConfig(svgEditor.configObj.curConfig);
           svgEditor.updateCanvas();
         });
 
-        jQuery(document).on("keyup", "#fq-doc-setup-snapping-step", (e) => {          
+        jQuery(document).on("keyup", "#fq-doc-setup-snapping-step", e => {
           const snappingStep = parseInt(jQuery(e.target).val());
           svgEditor.configObj.curConfig.snappingStep = snappingStep;
           svgCanvas.setConfig(svgEditor.configObj.curConfig);
@@ -1877,7 +1898,7 @@ export default {
             shared: false,
             preselected: false
           }),
-          refreshModalContents();
+            refreshModalContents();
         });
 
         jQuery(document).on("click", "#fq-modal-refresh-btn", () => {
@@ -2393,7 +2414,7 @@ export default {
             const replacedFid = fqCurrentFigData.fid;
 
             const svg = getSvgFromEditor();
-            const apiEndpoint = "replace";
+            const apiEndpoint = "upload";
 
             const imageBlob = new Blob([svg], { type: "image/svg+xml" });
             const imageFile = new File([imageBlob], fqExportDocFname + ".svg");
