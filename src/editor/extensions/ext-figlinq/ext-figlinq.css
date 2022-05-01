@@ -54,7 +54,6 @@
 
 #fq-powered-by-svgedit {
   position: fixed;
-  top: 65px;
   left: 10px;
   color: white !important;
   font-size: 11px;
@@ -122,8 +121,20 @@ html {
 }
 
 @media screen and (min-width: 1024px){
-  .navbar {
+  #fq-primary-navbar {
     min-height: 60px !important;
+  }
+  #fq-secondary-navbar {
+    min-height: 20px !important;
+  }
+  #fq-powered-by-svgedit {
+    top: 86px;
+  }
+}
+
+@media screen and (max-width: 1023px){
+  #fq-powered-by-svgedit {
+    top: 60px;
   }
 }
 
@@ -228,4 +239,94 @@ se-select{
   justify-content: center;
   border-radius: 4px;
   display: flex;
+}
+
+.navbar.is-info .navbar-item.has-dropdown:hover .navbar-link {
+  background-color: #ffffff00 !important;
+  color: #fff;
+}
+.navbar.is-info .navbar-item.has-dropdown:hover .fq-navbar-link {
+  background-color: #0d6b9e;
+}
+
+.fq-navbar-link{  
+  padding: 2px 10px 4px 10px;
+  /* background-color: #074d73;  
+  border-radius: 5px; */
+}
+
+#fq-secondary-navbar {
+  z-index: 29;
+  max-height:28px !important;
+  background-color: #e5e5e5;
+}
+#fq-secondary-navbar .navbar-link.is-arrowless {
+  padding-top: 0px;
+  padding-bottom: 0px;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+  font-size: 14px;
+}
+
+#fq-menu-account-navbar-item .navbar-dropdown {
+  left: auto; 
+  right:0; 
+}
+.navbar-dropdown a{
+  /* color: #08547d !important; */
+  transition: background-color 0.2s cubic-bezier(0.08, 0.52, 0.53, 1);
+}
+.navbar-dropdown a:hover{
+  color: white !important;
+  background-color: #08547d !important;
+}
+
+#fq-secondary-navbar .navbar-dropdown.is-boxed{
+  top: 28px !important;
+  border-top-left-radius: 0px !important;
+  border-top-right-radius: 0px !important;
+}
+
+#fq-menu-account-user-name{
+  width: 36px;
+  height: 36px;
+  background-color: white;
+  border: solid 2px white;
+  border-radius: 18px;
+  text-transform: uppercase;
+  font-weight: bold;
+  color: #08547d;
+  padding: 0px;
+  text-align: center;
+  display: block;
+  line-height: 32px;
+  transition: background-color 0.2s cubic-bezier(0.08, 0.52, 0.53, 1);
+}
+
+#fq-menu-account-navbar-item a:hover #fq-menu-account-user-name{
+  background-color: #08547d;
+  color: white;
+}
+#fq-menu-account-navbar-item .navbar-dropdown:hover #fq-menu-account-user-name{
+  background-color: #08547d;
+  color: white;
+}
+
+#fq-collections-icon{
+  background-image: url("./images/figlinq/collections.svg");
+  background-size: 18px 18px;
+  background-repeat: no-repeat;
+  background-position: 3px 3px;
+}
+
+#fq-collections-link:hover #fq-collections-icon{
+  background-image: url("./images/figlinq/collections-white.svg");
+}
+
+#fq-menu-account-dropdown-user-name {
+  text-transform: capitalize;
+}
+
+.icon-text{
+  flex-wrap: nowrap !important;
 }

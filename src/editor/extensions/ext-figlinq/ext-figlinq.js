@@ -230,7 +230,9 @@ export default {
                   .data("fid", `${data.username}:-1`);
 
                 fqUserId = data.username;
-                jQuery("#fq-menu-account-user-name").html(fqUserId);
+                console.log(data)
+                jQuery("#fq-menu-account-user-name").html(fqUserId.slice(0, 2));
+                jQuery("#fq-menu-account-dropdown-user-name").html(fqUserId);
                 jQuery("#fq-menu-account-navbar-item").removeClass("is-hidden");
                 jQuery("#fq-menu-account-my-files").attr(
                   "href",
