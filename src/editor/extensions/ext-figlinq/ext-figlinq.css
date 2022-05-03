@@ -268,10 +268,11 @@ se-select{
   font-size: 14px;
 }
 
-#fq-menu-account-navbar-item .navbar-dropdown {
+#fq-menu-account-navbar-item1 .navbar-dropdown, #fq-menu-account-navbar-item2 .navbar-dropdown {
   left: auto; 
   right:0; 
 }
+
 .navbar-dropdown a{
   /* color: #08547d !important; */
   transition: background-color 0.2s cubic-bezier(0.08, 0.52, 0.53, 1);

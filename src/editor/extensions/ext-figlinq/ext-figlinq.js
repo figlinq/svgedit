@@ -230,14 +230,28 @@ export default {
                   .data("fid", `${data.username}:-1`);
 
                 fqUserId = data.username;
-                console.log(data)
                 jQuery("#fq-menu-account-user-name").html(fqUserId.slice(0, 2));
                 jQuery("#fq-menu-account-dropdown-user-name").html(fqUserId);
-                jQuery("#fq-menu-account-navbar-item").removeClass("is-hidden");
-                jQuery("#fq-menu-account-my-files").attr(
+                jQuery("#fq-menu-account-navbar-item1").removeClass("is-hidden");
+                jQuery("#fq-menu-account-navbar-item2").removeClass("is-hidden");
+
+                jQuery("#fq-user-link-files").attr(
                   "href",
                   baseUrl + "organize/home"
                 );
+                jQuery("#fq-user-link-charts").attr(
+                  "href",
+                  baseUrl + "create"
+                );
+                jQuery("#fq-user-link-figures").attr(
+                  "href",
+                  baseUrl + "figures"
+                );
+                jQuery("#fq-user-link-collections").attr(
+                  "href",
+                  baseUrl + "dashboard/create"
+                );
+
                 jQuery("#fq-menu-account-sign-out").attr(
                   "href",
                   baseUrl + "signout"
@@ -246,6 +260,7 @@ export default {
                   "href",
                   baseUrl + "settings/profile"
                 );
+
                 fqCsrfToken = data.csrf_token;
                 fqUserData = data;
               } else {
