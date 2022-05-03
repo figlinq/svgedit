@@ -232,17 +232,18 @@ export default {
                 fqUserId = data.username;
                 jQuery("#fq-menu-account-user-name").html(fqUserId.slice(0, 2));
                 jQuery("#fq-menu-account-dropdown-user-name").html(fqUserId);
-                jQuery("#fq-menu-account-navbar-item1").removeClass("is-hidden");
-                jQuery("#fq-menu-account-navbar-item2").removeClass("is-hidden");
+                jQuery("#fq-menu-account-navbar-item1").removeClass(
+                  "is-hidden"
+                );
+                jQuery("#fq-menu-account-navbar-item2").removeClass(
+                  "is-hidden"
+                );
 
                 jQuery("#fq-user-link-files").attr(
                   "href",
                   baseUrl + "organize/home"
                 );
-                jQuery("#fq-user-link-charts").attr(
-                  "href",
-                  baseUrl + "create"
-                );
+                jQuery("#fq-user-link-charts").attr("href", baseUrl + "create");
                 jQuery("#fq-user-link-figures").attr(
                   "href",
                   baseUrl + "figures"
@@ -277,7 +278,10 @@ export default {
               jQuery(".fq-menu-add-content-btn").addClass("is-hidden");
               jQuery(".fq-menu-add-content-btn").addClass("is-hidden");
               jQuery(".fq-menu-add-content-btn").addClass("is-hidden");
-              showToast("Could not connect to FiglinQ!", "is-danger");
+              showToast(
+                "Could not connect to FiglinQ - are you logged in?",
+                "is-danger"
+              );
             });
         };
 

@@ -120,7 +120,7 @@ html {
   pointer-events: none;
 }
 
-@media screen and (min-width: 1024px){
+@media screen and (min-width: 1024px) {
   #fq-primary-navbar {
     min-height: 60px !important;
   }
@@ -132,7 +132,7 @@ html {
   }
 }
 
-@media screen and (max-width: 1023px){
+@media screen and (max-width: 1023px) {
   #fq-powered-by-svgedit {
     top: 60px;
   }
@@ -210,11 +210,11 @@ html {
   cursor: pointer !important;
 }
 
-se-button{
-  padding-top:3px;
+se-button {
+  padding-top: 3px;
 }
 
-se-select{
+se-select {
   font-size: 12px !important;
   color: white;
 }
@@ -227,7 +227,7 @@ se-select{
   margin: 5px 3px !important;
 }
 
-#fq-loading-overlay{
+#fq-loading-overlay {
   position: absolute;
   background-color: rgba(255, 255, 255, 0.85);
   width: 100%;
@@ -249,7 +249,7 @@ se-select{
   background-color: #0d6b9e;
 }
 
-.fq-navbar-link{  
+.fq-navbar-link {
   padding: 2px 10px 4px 10px;
   /* background-color: #074d73;  
   border-radius: 5px; */
@@ -257,7 +257,7 @@ se-select{
 
 #fq-secondary-navbar {
   z-index: 29;
-  max-height:28px !important;
+  max-height: 28px !important;
   background-color: #e5e5e5;
 }
 #fq-secondary-navbar .navbar-link.is-arrowless {
@@ -268,27 +268,28 @@ se-select{
   font-size: 14px;
 }
 
-#fq-menu-account-navbar-item1 .navbar-dropdown, #fq-menu-account-navbar-item2 .navbar-dropdown {
-  left: auto; 
-  right:0; 
+#fq-menu-account-navbar-item1 .navbar-dropdown,
+#fq-menu-account-navbar-item2 .navbar-dropdown {
+  left: auto;
+  right: 0;
 }
 
-.navbar-dropdown a{
+.navbar-dropdown a {
   /* color: #08547d !important; */
   transition: background-color 0.2s cubic-bezier(0.08, 0.52, 0.53, 1);
 }
-.navbar-dropdown a:hover{
+.navbar-dropdown a:hover {
   color: white !important;
   background-color: #08547d !important;
 }
 
-#fq-secondary-navbar .navbar-dropdown.is-boxed{
+#fq-secondary-navbar .navbar-dropdown.is-boxed {
   top: 28px !important;
   border-top-left-radius: 0px !important;
   border-top-right-radius: 0px !important;
 }
 
-#fq-menu-account-user-name{
+#fq-menu-account-user-name {
   width: 36px;
   height: 36px;
   background-color: white;
@@ -304,23 +305,23 @@ se-select{
   transition: background-color 0.2s cubic-bezier(0.08, 0.52, 0.53, 1);
 }
 
-#fq-menu-account-navbar-item a:hover #fq-menu-account-user-name{
+#fq-menu-account-navbar-item a:hover #fq-menu-account-user-name {
   background-color: #08547d;
   color: white;
 }
-#fq-menu-account-navbar-item .navbar-dropdown:hover #fq-menu-account-user-name{
+#fq-menu-account-navbar-item .navbar-dropdown:hover #fq-menu-account-user-name {
   background-color: #08547d;
   color: white;
 }
 
-#fq-collections-icon{
+#fq-collections-icon {
   background-image: url("./images/figlinq/collections.svg");
   background-size: 18px 18px;
   background-repeat: no-repeat;
   background-position: 3px 3px;
 }
 
-#fq-collections-link:hover #fq-collections-icon{
+#fq-collections-link:hover #fq-collections-icon {
   background-image: url("./images/figlinq/collections-white.svg");
 }
 
@@ -328,6 +329,13 @@ se-select{
   text-transform: capitalize;
 }
 
-.icon-text{
+.icon-text {
   flex-wrap: nowrap !important;
+}
+
+#fq-navbar-menu-btn-apps {
+  border-left: dashed 1px #4a95be;
+  padding-left: 21px;
+  height: 40px;
+  margin-top: 5px;
 }
