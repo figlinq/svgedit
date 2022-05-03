@@ -265,7 +265,7 @@ export default {
                 fqUserData = data;
               } else {
                 showToast(
-                  "Could not retrieve current user data, are you logged in to FiglinQ in this browser?",
+                  "It looks like you are not logged in to FiglinQ in this browser!",
                   "is-danger"
                 );
               }
