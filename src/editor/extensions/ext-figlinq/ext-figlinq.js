@@ -99,7 +99,7 @@ export default {
           fqExportDocSize,
           fqExportDocFname,
           fqExportMode,
-          fqThumbWidth = 1000,
+          fqThumbWidth = 1200,
           _typeMap,
           fqDefaultMargins = {
             // in mm
@@ -128,6 +128,7 @@ export default {
           "2x": 2,
           "3x": 3,
           "4x": 4,
+          "6x": 6,
           "8x": 8
         };
         const NSSVG = "http://www.w3.org/2000/svg";
@@ -393,7 +394,7 @@ export default {
           }
         };
 
-        const getNumIdFromFid = (dataFid, index = 1) => {
+        const getSubIdFromFid = (dataFid, index = 1) => {
           if (!dataFid || !dataFid.includes(":")) return false;
           return dataFid.split(":")[index];
         };
@@ -453,7 +454,7 @@ export default {
             return;
           }
 
-          const fid = getNumIdFromFid(dataFid);
+          const fid = getSubIdFromFid(dataFid);
           var url;
 
           const myFileTypes =
@@ -1250,11 +1251,11 @@ export default {
         ) => {
           var xFileName, successMsg, errorMsg;
 
-          if (fqExportMode === "upload") {
+          if (fqExportMode === "upload") { // Uploading a new file
             xFileName = fqExportDocFname;
             successMsg = " uploaded";
             errorMsg = " uploaded";
-          } else {
+          } else { // Saving existing file
             xFileName = fqExportDocFname;
             successMsg = " saved";
             errorMsg = " saved";
@@ -1265,8 +1266,19 @@ export default {
             "Plotly-World-Readable": world_readable,
             "X-CSRFToken": fqCsrfToken
           };
+          
           if (parentId) {
-            headers["Plotly-Parent"] = parentId;
+            const fileUserId = getSubIdFromFid(parentId, 0);
+            const fileNumId = getSubIdFromFid(parentId, 1);
+
+            const savingIntoSharedFolder = fileUserId !== fqUserId;
+
+            if (savingIntoSharedFolder) {         
+              headers["Target-Fid"] = parentId;
+              headers["Plotly-Parent"] = -1;
+            } else {
+              headers["Plotly-Parent"] = fileNumId;
+            }
           }
 
           jQuery
@@ -1285,8 +1297,8 @@ export default {
                 fqItemListFolder = "";
                 fqItemListFile = "";
                 if (fqExportMode === "upload") {
-                  const userId = getNumIdFromFid(response.file.fid, 0);
-                  const fileNumId = getNumIdFromFid(response.file.fid, 1);
+                  const userId = getSubIdFromFid(response.file.fid, 0);
+                  const fileNumId = getSubIdFromFid(response.file.fid, 1);
                   const baseHref = `${baseUrl}~${userId}/${fileNumId}.`;
 
                   const ext = response.file.filetype === "plot" ? "svg" : "src";
@@ -1446,8 +1458,8 @@ export default {
 
             case "saveFigureAs":
               elements.hide =
-                ".modal-action-panel, .fq-modal-file-tab, #fq-modal-file-search-block, #fq-modal-file-tab-preselected, #fq-modal-file-tab-shared";
-              elements.reveal = ".file-save-panel, #fq-modal-file-tab-my";
+                ".modal-action-panel, .fq-modal-file-tab, #fq-modal-file-search-block, #fq-modal-file-tab-preselected";
+              elements.reveal = ".file-save-panel, #fq-modal-file-tab-my, #fq-modal-file-tab-shared";
               elements.disable = "";
               elements.activate = "#fq-modal-file-tab-my";
               heading = "Save figure as";
@@ -1637,7 +1649,7 @@ export default {
             apiEndpoint,
             world_readable,
             true,
-            getNumIdFromFid(fqLastFolderId[fqModalFileTabMode], 1)
+            fqLastFolderId[fqModalFileTabMode]
           );
         });
 
@@ -2091,8 +2103,8 @@ export default {
             var refPlotIndex = false;
             data.some((element, index) => {
               // Get dimensions of the first selected plot, either from layout or from template (if not defined in layout)
-              const userId = getNumIdFromFid(element.fid, 0);
-              const fileNumId = getNumIdFromFid(element.fid, 1);
+              const userId = getSubIdFromFid(element.fid, 0);
+              const fileNumId = getSubIdFromFid(element.fid, 1);
               const baseHref = `${baseUrl}~${userId}/${fileNumId}.`;
               var w, h;
 
@@ -2346,7 +2358,7 @@ export default {
               apiEndpoint,
               world_readable,
               true,
-              getNumIdFromFid(fqLastFolderId[fqModalFileTabMode], 1)
+              fqLastFolderId[fqModalFileTabMode]
             );
           }
         );
@@ -2415,7 +2427,7 @@ export default {
           async event => {
             setInteractiveOff();
 
-            if (!fqCurrentFigData) {
+            if (!fqCurrentFigData) { // New figure >> show save as dialog
               showSaveFigureAsDialog();
               return;
             }
@@ -2470,13 +2482,14 @@ export default {
               fqCurrentFigData.owner === fqUserId
                 ? fqCurrentFigData.parent
                 : false;
+            const fullFileId = fqUserId + ":" + parentId;
 
             uploadFileToFiglinQ(
               formData,
               apiEndpoint,
               world_readable,
               false,
-              parentId
+              fullFileId
             );
           }
         );
