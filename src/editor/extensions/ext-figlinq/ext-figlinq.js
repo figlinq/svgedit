@@ -161,6 +161,25 @@ export default {
           "Z"
         ];
 
+        const setDeep = function(obj, path, value, setrecursively = false) {
+          path.reduce((a, b, level) => {
+            if (
+              setrecursively &&
+              typeof a[b] === "undefined" &&
+              level !== path.length
+            ) {
+              a[b] = {};
+              return a[b];
+            }
+
+            if (level === path.length - 1) {
+              a[b] = value;
+              return value;
+            }
+            return a[b];
+          }, obj);
+        };
+
         // To use this function we need to get content_type field into the "children" object returned from v2
         // const getExt = (contentType) => {
         //   if (contentType == "image/jpeg" || contentType == "image/jpg") return "jpg";
@@ -1160,16 +1179,31 @@ export default {
         };
 
         const adjustFigureProperty = async () => {
+          const property = jQuery("#fq-modal-export-property-select").val();
+          const propertyPath = property.split("-");
+          const value = parseFloat(
+            jQuery("#fq-modal-export-property-input").val()
+          );
+
           const selElems = svgCanvas.getSelectedElems();
           let i = selElems.length;
+          let plotSelected = false;
+          if (i < 1) {
+            alert("Please select at least one object!");
+            return;
+          }
           while (i--) {
             const elem = selElems[i];
-            if (!elem) {
+            const fid = jQuery(elem).data("fid");
+            const isPlot = jQuery(elem).hasClass("fq-plot");
+            const href = jQuery(elem).attr("href");
+            const d = new Date();
+            if (!elem || !isPlot) {
               continue;
             }
-            const fid = jQuery(elem).data("fid");
+            plotSelected = true;
             const plotUrl = `https://plotly.local/v2/plots/${fid}/content`;
-            let fetchResult = await fetch(plotUrl, {
+            await fetch(plotUrl, {
               method: "GET",
               mode: "cors",
               credentials: "include",
@@ -1177,20 +1211,21 @@ export default {
                 "X-CSRFToken": fqCsrfToken
               }
             })
-              .then(result => result.json())
-              .then(resultJson => {
-                resultJson.layout.xaxis.tickfont = {};
-                resultJson.layout.xaxis.tickfont.size = 20;
-                return resultJson;
+              .then(result => {
+                return result.json();
               })
               .then(resultJson => {
-                const updateUrl = `https://plotly.local/v2/plots/${fid}`;
+                setDeep(resultJson, propertyPath, value, true);
+                return resultJson;
+              })
+              .then(resultUpdated => {
+                const updatePlotUrl = `https://plotly.local/v2/plots/${fid}`;
                 const data = {
-                  figure: resultJson,
+                  figure: resultUpdated,
                   filename: "box",
                   world_readable: false
                 };
-                fetch(updateUrl, {
+                fetch(updatePlotUrl, {
                   method: "PUT",
                   mode: "cors",
                   credentials: "include",
@@ -1201,9 +1236,14 @@ export default {
                   },
                   body: JSON.stringify(data)
                 });
-
-                fetch(updateUrl, {
-                  method: "PUT",
+              })
+              .then(resultUpdated => {
+                const updateFileUrl = `https://plotly.local/v2/files/${fid}`;
+                const data = {
+                  figure: resultUpdated
+                };
+                fetch(updateFileUrl, {
+                  method: "PATCH",
                   mode: "cors",
                   credentials: "include",
                   headers: {
@@ -1212,8 +1252,37 @@ export default {
                     "Content-Type": "application/json"
                   },
                   body: JSON.stringify(data)
-                }).then(result => result.json());
+                }).then(() => {
+                  // jQuery(elem)
+                  //   .removeAttr("href")
+                  //   .attr("href", href + "?d=" + d.getTime())
+                  // var img = $("#myimg");
+                  // var url = img.attr("src");
+                  // jQuery
+                  //   .ajax({
+                  //     url: href,
+                  //     headers: { "Cache-Control": "no-cache" },
+                  //     xhrFields: { withCredentials: true }
+                  //   })
+                  //   .done(function() {
+                  //     // Refresh is complete, assign the image again
+                  //     jQuery(elem).attr("href", href);
+                  //   });
+                  fetch(href, {
+                    method: "GET",
+                    mode: "cors",
+                    credentials: "include",
+                    headers: {
+                      "X-CSRFToken": fqCsrfToken
+                    }
+                  }).then(() => {
+                    jQuery(elem).attr("href", href);
+                  });
+                });
               });
+          }
+          if (plotSelected === false) {
+            alert("Please select at least one plot!");
           }
         };
 

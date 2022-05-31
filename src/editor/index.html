@@ -312,15 +312,15 @@
         </div>
         <div class="navbar-item has-dropdown is-hoverable">
           <a class="navbar-link is-arrowless has-text-6 px-0">
-            <span class="fq-navbar-link">Object</span>
+            <span class="fq-navbar-link">Plot</span>
           </a>
           <div class="navbar-dropdown is-boxed" style="border-top: none;">
             <a id="fq-menu-object-adjust" class="navbar-item">
               <span class="icon-text">
                 <span class="icon">
-                  <i class="far fa-square"></i>
+                  <i class="fas fa-sliders-h"></i>
                 </span>
-                <span>Adjust</span>
+                <span>Adjust properties</span>
               </span>              
             </a>            
           </div>
@@ -868,19 +868,28 @@
     <div class="modal-background"></div>
     <div class="modal-content" style="max-width: 460px;">
       <div class="box">
-        <p class="mb-5 is-size-6">Adjust selected figures</p>
+        <p class="is-size-6">Adjust selected figures</p>
         
         <!-- Property -->
+        <div class="field">
+          <div class="control" style="margin-top: 2px;">
+            <label class="is-size-7">This is an experimental feature, please use with caution!</label>
+          </div>
+        </div>
         <div class="field is-grouped">
           <p class="control" style="margin-top: 2px;">
-            <label class="is-size-7">Property:</label>
+            <label class="is-size-7 has-text-weight-regular">Property:</label>
           </p>
           <div class="field has-addons">
             <div class="control">
               <div class="select is-small">
                 <select id="fq-modal-export-property-select">
-                  <option value="layout-xaxis-tickfont-size">X-axis tick font size</option>
-                  <option value="layout-yaxis-tickfont-size">Y-axis tick font size</option>
+                  <option value="layout-title-font-size">Plot > title > font > size</option>
+                  <option value="layout-xaxis-title-font-size">X-axis > title > font > size</option>
+                  <option value="layout-xaxis-tickfont-size">X-axis > tick labels > font > size</option>
+                  <option value="layout-xaxis-title-font-size">Y-axis > title > font > size</option>
+                  <option value="layout-yaxis-tickfont-size">Y-axis > tick labels > font > size</option>
+                  <option value="layout-legend-font-size">Legend > font > size</option>
                 </select>
               </div>
             </div>
@@ -893,12 +902,12 @@
         <div class="field is-grouped is-grouped-centered">
           <p class="control">
             <a id="fq-modal-adjust-btn-adjust" class="button is-link is-small">
-              Adjust
+              Apply
             </a>
           </p>
           <p class="control">
             <a class="button is-link is-outlined fq-modal-cancel-btn is-small">
-              Cancel
+              Close
             </a>
           </p>
         </div>
