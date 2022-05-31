@@ -310,6 +310,21 @@
             </a>
           </div>
         </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link is-arrowless has-text-6 px-0">
+            <span class="fq-navbar-link">Object</span>
+          </a>
+          <div class="navbar-dropdown is-boxed" style="border-top: none;">
+            <a id="fq-menu-object-adjust" class="navbar-item">
+              <span class="icon-text">
+                <span class="icon">
+                  <i class="far fa-square"></i>
+                </span>
+                <span>Adjust</span>
+              </span>              
+            </a>            
+          </div>
+        </div>
       </div>
     </div>
   </nav>
@@ -836,6 +851,49 @@
           <p class="control">
             <a id="fq-modal-export-btn-export" class="button is-link is-small">
               Export
+            </a>
+          </p>
+          <p class="control">
+            <a class="button is-link is-outlined fq-modal-cancel-btn is-small">
+              Cancel
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Adjust modal -->
+  <div id="fq-modal-adjust" class="modal modal-fx-normal">
+    <div class="modal-background"></div>
+    <div class="modal-content" style="max-width: 460px;">
+      <div class="box">
+        <p class="mb-5 is-size-6">Adjust selected figures</p>
+        
+        <!-- Property -->
+        <div class="field is-grouped">
+          <p class="control" style="margin-top: 2px;">
+            <label class="is-size-7">Property:</label>
+          </p>
+          <div class="field has-addons">
+            <div class="control">
+              <div class="select is-small">
+                <select id="fq-modal-export-property-select">
+                  <option value="layout-xaxis-tickfont-size">X-axis tick font size</option>
+                  <option value="layout-yaxis-tickfont-size">Y-axis tick font size</option>
+                </select>
+              </div>
+            </div>
+            <p class="control">
+              <input id="fq-modal-export-property-input" value="" class="input is-small" type="text">
+            </p>
+          </div>
+        </div>
+
+        <div class="field is-grouped is-grouped-centered">
+          <p class="control">
+            <a id="fq-modal-adjust-btn-adjust" class="button is-link is-small">
+              Adjust
             </a>
           </p>
           <p class="control">

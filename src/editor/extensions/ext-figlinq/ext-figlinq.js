@@ -1159,6 +1159,64 @@ export default {
           return attrs;
         };
 
+        const adjustFigureProperty = async () => {
+          const selElems = svgCanvas.getSelectedElems();
+          let i = selElems.length;
+          while (i--) {
+            const elem = selElems[i];
+            if (!elem) {
+              continue;
+            }
+            const fid = jQuery(elem).data("fid");
+            const plotUrl = `https://plotly.local/v2/plots/${fid}/content`;
+            let fetchResult = await fetch(plotUrl, {
+              method: "GET",
+              mode: "cors",
+              credentials: "include",
+              headers: {
+                "X-CSRFToken": fqCsrfToken
+              }
+            })
+              .then(result => result.json())
+              .then(resultJson => {
+                resultJson.layout.xaxis.tickfont = {};
+                resultJson.layout.xaxis.tickfont.size = 20;
+                return resultJson;
+              })
+              .then(resultJson => {
+                const updateUrl = `https://plotly.local/v2/plots/${fid}`;
+                const data = {
+                  figure: resultJson,
+                  filename: "box",
+                  world_readable: false
+                };
+                fetch(updateUrl, {
+                  method: "PUT",
+                  mode: "cors",
+                  credentials: "include",
+                  headers: {
+                    "X-CSRFToken": fqCsrfToken,
+                    Accept: "application/json",
+                    "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify(data)
+                });
+
+                fetch(updateUrl, {
+                  method: "PUT",
+                  mode: "cors",
+                  credentials: "include",
+                  headers: {
+                    "X-CSRFToken": fqCsrfToken,
+                    Accept: "application/json",
+                    "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify(data)
+                }).then(result => result.json());
+              });
+          }
+        };
+
         const exportImageFromEditor = async () => {
           // Empty temp div
           // jQuery("#fq-svg-container").empty();
@@ -1725,6 +1783,10 @@ export default {
           jQuery("#fq-modal-export").addClass("is-active");
         });
 
+        jQuery(document).on("click", "#fq-menu-object-adjust", () => {
+          jQuery("#fq-modal-adjust").addClass("is-active");
+        });
+
         jQuery(document).on("click", ".fq-modal-export-quality", e => {
           const incr = parseInt(jQuery(e.target).data("increment"));
           var value = parseInt(jQuery("#fq-modal-export-quality-input").val());
@@ -1760,6 +1822,12 @@ export default {
             refreshModalContents();
           }
         );
+
+        jQuery(document).on("click", "#fq-modal-adjust-btn-adjust", async e => {
+          jQuery(e.currentTarget).addClass("is-loading");
+          await adjustFigureProperty();
+          jQuery(e.currentTarget).removeClass("is-loading");
+        });
 
         jQuery(document).on("click", "#fq-modal-export-btn-export", async e => {
           jQuery(e.currentTarget).addClass("is-loading");
