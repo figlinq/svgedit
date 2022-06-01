@@ -1202,7 +1202,7 @@ export default {
               continue;
             }
             plotSelected = true;
-            const plotUrl = `https://plotly.local/v2/plots/${fid}/content`;
+            const plotUrl = `${baseUrl}v2/plots/${fid}/content`;
             await fetch(plotUrl, {
               method: "GET",
               mode: "cors",
@@ -1219,7 +1219,7 @@ export default {
                 return resultJson;
               })
               .then(resultUpdated => {
-                const updatePlotUrl = `https://plotly.local/v2/plots/${fid}`;
+                const updatePlotUrl = `${baseUrl}v2/plots/${fid}`;
                 const data = {
                   figure: resultUpdated,
                   filename: "box",
@@ -1238,7 +1238,7 @@ export default {
                 });
               })
               .then(resultUpdated => {
-                const updateFileUrl = `https://plotly.local/v2/files/${fid}`;
+                const updateFileUrl = `${baseUrl}v2/files/${fid}`;
                 const data = {
                   figure: resultUpdated
                 };
