@@ -512,6 +512,15 @@ export default {
             .always(function() {});
         };
 
+        const resetPlotImageUrls = () => {
+          const plotImages = jQuery(".fq-plot");
+          plotImages.each(function() {
+            const href = jQuery(this).attr("href");
+            const hrefCleaned = href.split("#")[0];
+            jQuery(this).attr("href", hrefCleaned);
+          });
+        };
+
         const populateFileModal = (data, selectedFids = false) => {
           jQuery("#fq-modal-files-open-figure-confirm").prop("disabled", true);
           let val = jQuery("#fq-modal-save-name-input").val();
@@ -1251,30 +1260,19 @@ export default {
                   },
                   body: JSON.stringify(data)
                 }).then(() => {
-                  // jQuery(elem)
-                  //   .removeAttr("href")
-                  //   .attr("href", href + "?d=" + d.getTime())
-                  // var img = $("#myimg");
-                  // var url = img.attr("src");
-                  // jQuery
-                  //   .ajax({
-                  //     url: href,
-                  //     headers: { "Cache-Control": "no-cache" },
-                  //     xhrFields: { withCredentials: true }
-                  //   })
-                  //   .done(function() {
-                  //     // Refresh is complete, assign the image again
-                  //     jQuery(elem).attr("href", href);
-                  //   });
+                  // Update image
                   fetch(href, {
-                    method: "GET",
+                    cache: "reload",
                     mode: "cors",
                     credentials: "include",
                     headers: {
                       "X-CSRFToken": fqCsrfToken
                     }
                   }).then(() => {
-                    jQuery(elem).attr("href", href);
+                    jQuery(elem).attr(
+                      "href",
+                      href + "#" + new Date().getTime()
+                    );
                   });
                 });
               });
@@ -2464,8 +2462,11 @@ export default {
               return;
             }
 
+            // Clean up image URLs to remove cachebusting hashes (see adjustFigureProperty())
+            // resetPlotImageUrls();
+
             const svg = getSvgFromEditor();
-            // const apiEndpoint = nameExists ? "replace" : "upload";
+
             const apiEndpoint = "upload";
 
             var imageBlob = new Blob([svg], { type: "image/svg+xml" });
@@ -2592,11 +2593,16 @@ export default {
               parseFid(fqCurrentFigData.fid, 0) + ":" + fqCurrentFigData.parent;
             const world_readable = fqCurrentFigData.world_readable;
             const replacedFid = fqCurrentFigData.fid;
-            console.log(fqCurrentFigData);
+
+            // Clean up image URLs to remove cachebusting hashes (see adjustFigureProperty())
+            // resetPlotImageUrls();
+
             const svg = getSvgFromEditor();
             const apiEndpoint = "upload";
 
-            const imageBlob = new Blob([svg], { type: "image/svg+xml" });
+            const imageBlob = new Blob([svg], {
+              type: "image/svg+xml"
+            });
             const imageFile = new File([imageBlob], fqExportDocFname + ".svg");
 
             const thumbBlob = await exportImageFromEditor();
