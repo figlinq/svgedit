@@ -1221,9 +1221,7 @@ export default {
               .then(resultUpdated => {
                 const updatePlotUrl = `${baseUrl}v2/plots/${fid}`;
                 const data = {
-                  figure: resultUpdated,
-                  filename: "box",
-                  world_readable: false
+                  figure: resultUpdated
                 };
                 fetch(updatePlotUrl, {
                   method: "PUT",
