@@ -1,5 +1,5 @@
 {
-  "name": "svgedit",
+  "name": "@figlinq/svgedit",
   "version": "7.0.0-beta.6",
   "description": "Powerful SVG-Editor for your browser ",
   "main": "dist/Editor.js",
