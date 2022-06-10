@@ -533,7 +533,7 @@ export default {
             results = data.children.results;
 
           results.forEach(result => {
-            const isFigure = "svgedit" in result.metadata;
+            const isFigure = "svgedit" in (result.metadata || {});
             const includeNonSvg =
               fqModalMode === "addContent" || fqModalMode === "upload";
             if (result.filetype === "fold" && !result.deleted) {
@@ -1375,7 +1375,6 @@ export default {
           parentId
         ) => {
           let xFileName, successMsg, errorMsg;
-
           if (fqExportMode === "upload") {
             // Uploading a new file
             xFileName = fqExportDocFname;
@@ -1394,14 +1393,16 @@ export default {
             "X-CSRFToken": fqCsrfToken
           };
 
-          const parentUsername = parseFid(parentId, 0);
+          const parentUsername = parentId
+            ? parseFid(parentId, 0)
+            : parseFid(fqCurrentFigData.fid, 0);
           const parentIndex = parseFid(parentId, 1);
           const savingIntoSharedFolder = parentUsername !== fqUsername;
 
           if (savingIntoSharedFolder) {
             headers["Target-Fid"] = parentId;
             headers["Plotly-Parent"] = -1;
-          } else {
+          } else if (parentId) {
             headers["Plotly-Parent"] = parentIndex;
           }
 
@@ -2598,6 +2599,10 @@ export default {
             // resetPlotImageUrls();
 
             const svg = getSvgFromEditor();
+            // IMPORTANT set to 'replace' if updating prod until new backend is live
+            // const apiEndpoint = "replace";
+
+            // TODO set to 'upload' once new backend is live
             const apiEndpoint = "upload";
 
             const imageBlob = new Blob([svg], {
@@ -2643,7 +2648,7 @@ export default {
               apiEndpoint,
               world_readable,
               false,
-              fqSelectedFolderId[fqModalFileTabMode]
+              false
             );
           }
         );
