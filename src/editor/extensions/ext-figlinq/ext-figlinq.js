@@ -1372,23 +1372,23 @@ export default {
           apiEndpoint,
           world_readable,
           updateModal,
-          parentId
+          parentId,
+          mode
         ) => {
           let xFileName, successMsg, errorMsg;
-          if (fqExportMode === "upload") {
+          if (mode === "upload") {
             // Uploading a new file
-            xFileName = fqExportDocFname;
             successMsg = " uploaded";
             errorMsg = " uploaded";
-          } else {
-            // Saving existing file
-            xFileName = fqExportDocFname;
+          } else if (mode === "replace") {
+            // Overwriting an existing file
+            // parentId = fqCurrentFigData.fid;
             successMsg = " saved";
             errorMsg = " saved";
           }
 
           var headers = {
-            "X-File-Name": xFileName,
+            "X-File-Name": fqExportDocFname,
             "Plotly-World-Readable": world_readable,
             "X-CSRFToken": fqCsrfToken
           };
@@ -1400,8 +1400,17 @@ export default {
           const savingIntoSharedFolder = parentUsername !== fqUsername;
 
           if (savingIntoSharedFolder) {
-            headers["Target-Fid"] = parentId;
-            headers["Plotly-Parent"] = -1;
+            if (mode === "upload") {
+              // Uploading a new file
+              headers["Plotly-Parent"] = -1;
+              headers["target-fid"] = parentId;
+            } else if (mode === "replace") {
+              // Overwriting an existing file
+              headers["Plotly-Parent"] = -1;
+              // headers["target-fid"] = `${parseFid(fqCurrentFigData.fid, 0)}:${
+              //   fqCurrentFigData.parent
+              // }`;
+            }
           } else if (parentId) {
             headers["Plotly-Parent"] = parentIndex;
           }
@@ -1775,7 +1784,8 @@ export default {
             apiEndpoint,
             world_readable,
             true,
-            fqSelectedFolderId[fqModalFileTabMode]
+            fqSelectedFolderId[fqModalFileTabMode],
+            "upload"
           );
         });
 
@@ -2505,7 +2515,8 @@ export default {
               apiEndpoint,
               world_readable,
               true,
-              fqSelectedFolderId[fqModalFileTabMode]
+              fqSelectedFolderId[fqModalFileTabMode],
+              "upload"
             );
           }
         );
@@ -2648,7 +2659,8 @@ export default {
               apiEndpoint,
               world_readable,
               false,
-              false
+              false,
+              "replace"
             );
           }
         );
