@@ -1,6 +1,7 @@
+id: figlinq-build-and-deploy
 name: Build and deploy
 
-on: workflow_dispatch
+on: [workflow_dispatch, push]
 
 jobs:
   build:
