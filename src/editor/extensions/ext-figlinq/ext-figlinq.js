@@ -11,8 +11,6 @@ import * as hstry from "../../../svgcanvas/history";
 
 const { InsertElementCommand, BatchCommand, UndoManager } = hstry;
 
-// Latest cherry-picked commit : 65dc979c504ccdfa5d7ed3556d3026643112b6e2
-
 /**
  * @file ext-figlinq.js
  * @license MIT
