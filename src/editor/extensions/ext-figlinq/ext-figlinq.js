@@ -1017,8 +1017,37 @@ export default {
             reader.onload = () => resolve(reader.result);
             reader.readAsDataURL(fetchResult.blob);
           });
-          jQuery("#" + imgId).attr("href", dataUrl);
+          const imgType = dataUrl.substring(
+            dataUrl.indexOf(":") + 1,
+            dataUrl.indexOf(";")
+          );
+          // Run PNG images through HTML canvas to fix potential interlacing issues
+          let imgSanitized;
+          if (imgType === "image/png") {
+            const imageObj = await runImageThroughCanvas(dataUrl);
+            imgSanitized = imageObj.dataURL;
+          } else {
+            imgSanitized = dataUrl;
+          }
+          jQuery("#" + imgId).attr("href", imgSanitized);
         };
+
+        const runImageThroughCanvas = input =>
+          new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = function() {
+              let canvas = document.createElement("CANVAS");
+              const ctx = canvas.getContext("2d");
+              let dataURL;
+              canvas.height = img.height;
+              canvas.width = img.width;
+              ctx.drawImage(img, 0, 0, img.width, img.height);
+              dataURL = canvas.toDataURL();
+              canvas = null;
+              resolve({ dataURL });
+            };
+            img.src = input;
+          });
 
         const inlineSvgImage = async function(imgId) {
           var imgUrl = jQuery("#fq-svg-container")
