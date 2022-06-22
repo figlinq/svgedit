@@ -108,6 +108,7 @@ export const moveUpDownSelected = function (dir) {
   if (!selected) { return; }
 
   elementContext_.setCurBBoxes([]);
+  // curBBoxes = [];
   let closest; let foundCur;
   // jQuery sorts this list
   const list = elementContext_.getIntersectionList(getStrokedBBoxDefaultVisible([ selected ]));
@@ -162,8 +163,10 @@ export const moveSelectedElements = function (dx, dy, undoable = true) {
   }
 
   const batchCmd = new BatchCommand('position');
-  selectedElements.forEach((selected, i) => {
-    if (selected) {
+  let i = selectedElements.length;
+  while (i--) {
+    const selected = selectedElements[i];
+    if (!isNullish(selected)) {
       const xform = elementContext_.getSVGRoot().createSVGTransform();
       const tlist = selected.transform?.baseVal;
 
@@ -187,7 +190,7 @@ export const moveSelectedElements = function (dx, dy, undoable = true) {
 
       elementContext_.gettingSelectorManager().requestSelector(selected).resize();
     }
-  });
+  }
   if (!batchCmd.isEmpty()) {
     if (undoable) {
       elementContext_.addCommandToHistory(batchCmd);
@@ -890,7 +893,12 @@ export const ungroupSelectedElement = function () {
         continue;
       }
 
-      children[i++] = parent.insertBefore(elem, anchor);
+      if (anchor) {
+        anchor.before(elem);
+      } else {
+        g.after(elem);
+      }
+      children[i++] = elem;
       batchCmd.addSubCommand(new MoveElementCommand(elem, oldNextSibling, oldParent));
     }
 

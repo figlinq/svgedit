@@ -54,6 +54,12 @@ const supportsHVLineContainerBBox_ = (function () {
   return (bbox.width === 15);
 }());
 
+const supportsNonScalingStroke_ = (function () {
+  const rect = document.createElementNS(NSSVG, 'rect');
+  rect.setAttribute('style', 'vector-effect:non-scaling-stroke');
+  return rect.style.vectorEffect === 'non-scaling-stroke';
+}());
+
 // Public API
 
 /**
@@ -94,3 +100,10 @@ export const supportsHVLineContainerBBox = () => supportsHVLineContainerBBox_;
  * @returns {boolean}
 */
 export const supportsGoodTextCharPos = () => supportsGoodTextCharPos_;
+
+/**
+* @function module:browser.supportsNonScalingStroke
+* @returns {boolean}
+*/
+export const supportsNonScalingStroke = () => supportsNonScalingStroke_;
+

@@ -625,7 +625,7 @@ class SvgCanvas {
         getCurrentZoom,
         getRubberBox() { return rubberBox; },
         setCurBBoxes(value) { curBBoxes = value; },
-        getCurBBoxes() { return curBBoxes; },
+        getCurBBoxes(_value) { return curBBoxes; },
         getCurrentResizeMode() { return currentResizeMode; },
         addCommandToHistory,
         getSelector() { return Selector; }
