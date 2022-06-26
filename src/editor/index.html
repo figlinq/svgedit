@@ -27,7 +27,8 @@
   <script src="https://cdn.jsdelivr.net/npm/bulma-toast@2.4.1/dist/bulma-toast.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pdfkit@0.10.0/js/pdfkit.standalone.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/svg-to-pdfkit@0.1.8/source.js"></script>
-
+  <!-- <script src="https://cdn.jsdelivr.net/npm/@shopify/draggable@1.0.0-beta.13/lib/draggable.js"></script> -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/draggable/1.0.0-beta.12/draggable.min.js" integrity="sha512-VTqyB/kLQGaTnF5kYAgeEFo8fwqdlAGNUQeoQi4EOmmBYTEQ/XrYC7lnzCvBBp1PR+1ODEQiT075oeUdPeFHwA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
   <!-- SCRIPTS -->
 
@@ -321,6 +322,16 @@
                   <i class="fas fa-sliders-h"></i>
                 </span>
                 <span>Adjust properties</span>
+              </span>              
+            </a>            
+            <a id="fq-menu-object-align" class="navbar-item">
+              <span class="icon-text">
+                <span class="icon">
+                  <span class="material-icons-outlined is-size-6">
+                    align_horizontal_center
+                    </span>
+                </span>
+                <span>Align axes</span>
               </span>              
             </a>            
           </div>
@@ -863,46 +874,150 @@
     </div>
   </div>
 
-  <!-- Adjust modal -->
-  <div id="fq-modal-adjust" class="modal modal-fx-normal">
-    <div class="modal-background"></div>
-    <div class="modal-content" style="max-width: 460px;">
+  <!-- Adjust plot styling modal -->
+  <div id="fq-modal-adjust" class="modal modal-fx-normal draggable-container">
+    <!-- <div class="modal-background"></div> -->
+    <div class="modal-content draggable-source" style="max-width: 360px;">
       <div class="box">
-        <p class="is-size-6">Adjust selected figures</p>
-        
-        <!-- Property -->
-        <div class="field">
-          <div class="control" style="margin-top: 2px;">
-            <label class="is-size-7">This is an experimental feature, please use with caution!</label>
-          </div>
+        <div class="content drag-handle mb-2">
+          <span class="material-icons-outlined has-text-grey-light is-size-5" style="position:absolute; right: 20px; top: 20px;">open_with</span>
+          <p class="is-size-6">Adjust properties of selected plots</p>
+          <p class="is-size-7 has-text-weight-normal">Warning: this function will adjust properties of the selected plots and it cannot be reversed using the 'Undo' functionality.</p>
         </div>
-        <div class="field is-grouped">
-          <p class="control" style="margin-top: 2px;">
-            <label class="is-size-7 has-text-weight-regular">Property:</label>
-          </p>
-          <div class="field has-addons">
+        <div class="stop-propagation">
+          <!-- Property -->
+          <table class="fq-modal-adjust-table">
+            <tr>
+              <td>              
+                <label class="checkbox is-size-7 has-text-weight-normal">
+                  <input class="fq-modal-adjust-checkbox" data-property="layout-title-font-size" type="checkbox">
+                  Plot > title > font > size
+                </label>
+              </td>
+              <td>
+                <input class="fq-modal-adjust-input" data-property="layout-title-font-size" value=""  size="1" class="input is-small" type="text">
+              </td>
+              <td>
+                <button class="button is-small fq-modal-adjust-copy" data-property="layout-title-font-size"><span class="material-icons-outlined mr-1">content_copy</span>Copy &#x2B07;</button>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <label class="checkbox is-size-7 has-text-weight-normal">
+                  <input class="fq-modal-adjust-checkbox" data-property="layout-legend-font-size" type="checkbox">
+                  Legend > font > size
+                </label>
+              </td>
+              <td>
+                <input class="fq-modal-adjust-input" data-property="layout-legend-font-size" value=""  size="1" class="input is-small" type="text">
+              </td>
+              <td>
+                <button class="button is-small fq-modal-adjust-copy" data-property="layout-legend-font-size"><span class="material-icons-outlined mr-1">content_copy</span>Copy &#x2B07;</button>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <label class="checkbox is-size-7 has-text-weight-normal">
+                  <input class="fq-modal-adjust-checkbox" data-property="layout-xaxis-title-font-size" type="checkbox">
+                  X-axis > title > font > size
+                </label>
+              </td>
+              <td>
+                <input class="fq-modal-adjust-input" data-property="layout-xaxis-title-font-size" value=""  size="1" class="input is-small" type="text">
+              </td>
+              <td>
+                <button class="button is-small fq-modal-adjust-copy" data-property="layout-xaxis-title-font-size"><span class="material-icons-outlined mr-1">content_copy</span>Copy &#x2B07;</button>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <label class="checkbox is-size-7 has-text-weight-normal">
+                  <input class="fq-modal-adjust-checkbox" data-property="layout-xaxis-tickfont-size" type="checkbox">
+                  X-axis > tick labels > font > size
+                </label>
+              </td>
+              <td>
+                <input class="fq-modal-adjust-input" data-property="layout-xaxis-tickfont-size" value=""  size="1" class="input is-small" type="text">
+              </td>
+              <td>
+                <button class="button is-small fq-modal-adjust-copy" data-property="layout-xaxis-tickfont-size"><span class="material-icons-outlined mr-1">content_copy</span>Copy &#x2B07;</button>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <label class="checkbox is-size-7 has-text-weight-normal">
+                  <input class="fq-modal-adjust-checkbox" data-property="layout-yaxis-title-font-size" type="checkbox">
+                  Y-axis > title > font > size
+                </label>
+              </td>
+              <td>
+                <input class="fq-modal-adjust-input" data-property="layout-yaxis-title-font-size" value=""  size="1" class="input is-small" type="text">
+              </td>
+              <td>
+                <button class="button is-small fq-modal-adjust-copy" data-property="layout-yaxis-title-font-size"><span class="material-icons-outlined mr-1">content_copy</span>Copy &#x2B07;</button>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <label class="checkbox is-size-7 has-text-weight-normal">
+                  <input class="fq-modal-adjust-checkbox" data-property="layout-yaxis-tickfont-size" type="checkbox">
+                  Y-axis > tick labels > font > size
+                </label>
+              </td>
+              <td>
+                <input class="fq-modal-adjust-input" data-property="layout-yaxis-tickfont-size" value=""  size="1" class="input is-small" type="text">
+              </td>
+              <td>
+                <button class="button is-small fq-modal-adjust-copy" data-property="layout-yaxis-tickfont-size"><span class="material-icons-outlined mr-1">content_copy</span>Copy &#x2B07;</button>
+              </td>
+            </tr>
+          </table>
+          <div class="field mt-2">
             <div class="control">
-              <div class="select is-small">
-                <select id="fq-modal-export-property-select">
-                  <option value="layout-title-font-size">Plot > title > font > size</option>
-                  <option value="layout-xaxis-title-font-size">X-axis > title > font > size</option>
-                  <option value="layout-xaxis-tickfont-size">X-axis > tick labels > font > size</option>
-                  <option value="layout-xaxis-title-font-size">Y-axis > title > font > size</option>
-                  <option value="layout-yaxis-tickfont-size">Y-axis > tick labels > font > size</option>
-                  <option value="layout-legend-font-size">Legend > font > size</option>
-                </select>
-              </div>
+              <label class="checkbox is-size-7 has-text-weight-normal">
+                <input id="fq-modal-adjust-property-equalize" type="checkbox">
+                Adjust for current scaling 
+              </label>
             </div>
+          </div>
+
+          <div class="field is-grouped is-grouped-centered">
             <p class="control">
-              <input id="fq-modal-export-property-input" value="" class="input is-small" type="text">
+              <a id="fq-modal-adjust-btn-adjust" class="button is-link is-small">
+                Apply
+              </a>
+            </p>
+            <p class="control">
+              <a class="button is-link is-outlined fq-modal-cancel-btn is-small">
+                Close
+              </a>
             </p>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Align plot modal -->
+  <div id="fq-modal-align" class="modal modal-fx-normal draggable-container">
+    <!-- <div class="modal-background"></div> -->
+    <div class="modal-content draggable-source" style="max-width: 360px;">
+      <div class="box">
+        <div class="content drag-handle mb-2">
+          <span class="material-icons-outlined has-text-grey-light is-size-5" style="position:absolute; right: 20px; top: 20px;">open_with</span>
+          <p class="is-size-6">Align plots by axis</p>
+          <p class="is-size-7 has-text-weight-normal">This function will align the selected plots by the chosen left or bottom axis.</p>
         </div>
 
         <div class="field is-grouped is-grouped-centered">
           <p class="control">
-            <a id="fq-modal-adjust-btn-adjust" class="button is-link is-small">
-              Apply
+            <a id="fq-modal-align-btn-x" class="button is-link is-small">
+              <span class="material-icons-outlined is-size-6">align_vertical_bottom</span>
+            </a>
+          </p>
+          <p class="control">
+            <a id="fq-modal-align-btn-y" class="button is-link is-small">
+              <span class="material-icons-outlined is-size-6">align_horizontal_left</span>
             </a>
           </p>
           <p class="control">

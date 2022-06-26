@@ -339,3 +339,41 @@ se-select {
   height: 40px;
   margin-top: 5px;
 }
+
+.fq-modal-adjust-table input[type="text"] {
+  padding: 0px;
+}
+.fq-modal-adjust-table td {
+  padding: 2px;
+  padding-right: 6px;
+}
+.fq-modal-adjust-table label {
+  user-select: none;
+}
+.fq-modal-adjust-table button {
+  height: 23px;
+  margin-top: 1px;
+  padding: 0px 6px;
+}
+.fq-modal-adjust-table .material-icons-outlined {
+  font-size: 14px;
+}
+#fq-modal-adjust .modal-content, #fq-modal-align .modal-content {
+  box-shadow: 0 .5em 1em -.125em rgba(10,10,10,.1),0 0 0 1px rgba(10,10,10,.02);
+}
+
+.draggable-source--is-dragging{
+  visibility: hidden;
+}
+
+.draggable-container {
+  pointer-events: none;
+}
+
+.draggable-container .box {
+  pointer-events: auto;
+}
+
+.drag-handle {
+  cursor: move;
+}

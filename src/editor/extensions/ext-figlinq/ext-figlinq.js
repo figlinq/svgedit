@@ -1,3 +1,9 @@
+/*
+TODO
+1. Limit movement of elements after initial selection in event.js, line 130
+
+*/
+
 import {
   folderItem,
   plotItem,
@@ -8,6 +14,11 @@ import {
 import { NS } from "./namespaces.js";
 import { isValidUnit } from "../../../common/units.js";
 import * as hstry from "../../../svgcanvas/history";
+import {
+  getRotationAngle,
+  getBBox as utilsGetBBox
+} from "../../../svgcanvas/utilities.js";
+import { moveSelectedElements } from "../../../svgcanvas/selected-elem.js";
 
 const { InsertElementCommand, BatchCommand, UndoManager } = hstry;
 
@@ -160,6 +171,8 @@ export default {
           "Y",
           "Z"
         ];
+        const fqFontRoundPrecision = 2;
+        const fqAlignRoundPrecision = 3;
 
         const setDeep = function(obj, path, value, setrecursively = false) {
           path.reduce((a, b, level) => {
@@ -442,6 +455,28 @@ export default {
           });
         };
 
+        const getPlotDataFromFiglinQ = fid => {
+          const plotUrl = `${baseUrl}v2/plots/${fid}/content`;
+          return new Promise(resolve => {
+            jQuery
+              .ajax({
+                url: plotUrl,
+                xhrFields: {
+                  withCredentials: true
+                }
+              })
+              .done(function(data) {
+                resolve(data);
+              })
+              .fail(function(error) {
+                resolve({
+                  fid: fid,
+                  error: error.responseJSON.detail
+                });
+              });
+          });
+        };
+
         const updateItemList = (dataFid, page, searchQuery = false) => {
           if (Array.isArray(dataFid)) {
             // Get data for each file
@@ -629,8 +664,8 @@ export default {
           const iframeSrc =
             contentHref == null ? contentHrefGuess : contentHref;
 
-          const height = currentImg.attr("height");
-          const width = currentImg.attr("width");
+          const height = currentImg.height();
+          const width = currentImg.width();
           const x = currentImg.attr("x");
           const y = currentImg.attr("y");
           const id = currentImg.attr("id");
@@ -1190,6 +1225,20 @@ export default {
           });
         };
 
+        const activateDraggableModals = () => {
+          const draggable = new Draggable.default(document.querySelectorAll('.draggable-container'), {
+            handle: '.drag-handle'
+          });
+          draggable.on('drag:stop', (data) => {
+            const pos = jQuery('.draggable-mirror').position();
+            jQuery(data.originalSource).css({
+              "position": "fixed",
+              "left": pos.left,
+              "top": pos.top,
+            });
+          });
+        }
+
         const updateExportFormState = () => {
           let format = jQuery("#fq-modal-export-format-select").val();
           if (format === "jpeg") {
@@ -1215,31 +1264,89 @@ export default {
           });
           return attrs;
         };
+        /*
+          Find all plots (elements of type image, with class 'fq-iplot')
+          in input array of nodes, including plots nested in <g> elements (groups).  
+          Input: Array of node elements
+          Output: Array of plot objects
+        */
+        const findPlots = (
+          elems,
+          plotElems,
+          descendIntoGroups = true,
+          keepOriginalOrder = false
+        ) => {
+          elems.forEach(item => {
+            const isPlot =
+              jQuery(item).hasClass("fq-plot") && jQuery(item).is("image");
+            const isGroup = jQuery(item).is("g");
+            if (isPlot) {
+              const originalWH = jQuery(item)
+                .data("original_dimensions")
+                .split(",");
+              const bBox = item.getBBox();
+              let currentElemProps = {
+                currentWidth: bBox.width,
+                currentHeight: bBox.height,
+                x: bBox.x,
+                y: bBox.y,
+                originalWidth: parseFloat(originalWH[0]),
+                originalHeight: parseFloat(originalWH[1]),
+                fid: jQuery(item).data("fid")
+              };
+              currentElemProps.elem = item;
 
-        const adjustFigureProperty = async () => {
-          const property = jQuery("#fq-modal-export-property-select").val();
-          const propertyPath = property.split("-");
-          const value = parseFloat(
-            jQuery("#fq-modal-export-property-input").val()
+              const precisionMultiplier = Math.pow(10, fqFontRoundPrecision);
+              currentElemProps.scale =
+                Math.round(
+                  (currentElemProps.currentHeight /
+                    currentElemProps.originalHeight) *
+                    precisionMultiplier
+                ) / precisionMultiplier;
+              plotElems.push(currentElemProps);
+            } else if (isGroup && descendIntoGroups) {
+              return findPlots(
+                jQuery(item)
+                  .children()
+                  .toArray(),
+                plotElems
+              );
+            } else if (keepOriginalOrder) {
+              plotElems.push({});
+            }
+          });
+          return plotElems;
+        };
+
+        const adjustPlots = async () => {
+
+          const equalizeProps = jQuery("#fq-modal-adjust-property-equalize").is(
+            ":checked"
           );
 
           const selElems = svgCanvas.getSelectedElems();
           let i = selElems.length;
-          let plotSelected = false;
-          if (i < 1) {
+
+          if (!i) {
             alert("Please select at least one object!");
             return;
           }
-          while (i--) {
-            const elem = selElems[i];
+
+          // Fid all plots in selection, including (nested) groups
+          const plotElems = findPlots(selElems, []);
+          if (!plotElems.length) {
+            alert("Please select at least one plot!");
+            return;
+          }
+
+          // Adjust props iteratively
+          let j = plotElems.length;
+          let k = 0;
+          while (k < j) {
+            const elem = plotElems[k].elem;
             const fid = jQuery(elem).data("fid");
-            const isPlot = jQuery(elem).hasClass("fq-plot");
             const href = jQuery(elem).attr("href");
             const d = new Date();
-            if (!elem || !isPlot) {
-              continue;
-            }
-            plotSelected = true;
             const plotUrl = `${baseUrl}v2/plots/${fid}/content`;
             await fetch(plotUrl, {
               method: "GET",
@@ -1253,7 +1360,17 @@ export default {
                 return result.json();
               })
               .then(resultJson => {
-                setDeep(resultJson, propertyPath, value, true);
+                // Update properties
+                jQuery('.fq-modal-adjust-checkbox').filter(":checked").map(function () { 
+                  const property = jQuery(this).data('property');
+                  const propertyPath = property.split("-");
+                  const value = jQuery(`input[data-property='${property}'][type='text']`).val();
+                  const valueScaled = equalizeProps
+                    ? value / plotElems[k].scale
+                    : value;
+                    // console.log(plotElems[k].scale, value, valueScaled);
+                  setDeep(resultJson, propertyPath, valueScaled, true);
+                })
                 return resultJson;
               })
               .then(resultUpdated => {
@@ -1305,10 +1422,135 @@ export default {
                   });
                 });
               });
+            k++;
           }
-          if (plotSelected === false) {
-            alert("Please select at least one plot!");
+        };
+
+        const getPlotAxesProps = jsonObj => {
+          return {
+            marginLeft:
+              jsonObj?.layout?.margin?.l !== undefined
+                ? jsonObj?.layout?.margin?.l
+                : jsonObj.layout?.template?.layout?.margin?.l,
+            marginBottom:
+              jsonObj?.layout?.margin?.b !== undefined
+                ? jsonObj?.layout?.margin?.b
+                : jsonObj.layout?.template?.layout?.margin?.b,
+            width:
+              jsonObj?.layout?.width !== undefined
+                ? jsonObj?.layout?.width
+                : jsonObj.layout?.template?.layout?.width,
+            height:
+              jsonObj?.layout?.height !== undefined
+                ? jsonObj?.layout?.height
+                : jsonObj.layout?.template?.layout?.height
+          };
+        };
+
+        const alignPlots = async axis => {
+          const refDim = axis === "x" ? "y" : "x";
+          const selElems = svgCanvas.getSelectedElems();
+
+          // Fid all plots in selection, excluding (nested) groups, while maintaining order of elements
+          const plotElems = findPlots(selElems, [], false, true);
+
+          // Find reference plot
+          var fidRef,
+            minDim = Infinity,
+            plotNumber = 0,
+            indexRef;
+          plotElems.forEach((plot, index) => {
+            if (Object.keys(plot).length !== 0 && plot[refDim] < minDim) {
+              minDim = plot[refDim];
+              fidRef = plot.fid;
+              indexRef = index;
+            }
+            if (Object.keys(plot).length !== 0) {
+              plotNumber++;
+            }
+          });
+
+          if (plotNumber < 2) {
+            alert("Please select at least two plots!");
+            return;
           }
+
+          let actions = plotElems.map(function(plot) {
+            if (Object.keys(plot).length === 0) {
+              return new Promise(resolve => {
+                resolve({});
+              }); // Not a plot, return empty object to maintain order of elements
+            } else {
+              return getPlotDataFromFiglinQ(plot.fid);
+            }
+          });
+
+          let results = Promise.all(actions);
+
+          results.then(data => {
+            let dx = [];
+            let dy = [];
+            var j = plotElems.length,
+              k = 0;
+
+            // Get ref plot info
+            const refPlotAxesProps = getPlotAxesProps(data[indexRef]);
+            const precisionMultiplier = Math.pow(10, fqAlignRoundPrecision);
+            const refScale =
+              Math.round(
+                (plotElems[indexRef].currentHeight / refPlotAxesProps.height) *
+                  precisionMultiplier
+              ) / precisionMultiplier;
+
+            const refXAxisPos =
+              plotElems[indexRef].y +
+              plotElems[indexRef].currentHeight -
+              refPlotAxesProps.marginBottom * refScale;
+            const refYAxisPos =
+              plotElems[indexRef].x + refPlotAxesProps.marginLeft * refScale;
+
+            while (k < j) {
+              const dataItem = data[k];
+              const plotItem = plotElems[k];
+              
+              if (Object.keys(plotItem).length === 0) {
+                // Not a plot, don't move
+                dx.push(0);
+                dy.push(0);
+              } else {
+                const plotAxesProps = getPlotAxesProps(dataItem);
+                if (axis === "x") {
+                  const scale =
+                    Math.round(
+                      (plotElems[k].currentHeight / plotAxesProps.height) *
+                        precisionMultiplier
+                    ) / precisionMultiplier;
+
+                  const xAxisPos =
+                    plotElems[k].y +
+                    plotElems[k].currentHeight -
+                    plotAxesProps.marginBottom * scale;
+                  const delta = refXAxisPos - xAxisPos;
+                  dx.push(0);
+                  dy.push(delta);
+                } else {
+                  const scale =
+                    Math.round(
+                      (plotElems[k].currentWidth / plotAxesProps.width) *
+                        precisionMultiplier
+                    ) / precisionMultiplier;
+
+                  const yAxisPos =
+                    plotElems[k].x + plotAxesProps.marginLeft * scale;
+                  const delta = refYAxisPos - yAxisPos;
+                  dx.push(delta);
+                  dy.push(0);
+                }
+              }
+              k++;
+            }
+            svgCanvas.moveSelectedElements(dx, dy);
+          });
         };
 
         const exportImageFromEditor = async () => {
@@ -1892,6 +2134,10 @@ export default {
           jQuery("#fq-modal-adjust").addClass("is-active");
         });
 
+        jQuery(document).on("click", "#fq-menu-object-align", () => {
+          jQuery("#fq-modal-align").addClass("is-active");
+        });
+
         jQuery(document).on("click", ".fq-modal-export-quality", e => {
           const incr = parseInt(jQuery(e.target).data("increment"));
           var value = parseInt(jQuery("#fq-modal-export-quality-input").val());
@@ -1930,7 +2176,19 @@ export default {
 
         jQuery(document).on("click", "#fq-modal-adjust-btn-adjust", async e => {
           jQuery(e.currentTarget).addClass("is-loading");
-          await adjustFigureProperty();
+          await adjustPlots();
+          jQuery(e.currentTarget).removeClass("is-loading");
+        });
+
+        jQuery(document).on("click", "#fq-modal-align-btn-x", async e => {
+          jQuery(e.currentTarget).addClass("is-loading");
+          await alignPlots("x");
+          jQuery(e.currentTarget).removeClass("is-loading");
+        });
+
+        jQuery(document).on("click", "#fq-modal-align-btn-y", async e => {
+          jQuery(e.currentTarget).addClass("is-loading");
+          await alignPlots("y");
           jQuery(e.currentTarget).removeClass("is-loading");
         });
 
@@ -2037,6 +2295,19 @@ export default {
           svgEditor.configObj.curConfig.snappingStep = snappingStep;
           svgCanvas.setConfig(svgEditor.configObj.curConfig);
           svgEditor.updateCanvas();
+        });
+
+        jQuery(document).on("click", ".fq-modal-adjust-copy", (e) => {
+          const property = jQuery(e.target).data('property');
+          const refValue = jQuery(`input[data-property='${property}'][type='text']`).val();
+          const inputs = jQuery('.fq-modal-adjust-input');
+          var visited = false;
+          inputs.each(function(){
+            if (visited) {
+              jQuery(this).val(refValue);
+            }
+            if(jQuery(this).data('property') === property){visited = true}
+          })
         });
 
         jQuery(document).on("click", "#fq-doc-setup-save-btn", () => {
@@ -2502,7 +2773,7 @@ export default {
               return;
             }
 
-            // Clean up image URLs to remove cachebusting hashes (see adjustFigureProperty())
+            // Clean up image URLs to remove cachebusting hashes (see adjustPlots())
             // resetPlotImageUrls();
 
             const svg = getSvgFromEditor();
@@ -2635,15 +2906,15 @@ export default {
             const world_readable = fqCurrentFigData.world_readable;
             const replacedFid = fqCurrentFigData.fid;
 
-            // Clean up image URLs to remove cachebusting hashes (see adjustFigureProperty())
+            // Clean up image URLs to remove cachebusting hashes (see adjustPlots())
             // resetPlotImageUrls();
 
             const svg = getSvgFromEditor();
             // IMPORTANT set to 'replace' if updating prod until new backend is live
-            // const apiEndpoint = "replace";
+            const apiEndpoint = "replace";
 
             // TODO set to 'upload' once new backend is live
-            const apiEndpoint = "upload";
+            // const apiEndpoint = "upload";
 
             const imageBlob = new Blob([svg], {
               type: "image/svg+xml"
@@ -2724,6 +2995,7 @@ export default {
         adjustStyles();
         loadFqFigure();
         updateExportFormState();
+        activateDraggableModals();
       }
     };
   }
