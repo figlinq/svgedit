@@ -8,10 +8,10 @@
  */
 
 /**
- * This is a very basic SVG-Edit extension. It adds a "Hello World" button in
- *  the left ("mode") panel. Clicking on the button, and then the canvas
- *  will show the user the point on the canvas that was clicked on.
- */
+* This is a very basic SVG-Edit extension. It adds a "Hello World" button in
+*  the left ("mode") panel. Clicking on the button, and then the canvas
+*  will show the user the point on the canvas that was clicked on.
+*/
 
 const name = 'helloworld'
 
@@ -50,9 +50,9 @@ export default {
       },
       // This is triggered when the main mouse button is pressed down
       // on the editor canvas (not the tool panels)
-      mouseDown() {
+      mouseDown () {
         // Check the mode on mousedown
-        if (svgCanvas.getMode() === "hello_world") {
+        if (svgCanvas.getMode() === 'hello_world') {
           // The returned object must include "started" with
           // a value of true in order for mouseUp to be triggered
           return { started: true }
@@ -62,7 +62,7 @@ export default {
 
       // This is triggered from anywhere, but "started" must have been set
       // to true (see above). Note that "opts" is an object with event info
-      mouseUp(opts) {
+      mouseUp (opts) {
         // Check the mode on mouseup
         if (svgCanvas.getMode() === 'hello_world') {
           const zoom = svgCanvas.getZoom()
