@@ -1,8 +1,8 @@
 /* globals svgEditor */
-import 'elix/define/MenuItem.js';
-import './sePlainMenuButton.js';
+import 'elix/define/MenuItem.js'
+import './sePlainMenuButton.js'
 
-const template = document.createElement('template');
+const template = document.createElement('template')
 template.innerHTML = `
   <style>
   :host {
@@ -29,7 +29,7 @@ template.innerHTML = `
     <slot></slot>
   </elix-menu-button>
 
-`;
+`
 /**
  * @class SeMenu
  */
@@ -38,20 +38,21 @@ export class SeMenu extends HTMLElement {
     * @function constructor
     */
   constructor () {
-    super();
+    super()
     // create the shadowDom and insert the template
-    this._shadowRoot = this.attachShadow({ mode: 'open' });
-    this._shadowRoot.append(template.content.cloneNode(true));
-    this.$menu = this._shadowRoot.querySelector('elix-menu-button');
-    this.$label = this.$menu.shadowRoot.querySelector('#popupToggle').shadowRoot;
-    this.imgPath = svgEditor.configObj.curConfig.imgPath;
+    this._shadowRoot = this.attachShadow({ mode: 'open' })
+    this._shadowRoot.append(template.content.cloneNode(true))
+    this.$menu = this._shadowRoot.querySelector('elix-menu-button')
+    this.$label = this.$menu.shadowRoot.querySelector('#popupToggle').shadowRoot
+    this.imgPath = svgEditor.configObj.curConfig.imgPath
   }
+
   /**
    * @function observedAttributes
    * @returns {any} observed
    */
   static get observedAttributes () {
-    return [ 'label', 'src' ];
+    return ['label', 'src']
   }
 
   /**
@@ -62,30 +63,30 @@ export class SeMenu extends HTMLElement {
    * @returns {void}
    */
   attributeChangedCallback (name, oldValue, newValue) {
-    const image = new Image();
-    if (oldValue === newValue) return;
+    const image = new Image()
+    if (oldValue === newValue) return
     switch (name) {
-    case 'src':
-      image.src = this.imgPath + '/' + newValue;
-      image.width = 24;
-      image.height = 24;
-      this.$label.prepend(image);
-      break;
-    case 'label':
-      this.$label.prepend(newValue);
-      break;
-    default:
-      // eslint-disable-next-line no-console
-      console.error(`unknown attribute: ${name}`);
-      break;
+      case 'src':
+        image.src = this.imgPath + '/' + newValue
+        image.width = 24
+        image.height = 24
+        this.$label.prepend(image)
+        break
+      case 'label':
+        this.$label.prepend(newValue)
+        break
+      default:
+        console.error(`unknown attribute: ${name}`)
+        break
     }
   }
+
   /**
    * @function get
    * @returns {any}
    */
   get label () {
-    return this.getAttribute('label');
+    return this.getAttribute('label')
   }
 
   /**
@@ -93,14 +94,15 @@ export class SeMenu extends HTMLElement {
    * @returns {void}
    */
   set label (value) {
-    this.setAttribute('label', value);
+    this.setAttribute('label', value)
   }
+
   /**
    * @function get
    * @returns {any}
    */
   get src () {
-    return this.getAttribute('src');
+    return this.getAttribute('src')
   }
 
   /**
@@ -108,22 +110,9 @@ export class SeMenu extends HTMLElement {
    * @returns {void}
    */
   set src (value) {
-    this.setAttribute('src', value);
+    this.setAttribute('src', value)
   }
-  /**
-   * @function connectedCallback
-   * @returns {void}
-   */
-  /* connectedCallback () {
-    this.$menu.addEventListener('openedchange', (e) => {
-      e.preventDefault();
-      const selectedItem = e?.detail?.closeResult;
-      if (selectedItem !== undefined && selectedItem?.id !== undefined) {
-        document.getElementById(selectedItem.id).click();
-      }
-    });
-  } */
 }
 
 // Register
-customElements.define('se-menu', SeMenu);
+customElements.define('se-menu', SeMenu)

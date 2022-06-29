@@ -70,14 +70,23 @@ export default {
     straight_segments: 'Straight',
     curve_segments: 'Curve',
     text_contents: 'Change text contents',
-    font_family_label: 'Font',
+    font_family_label: 'Font:',
     font_family: 'Change Font Family',
     font_size: 'Change Font Size',
     bold: 'Bold Text',
+    text_decoration_underline: 'Underline',
+    text_decoration_linethrough: 'Line-Through',
+    text_decoration_overline: 'Overline',
     italic: 'Italic Text',
     text_anchor_start: 'Align the text in start',
     text_anchor_middle: 'Align the text in middle',
     text_anchor_end: 'Align the text in end',
+    text_letter_spacing: 'Change the letter spacing',
+    text_word_spacing: 'Change the word spacing',
+    text_length: 'Lets you specify the width of the space into which the text will draw',
+    text_length_adjust: 'Length adjust',
+    text_length_adjust_spacing: 'Spacing',
+    text_length_adjust_spacing_and_glyphs: 'Spacing & Glyphs',
     r_label: 'r',
     x_label: 'x',
     y_label: 'y',
@@ -305,4 +314,4 @@ export default {
     editorPreferencesMsg: 'By default and where supported, SVG-Edit can store your editor preferences and SVG content locally on your machine so you do not need to add these back each time you load SVG-Edit. If, for privacy reasons, you do not wish to store this information on your machine, you can change away from the default option below.',
     source_dialog_note: 'Copy the contents of this box into a text editor, then save the file with a .svg extension.'
   }
-};
+}

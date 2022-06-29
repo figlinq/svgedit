@@ -18,7 +18,7 @@
 .svg_editor {
   display: grid;
   grid-template-rows: auto 15px 1fr 40px;
-  grid-template-columns: 34px 15px 50px 1fr 15px;
+  grid-template-columns: 40px 15px 50px 1fr 15px;
   grid-template-areas: 
     "main main   main top top"
     "left corner rulerX rulerX side"
@@ -33,6 +33,13 @@
   height: 100%;
 }
 
+#title_panel > p {
+  color: white;
+  padding-left: 5px;
+  padding-right: 3px;
+  font-weight: bold;
+}
+
 /* on smaller screen, allow 2 lines for the toolbar */
 @media screen and (max-width:1250px) {
   .svg_editor {
@@ -42,7 +49,7 @@
 
 /* class to open the right panel */
 .svg_editor.open {
-  grid-template-columns: 34px 15px 50px 1fr 150px;
+  grid-template-columns: 34px 15px 50px 1fr 220px;
 }
 
 #svgroot {
@@ -179,6 +186,8 @@ hr {
 
 #selLayerNames {
   display: block;
+  top: -8px;
+  position: relative;
 }
 
 /* Main button
@@ -317,10 +326,10 @@ hr {
   overflow: hidden;
   display: flex;
   align-items: center;
-  scrollbar-width: thin;
+  scrollbar-width: thin; /* Firefox */
 }
 
-#tools_bottom ::-webkit-scrollbar {
+#tools_bottom ::-webkit-scrollbar { /* Chrome, Edge, and Safari */
   width: 3px;
 }
 
@@ -339,14 +348,13 @@ hr {
 #tools_left {
   grid-area: left;
   border-right: none;
+  margin-left: auto;
+  margin-right: auto;
   overflow-y: scroll;
-  /* Works on Firefox */
-  scrollbar-width: 3px;
-  scrollbar-color: rgb(70, 70, 70) auto;
+  scrollbar-width: none; /* Firefox */
 }
 
-/* Scrollbar styling on Chrome, Edge, and Safari */
-#tools_left::-webkit-scrollbar {
+#tools_left::-webkit-scrollbar { /* Chrome, Edge, and Safari */
   width: 3px;
 }
 
