@@ -43,20 +43,20 @@ const config = [{
       sourcemap: true,
       file: 'dist/editor/Editor.js'
     },
-    {
-      format: 'es',
-      inlineDynamicImports: true,
-      sourcemap: true,
-      file: 'dist/editor/xdomain-Editor.js',
-      intro: 'const XDOMAIN = true;'
-    },
-    {
-      file: 'dist/editor/iife-Editor.js',
-      format: 'iife',
-      inlineDynamicImports: true,
-      name: 'Editor',
-      sourcemap: true
-    }
+    // {
+    //   format: 'es',
+    //   inlineDynamicImports: true,
+    //   sourcemap: true,
+    //   file: 'dist/editor/xdomain-Editor.js',
+    //   intro: 'const XDOMAIN = true;'
+    // },
+    // {
+    //   file: 'dist/editor/iife-Editor.js',
+    //   format: 'iife',
+    //   inlineDynamicImports: true,
+    //   name: 'Editor',
+    //   sourcemap: true
+    // }
   ],
   plugins: [
     copy({
@@ -65,22 +65,22 @@ const config = [{
           src: 'src/editor/index.html',
           dest: 'dist/editor'
         },
-        {
-          src: 'src/editor/index.html',
-          dest: 'dist/editor',
-          rename: 'xdomain-index.html',
-          transform: (contents) => contents.toString()
-            .replace("import Editor from './Editor.js'", "import Editor from './xdomain-Editor.js")
-        },
-        {
-          src: 'src/editor/index.html',
-          dest: 'dist/editor',
-          rename: 'iife-index.html',
-          transform: (contents) => {
-            const replace1 = contents.toString().replace("import Editor from './Editor.js'", "/* import Editor from './xdomain-Editor.js' */")
-            return replace1.replace('<script type="module">', '<script src="./iife-Editor.js"></script><script>')
-          }
-        },
+        // {
+        //   src: 'src/editor/index.html',
+        //   dest: 'dist/editor',
+        //   rename: 'xdomain-index.html',
+        //   transform: (contents) => contents.toString()
+        //     .replace("import Editor from './Editor.js'", "import Editor from './xdomain-Editor.js")
+        // },
+        // {
+        //   src: 'src/editor/index.html',
+        //   dest: 'dist/editor',
+        //   rename: 'iife-index.html',
+        //   transform: (contents) => {
+        //     const replace1 = contents.toString().replace("import Editor from './Editor.js'", "/* import Editor from './xdomain-Editor.js' */")
+        //     return replace1.replace('<script type="module">', '<script src="./iife-Editor.js"></script><script>')
+        //   }
+        // },
         { src: 'src/editor/images', dest },
         { src: 'src/editor/components/jgraduate/images', dest: dest.map((d) => `${d}/components/jgraduate`) },
         { src: 'src/editor/extensions/ext-shapes/shapelib', dest: dest.map((d) => `${d}/extensions/ext-shapes`) },
@@ -105,7 +105,7 @@ const config = [{
     commonjs(),
     dynamicImportVars({ include: 'src/editor/locale.js' }),
     babel({ babelHelpers: 'bundled', exclude: [/\/core-js\//] }), // exclude core-js to avoid circular dependencies.
-    terser({ keep_fnames: true }), // keep_fnames is needed to avoid an error when calling extensions.
+    // terser({ keep_fnames: true }), // keep_fnames is needed to avoid an error when calling extensions.
     filesize()
   ]
 }]
