@@ -1,0 +1,3012 @@
+/*
+TODO
+1. Limit movement of elements after initial selection in event.js, line 130
+
+*/
+
+import {
+  folderItem,
+  plotItem,
+  imageItem,
+  figureItem,
+  breadcrumb
+} from "./elements";
+import { NS } from "./namespaces.js";
+import { isValidUnit } from "../../../common/units.js";
+import * as hstry from "../../../svgcanvas/history";
+import {
+  getRotationAngle,
+  getBBox as utilsGetBBox
+} from "../../../svgcanvas/utilities.js";
+import { moveSelectedElements } from "../../../svgcanvas/selected-elem.js";
+
+const { InsertElementCommand, BatchCommand, UndoManager } = hstry;
+
+/**
+ * @file ext-figlinq.js
+ * @license MIT
+ * @copyright 2021 figlinq.com
+ */
+
+const name = "figlinq";
+const baseUrl =
+  location.hostname == "svgedit.plotly.local"
+    ? "https://plotly.local/"
+    : "https://" + location.hostname + "/";
+
+export default {
+  name,
+  async init() {
+    const svgEditor = this;
+    const { svgCanvas } = svgEditor;
+
+    return {
+      name: svgEditor.i18next.t(`${name}:name`),
+      callback() {
+        document
+          .querySelector("#se-cmenu_canvas")
+          .shadowRoot.querySelector(".contextMenu")
+          .setAttribute("style", "min-width:250px;");
+
+        jQuery(document).keydown(function(e) {
+          // Ctrl + z (undo)
+          if (
+            e.originalEvent.ctrlKey &&
+            !e.originalEvent.shiftKey &&
+            e.originalEvent.keyCode == 90
+          ) {
+            clickUndo();
+          }
+          // Ctrl + Shift + z (redo)
+          else if (
+            e.originalEvent.ctrlKey &&
+            e.originalEvent.shiftKey &&
+            e.originalEvent.keyCode == 90
+          ) {
+            clickRedo();
+          }
+          // Ctrl + y (redo)
+          else if (e.originalEvent.ctrlKey && e.originalEvent.keyCode == 89) {
+            clickRedo();
+          } else if (e.originalEvent.ctrlKey && e.originalEvent.keyCode == 89) {
+            clickRedo();
+          }
+        });
+
+        jQuery(window).bind("mousewheel DOMMouseScroll", function(event) {
+          if (event.ctrlKey == true) {
+            event.preventDefault();
+            showZoomWarning();
+            return false;
+          }
+        });
+
+        jQuery(".modal").bind("mousewheel DOMMouseScroll", function(event) {
+          if (event.ctrlKey == true) {
+            event.preventDefault();
+            return false;
+          }
+        });
+
+        // Initiate global vars
+        var fqItemListFolder,
+          fqItemListFile,
+          fqItemListPreselected = false,
+          fqUsername,
+          fqUserData,
+          fqCurrentFigData = false,
+          fqModalMode,
+          fqModalFileTabMode = "my",
+          fqCsrfToken,
+          fqSelectedFolderId = {
+            my: false,
+            shared: false,
+            preselected: false
+          },
+          fqSearchMode = false,
+          fqHighlightedFids = false,
+          fqExportDocType,
+          fqExportDocQuality,
+          fqExportDocSize,
+          fqExportDocFname,
+          fqExportMode,
+          fqThumbWidth = 1200,
+          _typeMap,
+          fqDefaultMargins = {
+            // in mm
+            left: 15,
+            top: 15,
+            right: 15,
+            bottom: 15
+          },
+          fqDefaultSpacing = {
+            // in mm
+            horizontal: 5,
+            vertical: 10
+          };
+        const svgAttrWhitelist = ["class", "height", "width", "x", "y", "id"];
+        const fqPdfPageSizes = {
+          A0: "2383.94x3370.39",
+          A1: "1683.78x2383.94",
+          A2: "1190.55x1683.78",
+          A3: "841.89x1190.55",
+          A4: "595.28x841.89",
+          A5: "419.53x595.28",
+          Letter: "612.00x792.00"
+        };
+        const fqExportFileFormats = {
+          "1x (current)": 1,
+          "2x": 2,
+          "3x": 3,
+          "4x": 4,
+          "6x": 6,
+          "8x": 8
+        };
+        const NSSVG = "http://www.w3.org/2000/svg";
+        const alphabet = [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H",
+          "I",
+          "J",
+          "K",
+          "L",
+          "M",
+          "N",
+          "O",
+          "P",
+          "Q",
+          "R",
+          "S",
+          "T",
+          "U",
+          "V",
+          "W",
+          "X",
+          "Y",
+          "Z"
+        ];
+        const fqFontRoundPrecision = 2;
+        const fqAlignRoundPrecision = 3;
+
+        const setDeep = function(obj, path, value, setrecursively = false) {
+          path.reduce((a, b, level) => {
+            if (
+              setrecursively &&
+              typeof a[b] === "undefined" &&
+              level !== path.length
+            ) {
+              a[b] = {};
+              return a[b];
+            }
+
+            if (level === path.length - 1) {
+              a[b] = value;
+              return value;
+            }
+            return a[b];
+          }, obj);
+        };
+
+        // To use this function we need to get content_type field into the "children" object returned from v2
+        // const getExt = (contentType) => {
+        //   if (contentType == "image/jpeg" || contentType == "image/jpg") return "jpg";
+        //   if (contentType == "image/svg" || contentType == "image/svg+xml") return "svg";
+        //   if (contentType == "image/png") return "png";
+        //   if (contentType == "image/bmp") return "bmp";
+        //   if (contentType == "image/gif") return "gif";
+        // }
+
+        // Replace the broken zoom functionality in v7
+        const upgradeUi = () => {
+          // Replace zoom button
+          const element = `        
+          <div id="zoom" class="select is-small" title="Hold shift while scrolling your mouse to zoom dynamically">
+            <select>
+              <option value="default">Zoom level</option>
+              <option value="1000">1000</option>
+              <option value="400">400</option>
+              <option value="200">200</option>
+              <option value="100">100</option>
+              <option value="50">50</option>
+              <option value="25">25</option>
+              <option value="canvas">Fit to canvas</option>
+              <option value="selection">Fit to selection</option>
+              <option value="layer">Fit to content</option>
+            </select>
+          </div>`;
+          jQuery("#zoom").replaceWith(element);
+
+          // Hide image URL input
+          jQuery("#image_url").hide();
+        };
+
+        // Fitting to content does not work
+        // <option value="layer">Fit to layer content</option>
+        // <option value="content">Fit to all content</option>
+
+        const showZoomWarning = () => {
+          jQuery("#fq-modal-warning-zoom").addClass("is-active");
+          setTimeout(function() {
+            jQuery("#fq-modal-warning-zoom").removeClass("is-active");
+          }, 1250);
+        };
+
+        const getFqUsername = () => {
+          jQuery
+            .ajax({
+              url: baseUrl + "v2/users/current",
+              xhrFields: { withCredentials: true }
+            })
+            .done(function(data) {
+              if (data.username) {
+                jQuery("#fq-menu-login-btn").addClass("is-hidden");
+                jQuery("#fq-menu-signup-btn").addClass("is-hidden");
+                jQuery(".fq-menu-add-content-btn").removeClass("is-hidden");
+                jQuery("#fq-menu-interact-switch-item").removeClass(
+                  "is-hidden"
+                );
+                jQuery("#fq-menu-file-open-figure").removeClass("is-hidden");
+                jQuery("#fq-menu-file-save-figure").removeClass("is-hidden");
+                jQuery("#fq-menu-file-save-figure-as").removeClass("is-hidden");
+                jQuery("#fq-menu-file-import-local-content").removeClass(
+                  "is-hidden"
+                );
+                jQuery("#fq-breadcrumb-item-home")
+                  .data("fid", `${data.username}:-1`)
+                  .find(".fq-modal-folder-item")
+                  .data("fid", `${data.username}:-1`);
+
+                fqUsername = data.username;
+                jQuery("#fq-menu-account-user-name").html(
+                  fqUsername.slice(0, 2)
+                );
+                jQuery("#fq-menu-account-dropdown-user-name").html(fqUsername);
+                jQuery("#fq-menu-account-navbar-item1").removeClass(
+                  "is-hidden"
+                );
+                jQuery("#fq-menu-account-navbar-item2").removeClass(
+                  "is-hidden"
+                );
+
+                jQuery("#fq-user-link-files").attr(
+                  "href",
+                  baseUrl + "organize/home"
+                );
+                jQuery("#fq-user-link-charts").attr("href", baseUrl + "create");
+                jQuery("#fq-user-link-figures").attr(
+                  "href",
+                  baseUrl + "figures"
+                );
+                jQuery("#fq-user-link-collections").attr(
+                  "href",
+                  baseUrl + "dashboard/create"
+                );
+
+                jQuery("#fq-menu-account-sign-out").attr(
+                  "href",
+                  baseUrl + "signout"
+                );
+                jQuery("#fq-menu-account-settings").attr(
+                  "href",
+                  baseUrl + "settings/profile"
+                );
+
+                fqCsrfToken = data.csrf_token;
+                fqUserData = data;
+              } else {
+                showToast(
+                  "It looks like you are not logged in to FiglinQ in this browser!",
+                  "is-danger"
+                );
+              }
+            })
+            .fail(function() {
+              jQuery("#fq-menu-login-btn").removeClass("is-hidden");
+              jQuery("#fq-menu-signup-btn").removeClass("is-hidden");
+              jQuery(".fq-menu-add-content-btn").addClass("is-hidden");
+              jQuery(".fq-menu-add-content-btn").addClass("is-hidden");
+              jQuery(".fq-menu-add-content-btn").addClass("is-hidden");
+              jQuery(".fq-menu-add-content-btn").addClass("is-hidden");
+              showToast(
+                "Could not connect to FiglinQ - are you logged in?",
+                "is-danger"
+              );
+            });
+        };
+
+        const setInteractiveOff = () => {
+          jQuery("#fq-menu-interact-switch").prop("checked", false);
+          const fObjects = jQuery("svg[class='fq-fobj-container']");
+          fObjects.each(function() {
+            var ref_id = jQuery(this).data("ref_id");
+            jQuery("#" + ref_id).attr("visibility", "visible");
+            this.remove();
+          });
+        };
+
+        const setInteractiveOn = () => {
+          svgCanvas.clearSelection();
+
+          // Get all plots
+          const plots = jQuery(".fq-plot");
+
+          var plot, foreignObject, newElem;
+          plots.each(function() {
+            plot = jQuery(this);
+
+            // Generate foreignObject JSON
+            foreignObject = generateForeignObject(plot);
+
+            // Add to canvas
+            newElem = svgCanvas.addSVGElementFromJson(foreignObject);
+
+            // Hide the plot image
+            this.setAttribute("visibility", "hidden");
+          });
+        };
+
+        const updateBreadcrumb = (fid, fname) => {
+          var fidPresent = false;
+          jQuery(".breadcrumb-item").each(function() {
+            if (jQuery(this).data("fid") == fid) fidPresent = true;
+          });
+
+          if (fidPresent) {
+            jQuery(
+              jQuery(".breadcrumb-item")
+                .get()
+                .reverse()
+            ).each(function() {
+              if (jQuery(this).data("fid") == fid) {
+                return false;
+              } else {
+                jQuery(this).remove();
+              }
+            });
+          } else if (fname) {
+            jQuery(breadcrumb(fid, fname)).insertAfter(".breadcrumb-item:last");
+          } else {
+            jQuery(".breadcrumb-item:not(#fq-breadcrumb-item-home)").remove();
+          }
+        };
+
+        const getSortedElems = (selector, attrName) => {
+          return jQuery(
+            jQuery(selector)
+              .toArray()
+              .sort((a, b) => {
+                var aVal = parseInt(a.getAttribute(attrName)),
+                  bVal = parseInt(b.getAttribute(attrName));
+                return aVal - bVal;
+              })
+          );
+        };
+
+        const getUrlParameter = function getUrlParameter(sParam) {
+          var sPageURL = window.location.search.substring(1),
+            sURLVariables = sPageURL.split("&"),
+            sParameterName,
+            i;
+
+          for (i = 0; i < sURLVariables.length; i++) {
+            sParameterName = sURLVariables[i].split("=");
+
+            if (sParameterName[0] === sParam) {
+              return typeof sParameterName[1] === undefined
+                ? true
+                : decodeURIComponent(sParameterName[1]);
+            }
+          }
+          return false;
+        };
+
+        /**
+         * Loads figure from url or opens content add modal
+         * @returns {Null}
+         */
+        const loadFqFigure = () => {
+          const fid = getUrlParameter("fid");
+          const add = getUrlParameter("add");
+          if (fid) {
+            svgCanvas.clear();
+            openFigure({ data: { fid: fid } });
+          } else if (add) {
+            // preload multiple files, open modal
+            const fidArray = add.split(",");
+            var checked = jQuery("#fq-menu-interact-switch").is(":checked");
+            if (checked) jQuery("#fq-menu-interact-switch").click();
+            fqModalFileTabMode = "preselected";
+            showModalSpinner();
+            prepareFileModal("addFiglinqPreselectedContent");
+            refreshModalContents(fidArray);
+          }
+        };
+
+        const parseFid = (dataFid, index = 1) => {
+          if (!dataFid || !dataFid.includes(":")) return false;
+          return dataFid.split(":")[index];
+        };
+
+        const getFileDataFromFiglinQ = (fid, endpoint = "files") => {
+          const url = `${baseUrl}v2/${endpoint}/${fid}`;
+          return new Promise(resolve => {
+            jQuery
+              .ajax({
+                url: url,
+                xhrFields: {
+                  withCredentials: true
+                }
+              })
+              .done(function(data) {
+                resolve(data);
+              })
+              .fail(function(error) {
+                resolve({
+                  fid: fid,
+                  error: error.responseJSON.detail
+                });
+              });
+          });
+        };
+
+        const getPlotDataFromFiglinQ = fid => {
+          const plotUrl = `${baseUrl}v2/plots/${fid}/content`;
+          return new Promise(resolve => {
+            jQuery
+              .ajax({
+                url: plotUrl,
+                xhrFields: {
+                  withCredentials: true
+                }
+              })
+              .done(function(data) {
+                resolve(data);
+              })
+              .fail(function(error) {
+                resolve({
+                  fid: fid,
+                  error: error.responseJSON.detail
+                });
+              });
+          });
+        };
+
+        const updateItemList = (dataFid, page, searchQuery = false) => {
+          if (Array.isArray(dataFid)) {
+            // Get data for each file
+            var elementProps = [];
+            dataFid.forEach(fid => {
+              elementProps.push({
+                fid: fid,
+                endpoint: "files"
+              });
+            });
+            var actions = elementProps.map(function(prop) {
+              return getFileDataFromFiglinQ(prop.fid, prop.endpoint);
+            });
+            var results = Promise.all(actions); // pass array of promises
+            results.then(data => {
+              var dataFormatted = {
+                children: {
+                  results: data,
+                  next: null
+                }
+              };
+              fqItemListPreselected = {
+                data: dataFormatted,
+                fids: dataFid
+              };
+              jQuery(".fq-modal-file-tab").removeClass("is-active");
+              jQuery("#fq-modal-file-tab-preselected").removeClass("is-hidden");
+              jQuery("#fq-modal-file-tab-preselected").addClass("is-active");
+              populateFileModal(dataFormatted);
+            });
+            return;
+          }
+
+          const fid = parseFid(dataFid);
+          var url;
+
+          const myFileTypes =
+            fqModalMode == "upload"
+              ? "filetype=fold"
+              : "filetype=plot&filetype=fold&filetype=external_image";
+
+          if (fqModalFileTabMode == "my") {
+            url = searchQuery
+              ? `${baseUrl}v2/folders/all?s=${searchQuery}&filetype=plot&filetype=external_image&page_size=1000`
+              : `${baseUrl}v2/folders/${dataFid}?page=${page}&${myFileTypes}&order_by=filename&page_size=1000`;
+          } else if (fqModalFileTabMode == "shared") {
+            if (fid == -1) {
+              url = `${baseUrl}v2/folders/shared?filetype=fold&filetype=plot&filetype=external_image&order_by=filename&page_size=1000`;
+            } else {
+              url = `${baseUrl}v2/folders/${dataFid}?page=${page}&filetype=fold&filetype=plot&filetype=external_image&order_by=filename&page_size=1000`;
+            }
+          }
+
+          jQuery
+            .ajax({
+              url: url,
+              xhrFields: {
+                withCredentials: true
+              }
+            })
+            .done(populateFileModal)
+            .fail(function() {
+              showToast(
+                "Communication error, file list has not been updated",
+                "is-danger"
+              );
+            })
+            .always(function() {});
+        };
+
+        const resetPlotImageUrls = () => {
+          const plotImages = jQuery(".fq-plot");
+          plotImages.each(function() {
+            const href = jQuery(this).attr("href");
+            const hrefCleaned = href.split("#")[0];
+            jQuery(this).attr("href", hrefCleaned);
+          });
+        };
+
+        const populateFileModal = (data, selectedFids = false) => {
+          jQuery("#fq-modal-files-open-figure-confirm").prop("disabled", true);
+          let val = jQuery("#fq-modal-save-name-input").val();
+          if (val.length) {
+            jQuery("#fq-modal-save-confirm-btn").prop("disabled", false);
+          } else {
+            jQuery("#fq-modal-save-confirm-btn").prop("disabled", true);
+          }
+          var index = 0,
+            results = data.children.results;
+
+          results.forEach(result => {
+            const isFigure = "svgedit" in (result.metadata || {});
+            const includeNonSvg =
+              fqModalMode === "addContent" || fqModalMode === "upload";
+            if (result.filetype === "fold" && !result.deleted) {
+              fqItemListFolder += folderItem(result.filename, result.fid);
+            } else if (
+              isFigure &&
+              result.filetype === "external_image" &&
+              !result.deleted
+            ) {
+              // TODO importing figures with external links into other figures is currently disabled, but could be enabled if they are inlined
+              var haslinkedcontent = false;
+              if (
+                fqModalMode === "addContent" &&
+                result.hasOwnProperty("metadata") &&
+                result.metadata.hasOwnProperty("svgedit") &&
+                result.metadata.svgedit.hasOwnProperty("haslinkedcontent") &&
+                result.metadata.svgedit.haslinkedcontent === true
+              ) {
+                haslinkedcontent = true;
+              }
+              fqItemListFile += figureItem(
+                result.filename,
+                result.fid,
+                index,
+                haslinkedcontent
+              );
+              index += 1;
+            } else if (
+              includeNonSvg &&
+              !isFigure &&
+              result.filetype === "external_image" &&
+              !result.deleted
+            ) {
+              fqItemListFile += imageItem(result.filename, result.fid, index);
+              index += 1;
+            } else if (
+              includeNonSvg &&
+              result.filetype === "plot" &&
+              !result.deleted
+            ) {
+              fqItemListFile += plotItem(result.filename, result.fid, index);
+              index += 1;
+            } else if ("error" in result) {
+              showToast(
+                `Error loading file ${result.fid} - ${result.error}.`,
+                "is-danger"
+              );
+            }
+          });
+
+          if (data.children.next == null) {
+            jQuery(".panel-list-item").remove();
+            jQuery("#fq-modal-item-list-container").html(
+              fqItemListFolder + fqItemListFile
+            );
+            jQuery("#fq-modal-refresh-btn").removeClass("is-loading");
+          } else {
+            page = page + 1;
+            updateItemList(dataFid, page);
+          }
+          var items = results.length == 1 ? "item" : "items";
+          jQuery("#fq-modal-file-search-items-found").text(
+            results.length + " " + items + " found"
+          );
+          if (fqItemListPreselected && fqModalFileTabMode === "preselected") {
+            fqItemListPreselected.fids.forEach(fid => {
+              const isDisabled = jQuery("*[data-fid='" + fid + "']").hasClass(
+                "is-disabled"
+              );
+              if (!isDisabled)
+                jQuery("*[data-fid='" + fid + "']").addClass("is-active");
+
+              jQuery("#fq-modal-add-confirm-btn").prop("disabled", false);
+            });
+          }
+
+          if (fqHighlightedFids) {
+            fqHighlightedFids.forEach(fid => {
+              jQuery("*[data-fid='" + fid + "']").addClass("is-active");
+            });
+            fqHighlightedFids = false;
+          }
+          hideModalSpinner();
+        };
+
+        const generateForeignObject = currentImg => {
+          const imgHref = currentImg.attr("href");
+          const contentHref = decodeURIComponent(
+            currentImg.data("content_href")
+          );
+
+          const contentHrefGuess = imgHref.replace(".svg", ".embed");
+          const iframeSrc =
+            contentHref == null ? contentHrefGuess : contentHref;
+
+          const height = currentImg.height();
+          const width = currentImg.width();
+          const x = currentImg.attr("x");
+          const y = currentImg.attr("y");
+          const id = currentImg.attr("id");
+          const originalDimensions = currentImg
+            .data("original_dimensions")
+            .split(",");
+          const fid = currentImg.data("fid");
+
+          let newIframe = {
+            element: "iframe",
+            namespace: NS.HTML,
+            attr: {
+              x: 0,
+              y: 0,
+              width: originalDimensions[0],
+              height: originalDimensions[1],
+              id: svgCanvas.getNextId(),
+              src: iframeSrc,
+              xmlns: NS.HTML,
+              allow: "fullscreen"
+            }
+          };
+
+          let newBody = {
+            element: "body",
+            namespace: NS.HTML,
+            attr: {
+              id: svgCanvas.getNextId(),
+              xmlns: NS.HTML
+            },
+            children: [newIframe]
+          };
+
+          let newForeignObj = {
+            element: "foreignObject",
+            namespace: NS.SVG,
+            attr: {
+              x: 0,
+              y: 0,
+              width: originalDimensions[0],
+              height: originalDimensions[1],
+              id: svgCanvas.getNextId(),
+              xmlns: NS.SVG
+            },
+            children: [newBody]
+          };
+
+          let newSvg = {
+            element: "svg",
+            namespace: NS.SVG,
+            attr: {
+              x: x,
+              y: y,
+              width: width,
+              height: height,
+              viewBox: `0 0 ${originalDimensions[0]} ${originalDimensions[1]}`,
+              preserveAspectRatio: "none",
+              id: svgCanvas.getNextId(),
+              class: "fq-fobj-container",
+              "data-ref_id": id,
+              "data-fid": fid,
+              xmlns: NS.SVG
+            },
+            children: [newForeignObj]
+          };
+
+          return newSvg;
+        };
+
+        const placeTextElement = (attr, text = "") => {
+          const _elem = {
+            element: "text",
+            attr: attr
+          };
+
+          const batchCmd = new BatchCommand("Insert text");
+          const newElem = svgCanvas.addSVGElementFromJson(_elem);
+          newElem.textContent = text;
+          batchCmd.addSubCommand(new InsertElementCommand(newElem));
+          svgCanvas.undoMgr.addCommandToHistory(batchCmd);
+          svgCanvas.call("changed", [newElem]);
+        };
+
+        const placeElement = imgProps => {
+          var attr = {
+            xmlns: NS.SVG,
+            preserveAspectRatio: "none",
+            id: svgCanvas.getNextId(),
+            style: "pointer-events:inherit",
+            class: "fq-" + imgProps.filetype,
+            href: imgProps.imgHref,
+            width: imgProps.width,
+            height: imgProps.height,
+            x: imgProps.x,
+            y: imgProps.y,
+            "data-original_dimensions": `${imgProps.widthOriginal},${imgProps.heightOriginal}`,
+            "data-fid": imgProps.fid
+          };
+
+          if (imgProps.filetype == "plot")
+            attr["data-content_href"] = imgProps.contentHref;
+
+          const _img = {
+            element: "image",
+            namespace: NS.SVG,
+            attr: attr
+          };
+
+          const batchCmd = new BatchCommand("Insert plot");
+          const newElem = svgCanvas.addSVGElementFromJson(_img);
+          batchCmd.addSubCommand(new InsertElementCommand(newElem));
+          svgCanvas.undoMgr.addCommandToHistory(batchCmd);
+          svgCanvas.call("changed", [newElem]);
+        };
+
+        const getSvgFromEditor = () => {
+          svgCanvas.clearSelection();
+
+          // Temporarily switch units to pixels for correct viewbox settings
+          var revertUnit = false;
+          const initialUnit = svgEditor.configObj.curConfig.baseUnit;
+          if (initialUnit !== "px") {
+            revertUnit = true;
+            svgEditor.configObj.curConfig.baseUnit = "px";
+            svgCanvas.setConfig(svgEditor.configObj.curConfig);
+            svgEditor.updateCanvas();
+          }
+
+          const saveOpts = {
+            images: svgEditor.configObj.pref("img_save"),
+            round_digits: 6,
+            apply: true
+          };
+          const saveOptions = svgCanvas.mergeDeep(
+            svgCanvas.getSvgOption(),
+            saveOpts
+          );
+          for (const [key, value] of Object.entries(saveOptions)) {
+            svgCanvas.setSvgOption(key, value);
+          }
+
+          const svg = '<?xml version="1.0"?>' + svgCanvas.svgCanvasToString();
+
+          // Revert back to previous units
+          if (initialUnit !== "px" && revertUnit) {
+            svgEditor.configObj.curConfig.baseUnit = initialUnit;
+            svgCanvas.setConfig(svgEditor.configObj.curConfig);
+            svgEditor.updateCanvas();
+          }
+          return svg;
+        };
+
+        const showToast = (msg, type) => {
+          const duration = type === "is-danger" ? 10000 : 4000;
+          bulmaToast.toast({
+            message: msg,
+            type: type,
+            position: "bottom-right",
+            closeOnClick: true,
+            dismissible: true,
+            duration: duration
+          });
+        };
+
+        const ensureRulesGrids = () => {
+          let showGrid = svgEditor.configObj.curConfig.showGrid;
+          if (showGrid) {
+            jQuery("#fq-menu-view-show-grid")
+              .find("i")
+              .removeClass("fa-square")
+              .addClass("fa-check-square");
+          } else {
+            jQuery("#fq-menu-view-show-grid")
+              .find("i")
+              .addClass("fa-square")
+              .removeClass("fa-check-square");
+          }
+
+          let showRulers = svgEditor.configObj.curConfig.showRulers;
+          if (showRulers) {
+            jQuery("#fq-menu-view-show-rulers")
+              .find("i")
+              .removeClass("fa-square")
+              .addClass("fa-check-square");
+          } else {
+            jQuery("#fq-menu-view-show-rulers")
+              .find("i")
+              .addClass("fa-square")
+              .removeClass("fa-check-square");
+          }
+        };
+
+        const closeModalOnEscape = e => {
+          if (e.key === "Escape") {
+            jQuery("#fq-modal-file").removeClass("is-active");
+            jQuery(document).unbind("keyup", closeModalOnEscape);
+          }
+        };
+
+        const refreshModalContents = (fidArray = false) => {
+          fqItemListFolder = "";
+          fqItemListFile = "";
+          jQuery("#fq-modal-file").addClass("is-active");
+          jQuery(document).keyup(closeModalOnEscape);
+
+          let q = jQuery("#fq-modal-file-search-input").val();
+          if (q && fqModalFileTabMode == "my") {
+            jQuery("#fq-modal-file-search-icon").removeClass("fas fa-search");
+            jQuery("#fq-modal-file-search-icon").addClass(
+              "far fa-times-circle"
+            );
+          } else {
+            jQuery("#fq-modal-file-search-icon").removeClass(
+              "far fa-times-circle"
+            );
+            jQuery("#fq-modal-file-search-icon").addClass("fas fa-search");
+          }
+
+          q = q.length >= 2 ? q : false;
+
+          if (fidArray) {
+            // Open specific fids in modal
+            updateItemList(fidArray, 1, q);
+          } else if (q && fqModalFileTabMode == "my") {
+            // Search query present, "My files" tab
+            fqSearchMode = true;
+            jQuery("#fq-modal-file-search-title").removeClass("is-hidden");
+            jQuery("#fq-modal-file-panel-breadcrumb").addClass("is-hidden");
+            updateItemList("shared", 1, q);
+          } else {
+            fqSearchMode = false;
+            jQuery("#fq-modal-file-search-title").addClass("is-hidden");
+            jQuery("#fq-modal-file-panel-breadcrumb").removeClass("is-hidden");
+
+            if (fqSelectedFolderId[fqModalFileTabMode]) {
+              updateItemList(fqSelectedFolderId[fqModalFileTabMode], 1);
+            } else {
+              fqSelectedFolderId[fqModalFileTabMode] =
+                fqModalFileTabMode == "my" ? fqUsername + ":-1" : "shared:-1";
+              updateItemList(fqSelectedFolderId[fqModalFileTabMode], 1);
+            }
+          }
+          updateBreadcrumb(fqSelectedFolderId[fqModalFileTabMode], false);
+        };
+
+        const decodeBase64 = function(s) {
+          var e = {},
+            i,
+            b = 0,
+            c,
+            x,
+            l = 0,
+            a,
+            r = "",
+            w = String.fromCharCode,
+            L = s.length;
+          var A =
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+          for (i = 0; i < 64; i++) {
+            e[A.charAt(i)] = i;
+          }
+          for (x = 0; x < L; x++) {
+            c = e[s.charAt(x)];
+            b = (b << 6) + c;
+            l += 6;
+            while (l >= 8) {
+              ((a = (b >>> (l -= 8)) & 0xff) || x < L - 2) && (r += w(a));
+            }
+          }
+          return r;
+        };
+
+        const clickUndo = function() {
+          const { undoMgr, textActions } = svgCanvas;
+          if (undoMgr.getUndoStackSize() > 0) {
+            undoMgr.undo();
+            svgEditor.layersPanel.populateLayers();
+            if (svgEditor.svgCanvas.getMode() === "textedit") {
+              textActions.clear();
+            }
+          }
+        };
+
+        const clickRedo = function() {
+          const { undoMgr } = svgCanvas;
+          if (undoMgr.getRedoStackSize() > 0) {
+            undoMgr.redo();
+            svgEditor.layersPanel.populateLayers();
+          }
+        };
+
+        const onConfirmClear = async function() {
+          jQuery("#fq-modal-confirm").removeClass("is-active");
+
+          // Remove fid from url
+          var currentUrl = new URL(document.location);
+          currentUrl.searchParams.delete("fid");
+          window.history.pushState(null, null, currentUrl.href);
+
+          fqCurrentFigData = false;
+
+          const [x, y] = svgEditor.configObj.curConfig.dimensions;
+          svgEditor.leftPanel.clickSelect();
+          svgEditor.svgCanvas.clear();
+          svgEditor.svgCanvas.setResolution(x, y);
+          svgEditor.updateCanvas(true);
+          svgEditor.zoomImage();
+          svgEditor.layersPanel.populateLayers();
+          svgEditor.topPanel.updateContextPanel();
+          svgEditor.svgCanvas.runExtensions("onNewDocument");
+          setTimeout(function() {
+            svgEditor.zoomChanged(window, "canvas");
+          }, 300);
+        };
+
+        const openFigure = async function(e) {
+          var url = baseUrl + "v2/external-images/" + e.data.fid;
+
+          jQuery
+            .ajax({
+              url: url,
+              xhrFields: { withCredentials: true }
+            })
+            .done(function(data) {
+              if (
+                !"image_content" in data ||
+                (data.content_type != "image/svg" &&
+                  data.content_type != "image/svg+xml")
+              ) {
+                showToast("This file type is not supported", "is-danger");
+                return;
+              }
+              var dataUrl = data.image_content;
+              var svgString = decodeBase64(dataUrl.split(",")[1]);
+              svgEditor.loadSvgString(svgString);
+              jQuery("#fq-modal-confirm").removeClass("is-active");
+              fqCurrentFigData = data;
+              if (
+                typeof fqCurrentFigData.metadata === "string" ||
+                fqCurrentFigData.metadata instanceof String
+              )
+                fqCurrentFigData.metadata = JSON.parse(
+                  fqCurrentFigData.metadata
+                );
+              setTimeout(function() {
+                svgEditor.zoomChanged(window, "canvas");
+              }, 250);
+              showToast('File "' + data.filename + '" loaded', "is-success");
+
+              // Add fid to url
+              var currentUrl = new URL(document.location);
+              currentUrl.searchParams.set("fid", data.fid);
+              window.history.pushState(
+                null,
+                null,
+                decodeURIComponent(currentUrl.href)
+              );
+            })
+            .fail(function(data) {
+              showToast("This file could not be loaded", "is-danger");
+            });
+        };
+
+        const inlineRasterImage = async function(imgId) {
+          var imgUrl = jQuery("#" + imgId).attr("href");
+
+          let fetchResult = await fetch(imgUrl, {
+            method: "GET",
+            mode: "cors",
+            credentials: "include",
+            headers: {
+              "X-CSRFToken": fqCsrfToken
+            }
+          }).then(async r => {
+            const blob = await r.blob();
+            const type = r.headers.get("Content-Type");
+            return { blob, type };
+          });
+
+          let dataUrl = await new Promise(resolve => {
+            let reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.readAsDataURL(fetchResult.blob);
+          });
+          const imgType = dataUrl.substring(
+            dataUrl.indexOf(":") + 1,
+            dataUrl.indexOf(";")
+          );
+          // Run PNG images through HTML canvas to fix potential interlacing issues
+          let imgSanitized;
+          if (imgType === "image/png") {
+            const imageObj = await runImageThroughCanvas(dataUrl);
+            imgSanitized = imageObj.dataURL;
+          } else {
+            imgSanitized = dataUrl;
+          }
+          jQuery("#" + imgId).attr("href", imgSanitized);
+        };
+
+        const runImageThroughCanvas = input =>
+          new Promise(resolve => {
+            const img = new Image();
+            img.onload = function() {
+              let canvas = document.createElement("CANVAS");
+              const ctx = canvas.getContext("2d");
+              let dataURL;
+              canvas.height = img.height;
+              canvas.width = img.width;
+              ctx.drawImage(img, 0, 0, img.width, img.height);
+              dataURL = canvas.toDataURL();
+              canvas = null;
+              resolve({ dataURL });
+            };
+            img.src = input;
+          });
+
+        const inlineSvgImage = async function(imgId) {
+          var imgUrl = jQuery("#fq-svg-container")
+            .find("#" + imgId)
+            .attr("href");
+
+          await fetch(imgUrl, {
+            method: "GET",
+            mode: "cors",
+            credentials: "include"
+          })
+            .then(result => result.text())
+            .then(text => {
+              var replacedObj = jQuery("#fq-svg-container").find("#" + imgId);
+              var doc = new DOMParser().parseFromString(
+                text,
+                "application/xml"
+              );
+              var newObj = jQuery(doc.documentElement).replaceAll(replacedObj);
+
+              jQuery(newObj).attr("id", imgId);
+            });
+        };
+
+        const svgToRaster = svgString => {
+          return new Promise(resolve => {
+            const canvas = document.getElementById("fq-canvas");
+            const resolution = svgCanvas.getResolution();
+            var w, h;
+            if (fqExportMode === "thumb") {
+              w = fqThumbWidth;
+              h = Math.round((resolution.h * fqThumbWidth) / resolution.w);
+            } else {
+              w = resolution.w * parseInt(fqExportDocSize);
+              h = resolution.h * parseInt(fqExportDocSize);
+            }
+
+            canvas.width = w;
+            canvas.height = h;
+            var blob = new Blob([svgString], { type: "image/svg+xml" });
+            var win = window.URL || window.webkitURL || window;
+            var img = new Image();
+            var url = win.createObjectURL(blob);
+
+            img.onload = function() {
+              const ctx = canvas.getContext("2d");
+
+              if (fqExportDocType != "png") {
+                ctx.fillStyle = "white";
+                ctx.fillRect(0, 0, w, h);
+              }
+              ctx.drawImage(img, 0, 0, w, h);
+              win.revokeObjectURL(url);
+              // If saving image/thumbnail to FiglinQ, return blob so that it can be added to form
+              if (fqExportMode === "thumb") {
+                canvas.toBlob(function(blob) {
+                  resolve(blob);
+                });
+                return;
+              } else if (fqExportMode === "download") {
+                var uri = canvas
+                  .toDataURL("image/" + fqExportDocType, fqExportDocQuality)
+                  .replace("image/" + fqExportDocType, "octet/stream");
+              }
+
+              // Add link to download file
+              var a = document.createElement("a");
+              document.body.appendChild(a);
+              a.style = "display: none";
+              a.href = uri;
+              a.download = fqExportDocFname + "." + fqExportDocType;
+              a.click();
+              window.URL.revokeObjectURL(uri);
+              document.body.removeChild(a);
+            };
+
+            img.src = url;
+          });
+        };
+
+        const svgToPdf = svgString => {
+          const docDimsStr = jQuery("#fq-modal-export-size-select").val();
+          const docDims = docDimsStr.split("x");
+
+          const doc = new PDFDocument({ size: fqExportDocSize });
+
+          const chunks = [];
+          doc.pipe({
+            // writable stream implementation
+            write: chunk => chunks.push(chunk),
+            end: () => {
+              const pdfBlob = new Blob(chunks, {
+                type: "application/octet-stream"
+              });
+              var blobUrl = window.URL.createObjectURL(pdfBlob);
+
+              var a = document.createElement("a");
+              document.body.appendChild(a);
+              a.style = "display: none";
+              a.href = blobUrl;
+              a.download = fqExportDocFname + ".pdf";
+              a.click();
+              window.URL.revokeObjectURL(blobUrl);
+              document.body.removeChild(a);
+            },
+            // readable stream stub iplementation
+            on: (event, action) => {},
+            once: (...args) => {},
+            emit: (...args) => {}
+          });
+          SVGtoPDF(doc, svgString, 0, 0, {
+            width: docDims[0],
+            height: docDims[1],
+            preserveAspectRatio: "xMinYMin meet"
+          });
+          doc.end();
+        };
+
+        const inlineRasterImageLoop = async function(imgIdArray) {
+          for (const imgId of imgIdArray) {
+            await inlineRasterImage(imgId);
+          }
+        };
+
+        const inlineSvgImageLoop = async function(imgIdArray) {
+          for (const imgId of imgIdArray) {
+            await inlineSvgImage(imgId);
+          }
+        };
+
+        const updateExportFormSizeSelect = options => {
+          jQuery("#fq-modal-export-size-select")
+            .find("option")
+            .remove();
+
+          jQuery.each(options, function(key, value) {
+            jQuery("#fq-modal-export-size-select").append(
+              jQuery("<option></option>")
+                .attr("value", value)
+                .text(key)
+            );
+          });
+        };
+
+        const activateDraggableModals = () => {
+          const draggable = new Draggable.default(
+            document.querySelectorAll(".draggable-container"),
+            {
+              handle: ".drag-handle"
+            }
+          );
+          draggable.on("drag:stop", data => {
+            const pos = jQuery(".draggable-mirror").position();
+            jQuery(data.originalSource).css({
+              position: "fixed",
+              left: pos.left,
+              top: pos.top
+            });
+          });
+        };
+
+        const updateExportFormState = () => {
+          let format = jQuery("#fq-modal-export-format-select").val();
+          if (format === "jpeg") {
+            jQuery('[id^="fq-modal-export-quality"]').prop("disabled", false);
+            jQuery('[id^="fq-modal-export-size"]').prop("disabled", false);
+            updateExportFormSizeSelect(fqExportFileFormats);
+            jQuery("#fq-modal-export-size-select").val(1);
+          } else if (format === "png" || format === "bmp") {
+            jQuery('[id^="fq-modal-export-quality"]').prop("disabled", true);
+            updateExportFormSizeSelect(fqExportFileFormats);
+            jQuery("#fq-modal-export-size-select").val(1);
+          } else {
+            jQuery('[id^="fq-modal-export-quality"]').prop("disabled", true);
+            updateExportFormSizeSelect(fqPdfPageSizes);
+            jQuery("#fq-modal-export-size-select").val(fqPdfPageSizes["A4"]);
+          }
+        };
+
+        const getAttributes = $node => {
+          var attrs = {};
+          jQuery.each($node[0].attributes, function(index, attribute) {
+            attrs[attribute.name] = attribute.value;
+          });
+          return attrs;
+        };
+        /*
+          Find all plots (elements of type image, with class 'fq-iplot')
+          in input array of nodes, including plots nested in <g> elements (groups).  
+          Input: Array of node elements
+          Output: Array of plot objects
+        */
+        const findPlots = (
+          elems,
+          plotElems,
+          descendIntoGroups = true,
+          keepOriginalOrder = false
+        ) => {
+          elems.forEach(item => {
+            const isPlot =
+              jQuery(item).hasClass("fq-plot") && jQuery(item).is("image");
+            const isGroup = jQuery(item).is("g");
+            if (isPlot) {
+              const originalWH = jQuery(item)
+                .data("original_dimensions")
+                .split(",");
+              const bBox = item.getBBox();
+              let currentElemProps = {
+                currentWidth: bBox.width,
+                currentHeight: bBox.height,
+                x: bBox.x,
+                y: bBox.y,
+                originalWidth: parseFloat(originalWH[0]),
+                originalHeight: parseFloat(originalWH[1]),
+                fid: jQuery(item).data("fid")
+              };
+              currentElemProps.elem = item;
+
+              const precisionMultiplier = Math.pow(10, fqFontRoundPrecision);
+              currentElemProps.scale =
+                Math.round(
+                  (currentElemProps.currentHeight /
+                    currentElemProps.originalHeight) *
+                    precisionMultiplier
+                ) / precisionMultiplier;
+              plotElems.push(currentElemProps);
+            } else if (isGroup && descendIntoGroups) {
+              return findPlots(
+                jQuery(item)
+                  .children()
+                  .toArray(),
+                plotElems
+              );
+            } else if (keepOriginalOrder) {
+              plotElems.push({});
+            }
+          });
+          return plotElems;
+        };
+
+        const adjustPlots = async () => {
+          const equalizeProps = jQuery("#fq-modal-adjust-property-equalize").is(
+            ":checked"
+          );
+
+          const selElems = svgCanvas.getSelectedElems();
+          let i = selElems.length;
+
+          if (!i) {
+            alert("Please select at least one object!");
+            return;
+          }
+
+          // Fid all plots in selection, including (nested) groups
+          const plotElems = findPlots(selElems, []);
+          if (!plotElems.length) {
+            alert("Please select at least one plot!");
+            return;
+          }
+
+          // Adjust props iteratively
+          let j = plotElems.length;
+          let k = 0;
+          while (k < j) {
+            const elem = plotElems[k].elem;
+            const fid = jQuery(elem).data("fid");
+            const href = jQuery(elem).attr("href");
+            const d = new Date();
+            const plotUrl = `${baseUrl}v2/plots/${fid}/content`;
+            await fetch(plotUrl, {
+              method: "GET",
+              mode: "cors",
+              credentials: "include",
+              headers: {
+                "X-CSRFToken": fqCsrfToken
+              }
+            })
+              .then(result => {
+                return result.json();
+              })
+              .then(resultJson => {
+                // Update properties
+                jQuery(".fq-modal-adjust-checkbox")
+                  .filter(":checked")
+                  .map(function() {
+                    const property = jQuery(this).data("property");
+                    const propertyPath = property.split("-");
+                    const value = jQuery(
+                      `input[data-property='${property}'][type='text']`
+                    ).val();
+                    const valueScaled = equalizeProps
+                      ? value / plotElems[k].scale
+                      : value;
+                    // console.log(plotElems[k].scale, value, valueScaled);
+                    setDeep(resultJson, propertyPath, valueScaled, true);
+                  });
+                return resultJson;
+              })
+              .then(resultUpdated => {
+                const updatePlotUrl = `${baseUrl}v2/plots/${fid}`;
+                const data = {
+                  figure: resultUpdated
+                };
+                fetch(updatePlotUrl, {
+                  method: "PUT",
+                  mode: "cors",
+                  credentials: "include",
+                  headers: {
+                    "X-CSRFToken": fqCsrfToken,
+                    Accept: "application/json",
+                    "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify(data)
+                });
+              })
+              .then(resultUpdated => {
+                const updateFileUrl = `${baseUrl}v2/files/${fid}`;
+                const data = {
+                  figure: resultUpdated
+                };
+                fetch(updateFileUrl, {
+                  method: "PATCH",
+                  mode: "cors",
+                  credentials: "include",
+                  headers: {
+                    "X-CSRFToken": fqCsrfToken,
+                    Accept: "application/json",
+                    "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify(data)
+                }).then(() => {
+                  // Update image
+                  fetch(href, {
+                    cache: "reload",
+                    mode: "cors",
+                    credentials: "include",
+                    headers: {
+                      "X-CSRFToken": fqCsrfToken
+                    }
+                  }).then(() => {
+                    jQuery(elem).attr(
+                      "href",
+                      href + "#" + new Date().getTime()
+                    );
+                  });
+                });
+              });
+            k++;
+          }
+        };
+
+        const getPlotAxesProps = jsonObj => {
+          return {
+            marginLeft:
+              jsonObj?.layout?.margin?.l !== undefined
+                ? jsonObj?.layout?.margin?.l
+                : jsonObj.layout?.template?.layout?.margin?.l,
+            marginBottom:
+              jsonObj?.layout?.margin?.b !== undefined
+                ? jsonObj?.layout?.margin?.b
+                : jsonObj.layout?.template?.layout?.margin?.b,
+            width:
+              jsonObj?.layout?.width !== undefined
+                ? jsonObj?.layout?.width
+                : jsonObj.layout?.template?.layout?.width,
+            height:
+              jsonObj?.layout?.height !== undefined
+                ? jsonObj?.layout?.height
+                : jsonObj.layout?.template?.layout?.height
+          };
+        };
+
+        const alignPlots = async axis => {
+          const refDim = axis === "x" ? "y" : "x";
+          const selElems = svgCanvas.getSelectedElems();
+
+          // Fid all plots in selection, excluding (nested) groups, while maintaining order of elements
+          const plotElems = findPlots(selElems, [], false, true);
+
+          // Find reference plot
+          var fidRef,
+            minDim = Infinity,
+            plotNumber = 0,
+            indexRef;
+          plotElems.forEach((plot, index) => {
+            if (Object.keys(plot).length !== 0 && plot[refDim] < minDim) {
+              minDim = plot[refDim];
+              fidRef = plot.fid;
+              indexRef = index;
+            }
+            if (Object.keys(plot).length !== 0) {
+              plotNumber++;
+            }
+          });
+
+          if (plotNumber < 2) {
+            alert("Please select at least two plots!");
+            return;
+          }
+
+          let actions = plotElems.map(function(plot) {
+            if (Object.keys(plot).length === 0) {
+              return new Promise(resolve => {
+                resolve({});
+              }); // Not a plot, return empty object to maintain order of elements
+            } else {
+              return getPlotDataFromFiglinQ(plot.fid);
+            }
+          });
+
+          let results = Promise.all(actions);
+
+          results.then(data => {
+            let dx = [];
+            let dy = [];
+            var j = plotElems.length,
+              k = 0;
+
+            // Get ref plot info
+            const refPlotAxesProps = getPlotAxesProps(data[indexRef]);
+            const precisionMultiplier = Math.pow(10, fqAlignRoundPrecision);
+            const refScale =
+              Math.round(
+                (plotElems[indexRef].currentHeight / refPlotAxesProps.height) *
+                  precisionMultiplier
+              ) / precisionMultiplier;
+
+            const refXAxisPos =
+              plotElems[indexRef].y +
+              plotElems[indexRef].currentHeight -
+              refPlotAxesProps.marginBottom * refScale;
+            const refYAxisPos =
+              plotElems[indexRef].x + refPlotAxesProps.marginLeft * refScale;
+
+            while (k < j) {
+              const dataItem = data[k];
+              const plotItem = plotElems[k];
+
+              if (Object.keys(plotItem).length === 0) {
+                // Not a plot, don't move
+                dx.push(0);
+                dy.push(0);
+              } else {
+                const plotAxesProps = getPlotAxesProps(dataItem);
+                if (axis === "x") {
+                  const scale =
+                    Math.round(
+                      (plotElems[k].currentHeight / plotAxesProps.height) *
+                        precisionMultiplier
+                    ) / precisionMultiplier;
+
+                  const xAxisPos =
+                    plotElems[k].y +
+                    plotElems[k].currentHeight -
+                    plotAxesProps.marginBottom * scale;
+                  const delta = refXAxisPos - xAxisPos;
+                  dx.push(0);
+                  dy.push(delta);
+                } else {
+                  const scale =
+                    Math.round(
+                      (plotElems[k].currentWidth / plotAxesProps.width) *
+                        precisionMultiplier
+                    ) / precisionMultiplier;
+
+                  const yAxisPos =
+                    plotElems[k].x + plotAxesProps.marginLeft * scale;
+                  const delta = refYAxisPos - yAxisPos;
+                  dx.push(delta);
+                  dy.push(0);
+                }
+              }
+              k++;
+            }
+            svgCanvas.moveSelectedElements(dx, dy);
+          });
+        };
+
+        const exportImageFromEditor = async () => {
+          // Empty temp div
+          // jQuery("#fq-svg-container").empty();
+
+          // Clone SVG into temp div
+
+          var svgString = svgCanvas.svgCanvasToString();
+
+          var doc = new DOMParser().parseFromString(
+            svgString,
+            "application/xml"
+          );
+          jQuery("#fq-svg-container").append(doc.documentElement);
+
+          // Inline raster images and plots
+          var fqElements = jQuery("#fq-svg-container").find(
+              ".fq-image, .fq-plot"
+            ),
+            imageIdArray = [],
+            plotIdArray = [],
+            attrArray = {},
+            curId,
+            newId;
+
+          if (fqElements.length) {
+            jQuery(fqElements).each(function() {
+              curId = jQuery(this).attr("id");
+              newId = "__" + curId;
+              jQuery(this).attr("id", newId);
+
+              attrArray[newId] = getAttributes(jQuery(this));
+
+              if (jQuery(this).hasClass("fq-image")) {
+                imageIdArray.push(newId);
+              } else if (jQuery(this).hasClass("fq-plot")) {
+                plotIdArray.push(newId);
+              }
+            });
+
+            if (imageIdArray.length) await inlineRasterImageLoop(imageIdArray);
+            if (plotIdArray.length) await inlineSvgImageLoop(plotIdArray);
+
+            var curAttrObj;
+            for (const curId in attrArray) {
+              var isImage = jQuery("#" + curId).hasClass("fq-image");
+              curAttrObj = attrArray[curId];
+              for (const curAttr in curAttrObj) {
+                if (!(curAttr == "href" && isImage)) {
+                  jQuery("#" + curId).attr(curAttr, curAttrObj[curAttr]);
+                }
+              }
+            }
+            // Remove non-whitelisted attributes
+            // if( jQuery.inArray(key, svgAttrWhitelist) == -1 ) {
+            //   jQuery("#fq-svg-container").find("#" + info.id).removeAttr(key);
+            // }
+          }
+
+          // Get the svg string
+          var el = document.getElementById("fq-svg-container");
+          var svgEl = el.firstChild;
+          var serializer = new XMLSerializer();
+          var svgStr = serializer.serializeToString(svgEl);
+          jQuery("#fq-svg-container").empty();
+
+          // Create image
+          if (fqExportDocType === "pdf") {
+            svgToPdf(svgStr);
+          } else {
+            if (fqExportMode === "download") {
+              svgToRaster(svgStr);
+            } else if (fqExportMode === "thumb") {
+              var blob = await svgToRaster(svgStr);
+              return blob;
+            }
+          }
+        };
+
+        const setModalConfirmBtnHandler = (handler, args = null) => {
+          jQuery("#fq-modal-confirm-btn-ok").unbind("click", onConfirmClear);
+          jQuery("#fq-modal-confirm-btn-ok").unbind("click", openFigure);
+
+          jQuery("#fq-modal-confirm-btn-ok").on("click", args, handler);
+        };
+
+        const uploadFileToFiglinQ = (
+          formData,
+          apiEndpoint,
+          world_readable,
+          updateModal,
+          parentId,
+          mode
+        ) => {
+          let xFileName, successMsg, errorMsg;
+          if (mode === "upload") {
+            // Uploading a new file
+            successMsg = " uploaded";
+            errorMsg = " uploaded";
+          } else if (mode === "replace") {
+            // Overwriting an existing file
+            // parentId = fqCurrentFigData.fid;
+            successMsg = " saved";
+            errorMsg = " saved";
+          }
+
+          var headers = {
+            "X-File-Name": fqExportDocFname,
+            "Plotly-World-Readable": world_readable,
+            "X-CSRFToken": fqCsrfToken
+          };
+
+          const parentUsername = parentId
+            ? parseFid(parentId, 0)
+            : parseFid(fqCurrentFigData.fid, 0);
+          const parentIndex = parseFid(parentId, 1);
+          const savingIntoSharedFolder = parentUsername !== fqUsername;
+
+          if (savingIntoSharedFolder) {
+            if (mode === "upload") {
+              // Uploading a new file
+              headers["Plotly-Parent"] = -1;
+              headers["target-fid"] = parentId;
+            } else if (mode === "replace") {
+              // Overwriting an existing file
+              headers["Plotly-Parent"] = -1;
+              // headers["target-fid"] = `${parseFid(fqCurrentFigData.fid, 0)}:${
+              //   fqCurrentFigData.parent
+              // }`;
+            }
+          } else if (parentId) {
+            headers["Plotly-Parent"] = parentIndex;
+          }
+
+          jQuery
+            .ajax({
+              method: "POST",
+              url: baseUrl + "v2/external-images/" + apiEndpoint,
+              xhrFields: { withCredentials: true },
+              headers: headers,
+              data: formData,
+              processData: false,
+              contentType: false
+            })
+            .done(function(response) {
+              if (updateModal) {
+                jQuery("#fq-modal-refresh-btn").addClass("is-loading");
+                fqItemListFolder = "";
+                fqItemListFile = "";
+                if (fqExportMode === "upload") {
+                  const userId = parseFid(response.file.fid, 0);
+                  const fileNumId = parseFid(response.file.fid, 1);
+                  const baseHref = `${baseUrl}~${userId}/${fileNumId}.`;
+
+                  const ext = response.file.filetype === "plot" ? "svg" : "src";
+                  var elementProps = {
+                    width: response.file.metadata.width,
+                    height: response.file.metadata.height,
+                    widthOriginal: response.file.metadata.width,
+                    heightOriginal: response.file.metadata.height,
+                    x: 0,
+                    y: 0,
+                    filetype: getSvgeditFiletype(response.file.filetype),
+                    fid: response.file.fid,
+                    contentHref: baseHref + "embed",
+                    imgHref: baseHref + ext
+                  };
+
+                  placeElement(elementProps);
+                } else {
+                  jQuery("#fq-modal-file").removeClass("is-active");
+                  jQuery(document).unbind("keyup", closeModalOnEscape);
+                  var currentUrl = new URL(document.location);
+                  currentUrl.searchParams.set("fid", response.file.fid);
+                  window.history.pushState(
+                    null,
+                    null,
+                    decodeURIComponent(currentUrl.href)
+                  );
+                  refreshModalContents();
+                }
+              }
+
+              showToast(
+                "File " + response.file.filename + successMsg,
+                "is-success"
+              );
+              if (fqExportMode !== "upload") {
+                fqCurrentFigData = response.file;
+                if (
+                  typeof fqCurrentFigData.metadata === "string" ||
+                  fqCurrentFigData.metadata instanceof String
+                )
+                  fqCurrentFigData.metadata = JSON.parse(
+                    fqCurrentFigData.metadata
+                  );
+              }
+
+              jQuery("#fq-menu-file-save-figure")
+                .find("i")
+                .removeClass("fa-spinner fa-pulse")
+                .addClass("fa-save");
+              jQuery("#fq-modal-save-confirm-btn").removeClass("is-loading");
+              if (fqExportMode !== "upload")
+                jQuery("#fq-modal-file").removeClass("is-active");
+            })
+            .fail(function() {
+              jQuery("#fq-menu-file-save-figure")
+                .find("i")
+                .removeClass("fa-spinner fa-pulse")
+                .addClass("fa-save");
+              jQuery("#fq-modal-save-confirm-btn").removeClass("is-loading");
+              showToast("Error - file was not" + errorMsg, "is-danger");
+            });
+        };
+
+        const showModalSpinner = () => {
+          console.log("show");
+          jQuery("#fq-loading-overlay").show();
+        };
+        const hideModalSpinner = () => {
+          console.log("hide");
+          jQuery("#fq-loading-overlay").hide();
+        };
+
+        const showSaveFigureAsDialog = () => {
+          if (fqCurrentFigData) {
+            var fName = fqCurrentFigData.filename.replace(/\.[^/.]+$/, "");
+            jQuery("#fq-modal-save-name-input").val(fName);
+            jQuery("#fq-modal-save-confirm-btn").prop("disabled", false);
+          } else {
+            jQuery("#fq-modal-save-name-input").val("");
+          }
+          fqModalFileTabMode = "my";
+          prepareFileModal("saveFigureAs");
+          refreshModalContents();
+        };
+
+        const createUnitMap = () => {
+          // Get correct em/ex values by creating a temporary SVG.
+          const svg = document.createElementNS(NSSVG, "svg");
+          document.body.append(svg);
+          const rect = document.createElementNS(NSSVG, "rect");
+          rect.setAttribute("width", "1em");
+          rect.setAttribute("height", "1ex");
+          rect.setAttribute("x", "1in");
+          svg.append(rect);
+          const bb = rect.getBBox();
+          svg.remove();
+
+          const inch = bb.x;
+          _typeMap = {
+            em: bb.width,
+            ex: bb.height,
+            in: inch,
+            cm: inch / 2.54,
+            mm: inch / 25.4,
+            pt: inch / 72,
+            pc: inch / 6,
+            px: 1,
+            "%": 0
+          };
+        };
+
+        const updateMarginsSpacingInputs = () => {
+          // Update margin/spacing unit and values
+          let curUnit = svgEditor.configObj.curConfig.baseUnit;
+          var mlPx = fqDefaultMargins.left * _typeMap["mm"];
+          var mtPx = fqDefaultMargins.top * _typeMap["mm"];
+          var mrPx = fqDefaultMargins.right * _typeMap["mm"];
+          var mbPx = fqDefaultMargins.bottom * _typeMap["mm"];
+          var shPx = fqDefaultSpacing.horizontal * _typeMap["mm"];
+          var svPx = fqDefaultSpacing.vertical * _typeMap["mm"];
+
+          var mlTarget = Math.round((mlPx / _typeMap[curUnit]) * 100) / 100;
+          var mtTarget = Math.round((mtPx / _typeMap[curUnit]) * 100) / 100;
+          var mrTarget = Math.round((mrPx / _typeMap[curUnit]) * 100) / 100;
+          var mbTarget = Math.round((mbPx / _typeMap[curUnit]) * 100) / 100;
+          var shTarget = Math.round((shPx / _typeMap[curUnit]) * 100) / 100;
+          var svTarget = Math.round((svPx / _typeMap[curUnit]) * 100) / 100;
+
+          jQuery(".margin-unit").html(curUnit);
+          jQuery("#fq-content-add-magin-left").val(mlTarget);
+          jQuery("#fq-content-add-magin-top").val(mtTarget);
+          jQuery("#fq-content-add-magin-right").val(mrTarget);
+          jQuery("#fq-content-add-magin-bottom").val(mbTarget);
+          jQuery("#fq-content-add-spacing-horizontal").val(shTarget);
+          jQuery("#fq-content-add-spacing-vertical").val(svTarget);
+        };
+
+        const prepareFileModal = (mode, launchModal = true) => {
+          showModalSpinner();
+          var elements = [];
+          var heading = "";
+          jQuery(".fq-modal-file-tab").removeClass("is-active");
+          switch (mode) {
+            case "openFigure":
+              elements.hide = ".modal-action-panel, .fq-modal-file-tab";
+              elements.reveal =
+                ".figure-open-panel, #fq-modal-file-tab-my, #fq-modal-file-tab-shared";
+              elements.disable = "#fq-modal-files-open-figure-confirm";
+              elements.activate = "#fq-modal-file-tab-my";
+              heading = "Open figure";
+              fqModalMode = "openFigure";
+              break;
+
+            case "saveFigure":
+              break;
+
+            case "saveFigureAs":
+              elements.hide =
+                ".modal-action-panel, .fq-modal-file-tab, #fq-modal-file-search-block, #fq-modal-file-tab-preselected";
+              elements.reveal =
+                ".file-save-panel, #fq-modal-file-tab-my, #fq-modal-file-tab-shared";
+              elements.disable = "";
+              elements.activate = "#fq-modal-file-tab-my";
+              heading = "Save figure as";
+              fqModalMode = "saveFigure";
+              break;
+
+            case "importLocalContent":
+              elements.hide =
+                ".modal-action-panel, .fq-modal-file-tab, #fq-modal-file-search-block, #fq-modal-file-tab-preselected, #fq-modal-file-tab-shared";
+              elements.reveal = ".file-upload-panel, #fq-modal-file-tab-my";
+              elements.disable = "#fq-modal-upload-confirm-btn";
+              elements.activate = "#fq-modal-file-tab-my";
+              heading = "Select destination folder in FiglinQ";
+              fqModalMode = "upload";
+              fqExportMode = "upload";
+              break;
+
+            case "addFiglinqContent":
+              elements.hide =
+                ".modal-action-panel, .fq-modal-file-tab, #fq-modal-file-tab-preselected";
+              elements.reveal =
+                ".content-add-panel, .content-add-options-panel, #fq-modal-file-search-block, #fq-modal-file-tab-my, #fq-modal-file-tab-shared";
+              if (fqItemListPreselected) {
+                elements.reveal += ", #fq-modal-file-tab-preselected";
+              }
+
+              elements.disable = "#fq-modal-add-confirm-btn";
+              elements.activate = "#fq-modal-file-tab-my";
+              heading = "Select content to add to this figure";
+              fqModalMode = "addContent";
+              updateMarginsSpacingInputs();
+              break;
+
+            case "addFiglinqPreselectedContent":
+              elements.hide =
+                ".modal-action-panel, #fq-modal-file-panel-breadcrumb";
+              elements.reveal =
+                ".content-add-panel, .content-add-options-panel, #fq-modal-file-tab-my, #fq-modal-file-tab-shared";
+              elements.disable = "#fq-modal-add-confirm-btn";
+              elements.activate = "#fq-modal-file-tab-preselected";
+              heading = "Select content to add to this figure";
+              fqModalMode = "addContent";
+              updateMarginsSpacingInputs();
+              break;
+            default:
+              break;
+          }
+
+          jQuery("#file-panel-heading").html(heading);
+          jQuery(elements.hide).addClass("is-hidden");
+          jQuery(elements.disable).prop("disabled", true);
+          jQuery(elements.reveal).removeClass("is-hidden");
+          jQuery(elements.activate).addClass("is-active");
+          if (launchModal) jQuery("#fq-modal-file").addClass("is-active");
+        };
+
+        const scaleElement = (
+          fixedDim,
+          elemWidth,
+          elemHeight,
+          refWidth,
+          refHeight
+        ) => {
+          var scaledDims = {};
+
+          if (fixedDim === "width") {
+            scaledDims.width = refWidth;
+            scaledDims.height = Math.round((elemHeight * refWidth) / elemWidth);
+          } else if (fixedDim === "height") {
+            scaledDims.width = Math.round((elemWidth * refHeight) / elemHeight);
+            scaledDims.height = refHeight;
+          }
+          return scaledDims;
+        };
+
+        const getSvgeditFiletype = filetype => {
+          switch (filetype) {
+            case "external_image":
+              return "image";
+            case "plot":
+              return "plot";
+            default:
+              return false;
+          }
+        };
+
+        const adjustStyles = () => {
+          var style, ids;
+
+          // Top panel input labels
+          ids = [
+            "selected_x",
+            "selected_y",
+            "rect_width",
+            "rect_height",
+            "path_node_x",
+            "path_node_y",
+            "starNumPoints",
+            "RadiusMultiplier",
+            "radialShift",
+            "ellipse_cx",
+            "ellipse_cy",
+            "ellipse_rx",
+            "ellipse_ry",
+            "circle_cx",
+            "circle_cy",
+            "circle_r",
+            "line_x1",
+            "line_x2",
+            "line_y1",
+            "line_y2",
+            "polySides",
+            "image_width",
+            "image_height"
+          ];
+          ids.forEach(id => {
+            style = document.createElement("style");
+            style.innerHTML =
+              "#label{ top: 4px; margin-right: 2px; margin-left: 2px; font-size: 12px; text-transform: capitalize;} #label:after{ content: ':' }";
+            document.getElementById(id).shadowRoot.appendChild(style);
+          });
+
+          // Top panel position input
+          style = document.createElement("style");
+          style.innerHTML =
+            "elix-dropdown-list{ margin-left: 4px; margin-right: 4px} elix-dropdown-list:hover{ cursor: pointer; }";
+          document
+            .getElementById("tool_position")
+            .shadowRoot.appendChild(style);
+
+          // Symbol library menu
+          style = document.createElement("style");
+          style.innerHTML =
+            ".menu-item{background-color: var(--main-bg-color); color: white; text-transform: capitalize;} .menu-item:hover{ cursor: pointer; } .image-lib{background-color: var(--main-bg-color)}";
+          document
+            .getElementById("tool_shapelib")
+            .shadowRoot.appendChild(style);
+
+          // Dropdowns
+          ids = ["seg_type", "tool_font_family"];
+          ids.forEach(id => {
+            style = document.createElement("style");
+            style.innerHTML =
+              "select{margin-top: 10px; margin-right: 4px; border: none; border-radius: 3px; cursor: pointer;} .menu-item:hover{ cursor: pointer; }";
+            document.getElementById(id).shadowRoot.appendChild(style);
+          });
+        };
+
+        const getPlotProp = (element, propName, defaultPropValue) => {
+          // If property is not defined in figure layout, look in template
+          return element.figure.layout.hasOwnProperty(propName)
+            ? element.figure.layout[propName]
+            : element.figure.layout.template.layout.hasOwnProperty(propName)
+            ? element.figure.layout.template.layout[propName]
+            : defaultPropValue;
+        };
+
+        jQuery(document).on("change", "#fq-file-upload-input", () => {
+          var fileName = jQuery("#fq-file-upload-input")[0].files.length
+            ? jQuery("#fq-file-upload-input")[0].files[0].name
+            : false;
+          if (fileName) {
+            jQuery("#fq-modal-upload-confirm-btn").prop("disabled", false);
+            jQuery("#fq-file-upload-input-label").html(fileName);
+          } else {
+            jQuery("#fq-modal-upload-confirm-btn").prop("disabled", true);
+          }
+        });
+
+        jQuery(document).on("click", "#fq-modal-upload-confirm-btn", e => {
+          e.target.blur();
+          if (!jQuery("#fq-file-upload-input")[0].files.length) {
+            showToast("Please select the file first!", "is-warning");
+            return;
+          }
+          const apiEndpoint = "upload";
+          var world_readable = jQuery("#fq-file-upload-world-readable").val();
+          var imageFile = jQuery("#fq-file-upload-input")[0].files[0];
+          fqExportDocFname = jQuery("#fq-file-upload-input-label").html();
+          fqExportMode = "upload";
+
+          var formData = new FormData();
+          formData.append("files", imageFile);
+          jQuery("#fq-modal-file").removeClass("is-active");
+          uploadFileToFiglinQ(
+            formData,
+            apiEndpoint,
+            world_readable,
+            true,
+            fqSelectedFolderId[fqModalFileTabMode],
+            "upload"
+          );
+        });
+
+        jQuery(document).on("change", "#fq-modal-export-format-select", () => {
+          updateExportFormState();
+        });
+
+        jQuery(document).on("change", "#fq-doc-baseunit", e => {
+          let curUnit = svgEditor.configObj.curConfig.baseUnit;
+          let targetUnit = jQuery(e.target).val();
+
+          var w = jQuery("#fq-doc-setup-width").val();
+          var h = jQuery("#fq-doc-setup-height").val();
+
+          var wNum = w.match(/\d+/)[0];
+          var hNum = h.match(/\d+/)[0];
+
+          var wToPx = wNum * _typeMap[curUnit];
+          var wToTargetUnit =
+            Math.round((wToPx / _typeMap[targetUnit]) * 100) / 100;
+          var hToPx = hNum * _typeMap[curUnit];
+          var hToTargetUnit =
+            Math.round((hToPx / _typeMap[targetUnit]) * 100) / 100;
+
+          svgEditor.configObj.curConfig.baseUnit = targetUnit;
+          svgCanvas.setConfig(svgEditor.configObj.curConfig);
+          svgEditor.updateCanvas();
+
+          // Update inputs
+          jQuery("#fq-doc-setup-width").val("" + wToTargetUnit + targetUnit);
+          jQuery("#fq-doc-setup-height").val("" + hToTargetUnit + targetUnit);
+          jQuery("#fq-doc-size").val("");
+        });
+
+        jQuery(document).on("change", "#fq-doc-setup-width", e => {
+          jQuery("#fq-doc-size").val("");
+
+          var w = jQuery(e.target).val();
+          var resolution = svgEditor.svgCanvas.getResolution();
+          var x = w;
+          svgEditor.svgCanvas.setResolution(x, resolution.h);
+        });
+
+        jQuery(document).on("change", "#fq-doc-setup-height", e => {
+          jQuery("#fq-doc-size").val("");
+
+          var h = jQuery(e.target).val();
+          var resolution = svgEditor.svgCanvas.getResolution();
+          var y = h;
+          svgEditor.svgCanvas.setResolution(resolution.w, y);
+        });
+
+        jQuery(document).on("change", "#fq-doc-size", e => {
+          var w,
+            h,
+            val = jQuery(e.target).val();
+          if (val) {
+            const baseUnit = svgEditor.configObj.curConfig.baseUnit;
+            var [w, h] = val.split("x");
+            w = w / _typeMap[baseUnit] + baseUnit;
+            h = h / _typeMap[baseUnit] + baseUnit;
+
+            svgEditor.svgCanvas.setResolution(w, h);
+
+            jQuery("#fq-doc-setup-width").val(w);
+            jQuery("#fq-doc-setup-height").val(h);
+          }
+        });
+
+        jQuery(document).on("click", "#fq-menu-file-export", () => {
+          jQuery("#fq-modal-export").addClass("is-active");
+        });
+
+        jQuery(document).on("click", "#fq-menu-object-adjust", () => {
+          jQuery("#fq-modal-adjust").addClass("is-active");
+        });
+
+        jQuery(document).on("click", "#fq-menu-object-align", () => {
+          jQuery("#fq-modal-align").addClass("is-active");
+        });
+
+        jQuery(document).on("click", ".fq-modal-export-quality", e => {
+          const incr = parseInt(jQuery(e.target).data("increment"));
+          var value = parseInt(jQuery("#fq-modal-export-quality-input").val());
+          var newValue = value + incr;
+          if (newValue > 100) newValue = 100;
+          if (newValue < 10) newValue = 10;
+          jQuery("#fq-modal-export-quality-input").val(newValue);
+        });
+
+        jQuery(document).on("click", "#fq-modal-btn-confirm-save-figure", e => {
+          jQuery("#fq-modal-import-newfig").removeClass("is-active");
+          showSaveFigureAsDialog();
+        });
+
+        jQuery(document).on("click", ".navbar-dropdown .navbar-item", e => {
+          e.target.blur();
+          jQuery(e.target)
+            .parents(".navbar-item.has-dropdown")
+            .removeClass("is-hoverable");
+          setTimeout(function() {
+            jQuery(e.target)
+              .parents(".navbar-item.has-dropdown")
+              .addClass("is-hoverable");
+          }, 100);
+        });
+
+        jQuery(document).on(
+          "click",
+          "#fq-menu-file-import-local-content",
+          () => {
+            fqModalFileTabMode = "my";
+            prepareFileModal("importLocalContent");
+            refreshModalContents();
+          }
+        );
+
+        jQuery(document).on("click", "#fq-modal-adjust-btn-adjust", async e => {
+          jQuery(e.currentTarget).addClass("is-loading");
+          await adjustPlots();
+          jQuery(e.currentTarget).removeClass("is-loading");
+        });
+
+        jQuery(document).on("click", "#fq-modal-align-btn-x", async e => {
+          jQuery(e.currentTarget).addClass("is-loading");
+          await alignPlots("x");
+          jQuery(e.currentTarget).removeClass("is-loading");
+        });
+
+        jQuery(document).on("click", "#fq-modal-align-btn-y", async e => {
+          jQuery(e.currentTarget).addClass("is-loading");
+          await alignPlots("y");
+          jQuery(e.currentTarget).removeClass("is-loading");
+        });
+
+        jQuery(document).on("click", "#fq-modal-export-btn-export", async e => {
+          jQuery(e.currentTarget).addClass("is-loading");
+          fqExportMode = "download";
+          fqExportDocType = jQuery("#fq-modal-export-format-select").val();
+          fqExportDocQuality =
+            parseFloat(jQuery("#fq-modal-export-quality-input").val()) / 100;
+          fqExportDocFname = jQuery("#fq-modal-export-fname-input").val();
+          if (fqExportDocType == "pdf") {
+            fqExportDocSize = jQuery(
+              "#fq-modal-export-size-select option:selected"
+            ).text();
+          } else {
+            fqExportDocSize = parseInt(
+              jQuery("#fq-modal-export-size-select").val()
+            );
+          }
+
+          await exportImageFromEditor();
+          jQuery(e.currentTarget).removeClass("is-loading");
+        });
+
+        jQuery(document).on("focusout", "#fq-modal-export-quality-input", e => {
+          var newValue = parseInt(jQuery(e.target).val());
+          if (newValue > 100) newValue = 100;
+          if (newValue < 10) newValue = 10;
+          if (isNaN(newValue)) newValue = 80;
+          jQuery(e.target).val(newValue);
+        });
+
+        jQuery(document).on("click", "#fq-menu-view-show-grid", () => {
+          jQuery("#view_grid").click();
+          let showGrid = svgEditor.configObj.curConfig.showGrid;
+          if (showGrid) {
+            jQuery("#fq-menu-view-show-grid")
+              .find("i")
+              .removeClass("fa-square")
+              .addClass("fa-check-square");
+          } else {
+            jQuery("#fq-menu-view-show-grid")
+              .find("i")
+              .addClass("fa-square")
+              .removeClass("fa-check-square");
+          }
+        });
+
+        jQuery(document).on("click", "#fq-menu-view-show-rulers", () => {
+          let showRulers = svgEditor.configObj.curConfig.showRulers;
+          if (!showRulers) {
+            jQuery("#fq-menu-view-show-rulers")
+              .find("i")
+              .removeClass("fa-square")
+              .addClass("fa-check-square");
+          } else {
+            jQuery("#fq-menu-view-show-rulers")
+              .find("i")
+              .addClass("fa-square")
+              .removeClass("fa-check-square");
+          }
+          svgEditor.configObj.curConfig.showRulers = !showRulers;
+          svgEditor.rulers.display(!showRulers);
+        });
+
+        jQuery(document).on(
+          "click",
+          "#fq-menu-file-document-properties",
+          () => {
+            jQuery("#fq-doc-size").val("");
+            const baseUnit = svgEditor.configObj.curConfig.baseUnit;
+            const resolution = svgEditor.svgCanvas.getResolution();
+
+            jQuery("#fq-doc-baseunit").val(baseUnit);
+
+            const gridSnappingOn = svgEditor.configObj.curConfig.gridSnapping;
+            const gridSnappingStep = svgEditor.configObj.curConfig.snappingStep;
+
+            jQuery("#fq-doc-setup-snapping-enabled").prop(
+              "checked",
+              gridSnappingOn
+            );
+            jQuery("#fq-doc-setup-snapping-step").val(gridSnappingStep);
+
+            jQuery("#fq-doc-setup-width").val(
+              resolution.w / _typeMap[baseUnit] + baseUnit
+            );
+            jQuery("#fq-doc-setup-height").val(
+              resolution.h / _typeMap[baseUnit] + baseUnit
+            );
+            jQuery("#fq-modal-doc-setup").addClass("is-active");
+          }
+        );
+
+        jQuery(document).on("change", "#fq-doc-setup-snapping-enabled", e => {
+          const gridSnappingOn = jQuery(e.target).prop("checked");
+          svgEditor.configObj.curConfig.gridSnapping = gridSnappingOn;
+          svgCanvas.setConfig(svgEditor.configObj.curConfig);
+          svgEditor.updateCanvas();
+        });
+
+        jQuery(document).on("keyup", "#fq-doc-setup-snapping-step", e => {
+          const snappingStep = parseInt(jQuery(e.target).val());
+          svgEditor.configObj.curConfig.snappingStep = snappingStep;
+          svgCanvas.setConfig(svgEditor.configObj.curConfig);
+          svgEditor.updateCanvas();
+        });
+
+        jQuery(document).on("click", ".fq-modal-adjust-copy", e => {
+          const property = jQuery(e.target).data("property");
+          const refValue = jQuery(
+            `input[data-property='${property}'][type='text']`
+          ).val();
+          const inputs = jQuery(".fq-modal-adjust-input");
+          var visited = false;
+          inputs.each(function() {
+            if (visited) {
+              jQuery(this).val(refValue);
+            }
+            if (jQuery(this).data("property") === property) {
+              visited = true;
+            }
+          });
+        });
+
+        jQuery(document).on("click", "#fq-doc-setup-save-btn", () => {
+          const predefined = jQuery("#fq-doc-size").val();
+          const gridSnappingStep = parseInt(
+            jQuery("#fq-doc-setup-snapping-step").val()
+          );
+          const gridSnappingOn = jQuery("#fq-doc-setup-snapping-enabled").prop(
+            "checked"
+          );
+
+          const w =
+            predefined === "fit" ? "fit" : jQuery("#fq-doc-setup-width").val();
+          const h =
+            predefined === "fit" ? "fit" : jQuery("#fq-doc-setup-height").val();
+          const baseunit = jQuery("#fq-doc-baseunit").val();
+          jQuery("#fq-modal-doc-setup").removeClass("is-active");
+
+          if (w !== "fit" && !isValidUnit("width", w)) {
+            showToast("Invalid width unit!", "is-danger");
+            return;
+          }
+          if (h !== "fit" && !isValidUnit("height", h)) {
+            showToast("Invalid height unit!", "is-danger");
+            return;
+          }
+
+          if (!svgCanvas.setResolution(w, h)) {
+            showToast("No content to fit!", "is-danger");
+          }
+
+          svgEditor.configObj.curConfig.baseUnit = baseunit;
+          svgEditor.configObj.curConfig.gridSnapping = gridSnappingOn;
+          svgEditor.configObj.curConfig.snappingStep = gridSnappingStep;
+
+          svgCanvas.setConfig(svgEditor.configObj.curConfig);
+          svgEditor.updateCanvas();
+        });
+
+        jQuery(document).on("click", ".fq-modal-cancel-btn", () => {
+          jQuery(".modal").removeClass("is-active");
+        });
+
+        jQuery(document).on("click", ".fq-modal-file-tab", e => {
+          showModalSpinner();
+          jQuery(".fq-modal-file-tab").removeClass("is-active");
+          jQuery("#fq-modal-add-confirm-btn, #col_select").prop(
+            "disabled",
+            true
+          );
+          jQuery(e.currentTarget).addClass("is-active");
+
+          fqModalFileTabMode = jQuery(e.currentTarget).data("mode");
+          if (fqModalFileTabMode == "shared") {
+            jQuery("#fq-modal-file-search-wrapper").prop("disabled", true);
+          } else if (fqModalFileTabMode == "my") {
+            jQuery("#fq-modal-file-search-wrapper").prop("disabled", false);
+          } else if (fqModalFileTabMode == "preselected") {
+            jQuery("#fq-modal-file-search-wrapper").prop("disabled", true);
+            jQuery("#fq-modal-file-panel-breadcrumb").addClass("is-hidden");
+            refreshModalContents(fqItemListPreselected.fids);
+            return;
+          }
+
+          (fqSelectedFolderId = {
+            my: false,
+            shared: false,
+            preselected: false
+          }),
+            refreshModalContents();
+        });
+
+        jQuery(document).on("click", "#fq-modal-refresh-btn", () => {
+          showModalSpinner();
+          refreshModalContents();
+        });
+
+        jQuery(document).on(
+          "click",
+          ".fq-modal-plot-item, .fq-modal-image-item, .fq-modal-figure-item",
+          e => {
+            if (fqModalMode === "saveFigure") {
+              if (jQuery(e.target).hasClass("fq-modal-figure-item")) {
+                jQuery(
+                  ".fq-modal-plot-item, .fq-modal-image-item, .fq-modal-figure-item"
+                ).removeClass("is-active");
+                jQuery(e.target).addClass("is-active");
+                var text = jQuery(e.target)
+                  .find(".fq-list-item-text")
+                  .html();
+                if (text.toLowerCase().endsWith(".svg")) {
+                  text = text.replace(/\.[^/.]+$/, "");
+                  jQuery("#fq-modal-save-name-input").val(text);
+                  jQuery("#fq-modal-save-confirm-btn").prop("disabled", false);
+                }
+              }
+              return;
+            }
+
+            if (fqModalMode === "openFigure") {
+              jQuery(
+                ".fq-modal-plot-item, .fq-modal-image-item, .fq-modal-figure-item"
+              ).removeClass("is-active");
+              jQuery(e.target).addClass("is-active");
+              jQuery("#fq-modal-files-open-figure-confirm").prop(
+                "disabled",
+                false
+              );
+              return;
+            }
+
+            if (jQuery(e.target).hasClass("is-active")) {
+              jQuery(e.target).removeClass("is-active");
+            } else {
+              jQuery(e.target).addClass("is-active");
+            }
+
+            var activePresent = false;
+            var activeList = [];
+            jQuery(
+              ".fq-modal-plot-item, .fq-modal-image-item, .fq-modal-figure-item"
+            ).each(function() {
+              if (jQuery(this).hasClass("is-active")) {
+                activePresent = true;
+                activeList.push(jQuery(this).data("fid"));
+              }
+            });
+
+            if (activePresent) {
+              jQuery("#fq-modal-add-confirm-btn").prop("disabled", false);
+              jQuery("#fq-modal-add-confirm-btn").data(
+                "selectedFid",
+                activeList
+              );
+              if (activeList.length > 1) {
+                jQuery("#col_select").prop("disabled", false);
+              } else {
+                jQuery("#col_select").prop("disabled", true);
+              }
+            } else {
+              jQuery("#fq-modal-add-confirm-btn").prop("disabled", true);
+            }
+          }
+        );
+
+        jQuery(document).on("click", ".fq-modal-folder-item", e => {
+          const dataFid = jQuery(e.currentTarget)
+            .data("fid")
+            .toString();
+          const fname = jQuery(e.target)
+            .text()
+            .trim();
+
+          fqSelectedFolderId[fqModalFileTabMode] = dataFid;
+
+          updateBreadcrumb(dataFid, fname);
+
+          fqItemListFolder = "";
+          fqItemListFile = "";
+          updateItemList(dataFid, 1);
+          jQuery("#fq-modal-add-confirm-btn").prop("disabled", true);
+          jQuery("#fq-modal-refresh-btn").addClass("is-loading");
+        });
+
+        jQuery(document).on("click", "#fq-menu-interact-switch", e => {
+          e.target.blur();
+          var checked = jQuery("#fq-menu-interact-switch").is(":checked");
+          if (checked) {
+            setInteractiveOn();
+          } else {
+            setInteractiveOff();
+          }
+        });
+
+        jQuery(document).on("click", "#fq-modal-add-confirm-btn", e => {
+          e.target.blur();
+          svgCanvas.clearSelection();
+          jQuery(e.target).addClass("is-loading");
+
+          const selector =
+            ".fq-modal-plot-item.is-active, .fq-modal-image-item.is-active, .fq-modal-figure-item.is-active";
+          const selectedItems = getSortedElems(selector, "data-index");
+          const columnNumber = parseInt(jQuery("#col_select").val());
+          var margins = {
+            left: parseFloat(jQuery("#fq-content-add-magin-left").val()),
+            top: parseFloat(jQuery("#fq-content-add-magin-top").val()),
+            right: parseFloat(jQuery("#fq-content-add-magin-right").val()),
+            bottom: parseFloat(jQuery("#fq-content-add-magin-bottom").val())
+          };
+          var spacing = {
+            horizontal: parseFloat(
+              jQuery("#fq-content-add-spacing-horizontal").val()
+            ),
+            vertical: parseFloat(
+              jQuery("#fq-content-add-spacing-vertical").val()
+            )
+          };
+
+          // Calculate margins/spacing in pixels
+          let curUnit = svgEditor.configObj.curConfig.baseUnit;
+          if (curUnit !== "px") {
+            margins.left = margins.left * _typeMap[curUnit];
+            margins.top = margins.top * _typeMap[curUnit];
+            margins.right = margins.right * _typeMap[curUnit];
+            margins.bottom = margins.bottom * _typeMap[curUnit];
+
+            spacing.horizontal = spacing.horizontal * _typeMap[curUnit];
+            spacing.vertical = spacing.vertical * _typeMap[curUnit];
+          }
+
+          var elementProps = [];
+          jQuery.each(selectedItems, index => {
+            elementProps[index] = {
+              fid: jQuery(selectedItems[index]).data("fid"),
+              endpoint:
+                jQuery(selectedItems[index]).data("ftype") == "plot"
+                  ? "plots"
+                  : "files"
+            };
+          });
+
+          const fixedDim = "height";
+          var pageDims = svgEditor.svgCanvas.getResolution();
+          // Get information about all elements
+          var actions = elementProps.map(function(prop) {
+            return getFileDataFromFiglinQ(prop.fid, prop.endpoint);
+          });
+          var results = Promise.all(actions); // pass array of promises
+          results.then(data => {
+            // Default plot width / height
+            const wDefault = 400;
+            const hDefault = 360;
+
+            // Reference plot width / height
+            var wRef = wDefault;
+            var hRef = hDefault;
+
+            // If there is at least 1 plot, use it as size reference
+            var refPlotIndex = false;
+            data.some((element, index) => {
+              // Get dimensions of the first selected plot, either from layout or from template (if not defined in layout)
+              const userId = parseFid(element.fid, 0);
+              const fileNumId = parseFid(element.fid, 1);
+              const baseHref = `${baseUrl}~${userId}/${fileNumId}.`;
+              var w, h;
+
+              if (element.filetype == "plot") {
+                w = getPlotProp(element, "width", wRef);
+                h = getPlotProp(element, "height", hRef);
+
+                // Set dimensions of the first plot as reference
+                if (refPlotIndex === false) {
+                  refPlotIndex = index;
+                  wRef = w;
+                  hRef = h;
+                }
+
+                data[index].imgHref = baseHref + "svg";
+                data[index].svgeditFiletype = "plot";
+              } else if (element.filetype == "external_image") {
+                w = element.metadata.width;
+                h = element.metadata.height;
+                data[index].imgHref = baseHref + "src";
+                data[index].svgeditFiletype = "image";
+              }
+              data[index].width = w ? w : wDefault;
+              data[index].height = h ? h : hDefault;
+              data[index].contentHref = baseHref + "embed";
+            });
+
+            // Find the maximum width of all elements after applying the multi-column layout
+            var x = 0;
+            var y = 0;
+            var curColumn = 1;
+            const pageWidthUsable =
+              pageDims.w -
+              margins.right -
+              margins.left -
+              spacing.horizontal * (columnNumber - 1);
+            var maxX = pageWidthUsable; // Only scale if layout is wider than the page minus margins, otherwise keep original dimensions
+            data.some(element => {
+              // Scale all elements to appropriate height
+              const scaledDims = scaleElement(
+                fixedDim,
+                element.width,
+                element.height,
+                wRef,
+                hRef
+              );
+              element.widthScaled = scaledDims.width;
+              element.heightScaled = scaledDims.height;
+
+              x += scaledDims.width;
+              maxX = Math.max(maxX, x);
+
+              curColumn += 1;
+              if (curColumn > columnNumber) {
+                curColumn = 1;
+                x = 0;
+                y += hRef + spacing.vertical;
+              }
+            });
+
+            // Calculate scaling page factor
+            const pageScaleFactor = pageWidthUsable / maxX;
+            const hRefScaled = hRef * pageScaleFactor;
+
+            // Set initial positioning, including margins
+            curColumn = 1;
+            x = margins.left;
+            y = margins.top;
+
+            // Finally, place new elements and add letters
+
+            const addLetters = jQuery("#fq-add-panel-letters").val();
+
+            data.some((element, index) => {
+              element.widthScaled = element.widthScaled * pageScaleFactor;
+              element.heightScaled = element.heightScaled * pageScaleFactor;
+
+              var elementProps = {
+                width: element.widthScaled,
+                height: element.heightScaled,
+                widthOriginal: element.width,
+                heightOriginal: element.height,
+                x: x,
+                y: y,
+                filetype: element.svgeditFiletype,
+                fid: element.fid,
+                contentHref: element.contentHref,
+                imgHref: element.imgHref
+              };
+
+              placeElement(elementProps);
+
+              if (addLetters) {
+                let letter = alphabet[index];
+                if (addLetters === "lower") {
+                  letter = letter.toLowerCase();
+                }
+                const attr = {
+                  x: x - 6,
+                  y: y - 6,
+                  id: svgCanvas.getNextId(),
+                  fill: "#000000",
+                  "stroke-width": "0",
+                  "font-size": "14",
+                  "font-family": "Sans-serif",
+                  "text-anchor": "middle",
+                  "xml:space": "preserve",
+                  opacity: 1
+                };
+
+                placeTextElement(attr, letter);
+              }
+
+              x += element.widthScaled + spacing.horizontal;
+              curColumn += 1;
+              if (curColumn > columnNumber) {
+                curColumn = 1;
+                x = margins.left;
+                y += hRefScaled + spacing.vertical;
+              }
+            });
+
+            jQuery(e.target).removeClass("is-loading");
+            jQuery("#fq-modal-file").removeClass("is-active");
+            jQuery(document).unbind("keyup", closeModalOnEscape);
+            setTimeout(function() {
+              svgEditor.zoomChanged(window, "layer");
+            }, 500);
+          });
+        });
+
+        jQuery(document).on(
+          "click",
+          "#fq-modal-file-search-icon.fa-times-circle",
+          e => {
+            jQuery("#fq-modal-file-search-input")
+              .val("")
+              .keyup();
+            fqSearchMode = false;
+          }
+        );
+
+        jQuery(document).on("keyup", "#fq-modal-file-search-input", e => {
+          refreshModalContents();
+        });
+
+        jQuery(document).on("keyup", "#fq-modal-save-name-input", e => {
+          let val = jQuery(e.target).val();
+
+          if (val.length) {
+            jQuery("#fq-modal-save-confirm-btn").prop("disabled", false);
+          } else {
+            jQuery("#fq-modal-save-confirm-btn").prop("disabled", true);
+          }
+        });
+
+        jQuery(document).on(
+          "click",
+          "#fq-modal-files-open-figure-confirm",
+          () => {
+            jQuery("#fq-modal-file").removeClass("is-active");
+            jQuery(document).unbind("keyup", closeModalOnEscape);
+            jQuery("#fq-modal-confirm-btn-ok").html("Open figure");
+            jQuery("#fq-modal-confirm").addClass("is-active");
+            let fid = jQuery(".fq-modal-figure-item.is-active").data("fid");
+            setModalConfirmBtnHandler(openFigure, { fid: fid });
+          }
+        );
+
+        jQuery(document).on("click", "#fq-menu-file-new-figure", () => {
+          jQuery("#fq-modal-confirm-btn-ok").html("New figure");
+          setModalConfirmBtnHandler(onConfirmClear);
+          jQuery("#fq-modal-confirm").addClass("is-active");
+        });
+
+        jQuery(document).on(
+          "click",
+          "#fq-modal-save-confirm-btn",
+          async event => {
+            jQuery("#fq-modal-save-confirm-btn").addClass("is-loading");
+            event.target.blur();
+            fqExportMode = "thumb";
+            fqExportDocType = "png";
+            fqExportDocFname = jQuery("#fq-modal-save-name-input").val();
+            fqExportDocSize = parseInt(
+              jQuery("#fq-modal-export-size-select").val()
+            );
+
+            const world_readable = jQuery("#file_upload_world_readable").val();
+
+            // TODO *properly* check if file name exists via API
+            let replacedFid,
+              nameExists = false;
+            jQuery(".fq-modal-image-item, .fq-modal-figure-item").each(
+              function() {
+                if (
+                  jQuery(this)
+                    .find(".fq-list-item-text")
+                    .html() ==
+                  fqExportDocFname + ".svg"
+                ) {
+                  nameExists = true;
+                  replacedFid = jQuery(this).data("fid");
+                }
+              }
+            );
+
+            if (nameExists) {
+              if (!confirm("File already exists. Overwrite?")) {
+                jQuery("#fq-modal-save-confirm-btn").removeClass("is-loading");
+                return;
+              }
+            }
+
+            if (fqSelectedFolderId[fqModalFileTabMode] === "shared:-1") {
+              showToast(
+                "Please select one of the shared folders!",
+                "is-danger"
+              );
+              return;
+            }
+
+            // Clean up image URLs to remove cachebusting hashes (see adjustPlots())
+            // resetPlotImageUrls();
+
+            const svg = getSvgFromEditor();
+
+            const apiEndpoint = "upload";
+
+            var imageBlob = new Blob([svg], { type: "image/svg+xml" });
+            var imageFile = new File([imageBlob], fqExportDocFname + ".svg");
+
+            var thumbBlob = await exportImageFromEditor();
+            var thumbFile = new File(
+              [thumbBlob],
+              fqExportDocFname + "_thumb.png"
+            );
+
+            var formData = new FormData();
+
+            formData.append("files", imageFile);
+            formData.append("thumb", thumbFile);
+
+            // Check if figure contains any linked content
+            var fqElements = jQuery(".fq-image, .fq-plot, .fq-figure");
+            const hasLinkedContent = fqElements.length > 0;
+
+            // Add metadata
+            var metadata = fqCurrentFigData ? fqCurrentFigData.metadata : {};
+            metadata.svgedit = metadata.svgedit || {};
+            if (hasLinkedContent) {
+              metadata.svgedit.haslinkedcontent = true;
+            } else {
+              metadata.svgedit.haslinkedcontent = false;
+            }
+            formData.append("metadata", JSON.stringify(metadata));
+
+            if (nameExists) formData.append("replaced_fid", replacedFid);
+
+            uploadFileToFiglinQ(
+              formData,
+              apiEndpoint,
+              world_readable,
+              true,
+              fqSelectedFolderId[fqModalFileTabMode],
+              "upload"
+            );
+          }
+        );
+
+        jQuery(document).on("change", "#zoom", e => {
+          const value = jQuery(e.target).val();
+          switch (value) {
+            case "default":
+              return;
+            case "canvas":
+            case "selection":
+            case "layer":
+            case "content":
+              svgEditor.zoomChanged(window, value);
+              break;
+            default: {
+              const zoomlevel = Number(value) / 100;
+              if (zoomlevel < 0.001) {
+                value = 0.1;
+                return;
+              }
+              const zoom = svgCanvas.getZoom();
+              const { workarea } = svgEditor;
+              svgEditor.zoomChanged(
+                window,
+                {
+                  width: 0,
+                  height: 0,
+                  // center pt of scroll position
+                  x:
+                    (workarea.scrollLeft +
+                      parseFloat(
+                        getComputedStyle(workarea, null).width.replace("px", "")
+                      ) /
+                        2) /
+                    zoom,
+                  y:
+                    (workarea.scrollTop +
+                      parseFloat(
+                        getComputedStyle(workarea, null).height.replace(
+                          "px",
+                          ""
+                        )
+                      ) /
+                        2) /
+                    zoom,
+                  zoom: zoomlevel
+                },
+                true
+              );
+            }
+          }
+          jQuery(e.target).val("default");
+        });
+
+        jQuery(document).on("click", ".fq-menu-add-content-btn", () => {
+          setInteractiveOff();
+          prepareFileModal("addFiglinqContent");
+          fqModalFileTabMode = "my";
+          refreshModalContents();
+        });
+
+        jQuery(document).on(
+          "click",
+          "#fq-menu-file-save-figure",
+          async event => {
+            setInteractiveOff();
+
+            if (!fqCurrentFigData) {
+              // New figure >> show save as dialog
+              showSaveFigureAsDialog();
+              return;
+            }
+
+            jQuery("#fq-menu-file-save-figure")
+              .find("i")
+              .removeClass("fa-save")
+              .addClass("fa-spinner fa-pulse");
+            event.target.blur();
+
+            fqExportMode = "thumb";
+            fqExportDocType = "png";
+            fqExportDocFname = fqCurrentFigData.filename;
+
+            fqSelectedFolderId[fqModalFileTabMode] =
+              parseFid(fqCurrentFigData.fid, 0) + ":" + fqCurrentFigData.parent;
+            const world_readable = fqCurrentFigData.world_readable;
+            const replacedFid = fqCurrentFigData.fid;
+
+            // Clean up image URLs to remove cachebusting hashes (see adjustPlots())
+            // resetPlotImageUrls();
+
+            const svg = getSvgFromEditor();
+            // IMPORTANT set to 'replace' if updating prod until new backend is live
+            const apiEndpoint = "replace";
+
+            // TODO set to 'upload' once new backend is live
+            // const apiEndpoint = "upload";
+
+            const imageBlob = new Blob([svg], {
+              type: "image/svg+xml"
+            });
+            const imageFile = new File([imageBlob], fqExportDocFname + ".svg");
+
+            const thumbBlob = await exportImageFromEditor();
+            const thumbFile = new File(
+              [thumbBlob],
+              fqExportDocFname + "_thumb.svg"
+            );
+
+            var formData = new FormData();
+
+            formData.append("files", imageFile);
+            formData.append("thumb", thumbFile);
+            formData.append("replaced_fid", replacedFid);
+
+            // Check if figure contains any linked content
+            var fqElements = jQuery(".fq-image, .fq-plot, .fq-figure");
+            const hasLinkedContent = fqElements.length > 0;
+
+            var metadata = fqCurrentFigData.metadata || {};
+            metadata.svgedit = metadata.svgedit || {};
+            if (hasLinkedContent) {
+              metadata.svgedit.haslinkedcontent = true;
+            } else {
+              metadata.svgedit.haslinkedcontent = false;
+            }
+            formData.append("metadata", JSON.stringify(metadata));
+
+            // const fid = fqCurrentFigData.fid;
+            // const username = parseFid(replacedFid, 0);
+            // const id = parseFid(replacedFid, 1);
+
+            // const parentId =
+            //   username === fqUsername ? fqCurrentFigData.parent : -1;
+            // console.log(fqCurrentFigData);
+
+            uploadFileToFiglinQ(
+              formData,
+              apiEndpoint,
+              world_readable,
+              false,
+              false,
+              "replace"
+            );
+          }
+        );
+
+        jQuery(document).on("click", "#fq-menu-file-save-figure-as", () => {
+          setInteractiveOff();
+          showSaveFigureAsDialog();
+        });
+
+        jQuery(document).on("click", ".navbar-burger", () => {
+          jQuery(".navbar-burger").toggleClass("is-active");
+          jQuery(".navbar-menu").toggleClass("is-active");
+        });
+
+        jQuery(document).on("keyup", ".fq-margin-input", e => {
+          if (jQuery("#fq-content-add-link-margins").prop("checked") === true) {
+            jQuery(".fq-margin-input").val(jQuery(e.target).val());
+          }
+        });
+
+        jQuery(document).on("click", "#fq-menu-file-open-figure", () => {
+          prepareFileModal("openFigure");
+          refreshModalContents();
+        });
+
+        // Init
+        createUnitMap();
+        ensureRulesGrids();
+        getFqUsername();
+        setInteractiveOff();
+        upgradeUi();
+        adjustStyles();
+        loadFqFigure();
+        updateExportFormState();
+        activateDraggableModals();
+      }
+    };
+  }
+};

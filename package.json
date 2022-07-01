@@ -132,5 +132,9 @@
     "rollup-plugin-terser": "7.0.2",
     "standard": "17.0.0",
     "start-server-and-test": "1.14.0"
+  },
+  "volta": {
+    "node": "16.14.0",
+    "yarn": "1.22.18"
   }
 }
