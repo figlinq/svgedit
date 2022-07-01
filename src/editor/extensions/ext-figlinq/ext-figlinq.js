@@ -1226,18 +1226,21 @@ export default {
         };
 
         const activateDraggableModals = () => {
-          const draggable = new Draggable.default(document.querySelectorAll('.draggable-container'), {
-            handle: '.drag-handle'
-          });
-          draggable.on('drag:stop', (data) => {
-            const pos = jQuery('.draggable-mirror').position();
+          const draggable = new Draggable.default(
+            document.querySelectorAll(".draggable-container"),
+            {
+              handle: ".drag-handle"
+            }
+          );
+          draggable.on("drag:stop", data => {
+            const pos = jQuery(".draggable-mirror").position();
             jQuery(data.originalSource).css({
-              "position": "fixed",
-              "left": pos.left,
-              "top": pos.top,
+              position: "fixed",
+              left: pos.left,
+              top: pos.top
             });
           });
-        }
+        };
 
         const updateExportFormState = () => {
           let format = jQuery("#fq-modal-export-format-select").val();
@@ -1319,7 +1322,6 @@ export default {
         };
 
         const adjustPlots = async () => {
-
           const equalizeProps = jQuery("#fq-modal-adjust-property-equalize").is(
             ":checked"
           );
@@ -1361,16 +1363,20 @@ export default {
               })
               .then(resultJson => {
                 // Update properties
-                jQuery('.fq-modal-adjust-checkbox').filter(":checked").map(function () { 
-                  const property = jQuery(this).data('property');
-                  const propertyPath = property.split("-");
-                  const value = jQuery(`input[data-property='${property}'][type='text']`).val();
-                  const valueScaled = equalizeProps
-                    ? value / plotElems[k].scale
-                    : value;
+                jQuery(".fq-modal-adjust-checkbox")
+                  .filter(":checked")
+                  .map(function() {
+                    const property = jQuery(this).data("property");
+                    const propertyPath = property.split("-");
+                    const value = jQuery(
+                      `input[data-property='${property}'][type='text']`
+                    ).val();
+                    const valueScaled = equalizeProps
+                      ? value / plotElems[k].scale
+                      : value;
                     // console.log(plotElems[k].scale, value, valueScaled);
-                  setDeep(resultJson, propertyPath, valueScaled, true);
-                })
+                    setDeep(resultJson, propertyPath, valueScaled, true);
+                  });
                 return resultJson;
               })
               .then(resultUpdated => {
@@ -1512,7 +1518,7 @@ export default {
             while (k < j) {
               const dataItem = data[k];
               const plotItem = plotElems[k];
-              
+
               if (Object.keys(plotItem).length === 0) {
                 // Not a plot, don't move
                 dx.push(0);
@@ -2297,17 +2303,21 @@ export default {
           svgEditor.updateCanvas();
         });
 
-        jQuery(document).on("click", ".fq-modal-adjust-copy", (e) => {
-          const property = jQuery(e.target).data('property');
-          const refValue = jQuery(`input[data-property='${property}'][type='text']`).val();
-          const inputs = jQuery('.fq-modal-adjust-input');
+        jQuery(document).on("click", ".fq-modal-adjust-copy", e => {
+          const property = jQuery(e.target).data("property");
+          const refValue = jQuery(
+            `input[data-property='${property}'][type='text']`
+          ).val();
+          const inputs = jQuery(".fq-modal-adjust-input");
           var visited = false;
-          inputs.each(function(){
+          inputs.each(function() {
             if (visited) {
               jQuery(this).val(refValue);
             }
-            if(jQuery(this).data('property') === property){visited = true}
-          })
+            if (jQuery(this).data("property") === property) {
+              visited = true;
+            }
+          });
         });
 
         jQuery(document).on("click", "#fq-doc-setup-save-btn", () => {
