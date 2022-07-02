@@ -1490,7 +1490,7 @@ export default {
                 newId = '__' + curId
                 $(this).attr('id', newId)
 
-                attrArray[newId] = getAttributes($(this))
+                attrArray[newId] = getAttributes(jQuery(this))
 
                 if ($(this).hasClass('fq-image')) {
                   imageIdArray.push(newId)
