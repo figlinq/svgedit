@@ -87,6 +87,7 @@
     "jspdf": "2.5.1",
     "pathseg": "1.2.1",
     "regenerator-runtime": "0.13.9",
+    "rollup-plugin-copy-watch": "^0.0.1",
     "svg2pdf.js": "2.2.0"
   },
   "devDependencies": {

@@ -6,7 +6,7 @@ import path from 'path'
 import { lstatSync, readdirSync } from 'fs'
 import rimraf from 'rimraf'
 import babel from '@rollup/plugin-babel'
-import copy from 'rollup-plugin-copy'
+import copy from 'rollup-plugin-copy-watch'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import url from '@rollup/plugin-url' // for XML/SVG files
@@ -34,7 +34,8 @@ const dest = ['dist/editor']
 rimraf('./dist', () => console.info('recreating dist'))
 
 // config for svgedit core module
-const config = [{
+const config = [
+  {
   input: ['src/editor/Editor.js'],
   output: [
     {
@@ -65,6 +66,14 @@ const config = [{
           src: 'src/editor/index.html',
           dest: 'dist/editor'
         },
+        {
+          src: 'src/editor/extensions/ext-figlinq/images',
+          dest: 'dist/editor/extensions/ext-figlinq'
+        }, 
+        {
+          src: 'src/editor/extensions/ext-figlinq/ext-figlinq.css',
+          dest: 'dist/editor/extensions/ext-figlinq'
+        },
         // {
         //   src: 'src/editor/index.html',
         //   dest: 'dist/editor',
@@ -88,8 +97,9 @@ const config = [{
         { src: 'src/editor/embedapi.js', dest },
         { src: 'src/editor/browser-not-supported.html', dest },
         { src: 'src/editor/browser-not-supported.js', dest },
-        { src: 'src/editor/svgedit.css', dest }
-      ]
+        { src: 'src/editor/svgedit.css', dest } 
+      ],
+      watch: 'src/editor/extensions/ext-figlinq',
     }),
     html({
       include: [

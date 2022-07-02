@@ -87,6 +87,10 @@
   border: 0;
 }
 
+#title_panel{ 
+  display: none; 
+}
+
 .panel-block label {
   font-weight: normal;
 }
@@ -376,4 +380,23 @@ se-select {
 
 .drag-handle {
   cursor: move;
+}
+
+.control .input {
+  padding-bottom: calc(.5em - 1px);
+  padding-left: calc(.75em - 1px);
+  padding-right: calc(.75em - 1px);
+  padding-top: calc(.5em - 1px);
+}
+
+#svgedit-logo {
+  margin-right: 10px;
+  width: 20px; 
+  height: 20px; 
+  position: relative;
+  top:4px;
+}
+
+#color_picker {
+  top: 200px !important;
 }

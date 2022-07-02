@@ -3317,7 +3317,7 @@ chokidar@^2.0.4, chokidar@^2.1.1:
   optionalDependencies:
     fsevents "^1.2.7"
 
-chokidar@^3.0.0, chokidar@^3.4.3:
+chokidar@^3.0.0, chokidar@^3.4.0, chokidar@^3.4.3:
   version "3.5.3"
   resolved "https://registry.yarnpkg.com/chokidar/-/chokidar-3.5.3.tgz#1cf37c8707b932bd1af1ae22c0432e2acd1903bd"
   integrity sha512-Dr3sfKRP6oTcjf2JmUmFJfeVMvXBdegxB0iVQ5eb2V10uFJUCAS8OByZdVAyVb8xXNz3GjjTgj9kLWsZTqE6kw==
@@ -9369,6 +9369,18 @@ ripemd160@^2.0.0, ripemd160@^2.0.1:
   dependencies:
     hash-base "^3.0.0"
     inherits "^2.0.1"
+
+rollup-plugin-copy-watch@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/rollup-plugin-copy-watch/-/rollup-plugin-copy-watch-0.0.1.tgz#c742d6c1836ee1f9868466800c7910e59349d0d5"
+  integrity sha512-TjlXZsmsdLWd4Jx1M6qUQqLgRxJlTpmHchPTN6s4d58ubYAa7DlbMrqGz5In1Xg/iN7p19YNpcGGKWu0ImHpVg==
+  dependencies:
+    "@types/fs-extra" "^8.0.1"
+    chokidar "^3.4.0"
+    colorette "^1.1.0"
+    fs-extra "^8.1.0"
+    globby "10.0.1"
+    is-plain-object "^3.0.0"
 
 rollup-plugin-copy@3.4.0:
   version "3.4.0"
