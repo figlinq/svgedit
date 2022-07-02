@@ -1,4 +1,4 @@
-# Development setup
+# Old development setup
 
 ## SVGedit redirects 
 
