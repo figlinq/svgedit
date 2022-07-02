@@ -26,10 +26,10 @@ export function imageItem(name, fid, index) {
 }
 
 export function figureItem(name, fid, index, haslinkedcontent = false) {
-  const disabledStr = haslinkedcontent ? "is-disabled" : "";
+  const disabledStr = haslinkedcontent ? 'is-disabled' : '';
   const explanation = haslinkedcontent
     ? `<span class="fq-list-item-text panel-list-explanation"><i class="fas fa-exclamation-triangle mr-2"></i>Figure with linked content cannot be added to another figure.</span>`
-    : "";
+    : '';
   return `
     <a class="is-relative panel-block panel-list-item fq-modal-figure-item noselect is-size-7 ${disabledStr}" data-ftype="figure" data-fid="${fid}" data-index="${index}">
         <span class="panel-icon fa-stack">
@@ -42,12 +42,10 @@ export function figureItem(name, fid, index, haslinkedcontent = false) {
 }
 
 export function breadcrumb(dataFid, fname) {
-  const fid = dataFid.includes(":")
-    ? dataFid.substring(dataFid.indexOf(":") + 1)
-    : dataFid;
-
-  if (fid == -1) {
-    return `<li>
+  const fid = dataFid.includes(':') ? dataFid.substring(dataFid.indexOf(':') + 1) : dataFid;
+  let element;
+  if (fid === -1) {
+    element = `<li>
                 <div class="fq-modal-folder-item" data-fid="${dataFid}">
                     <span class="icon">
                         <i class="fas fa-home"></i>
@@ -55,8 +53,9 @@ export function breadcrumb(dataFid, fname) {
                 </div>
             </li>`;
   } else {
-    return `<li class="breadcrumb-item" data-fid="${dataFid}">
+    element = `<li class="breadcrumb-item" data-fid="${dataFid}">
                 <a href="#" class="fq-modal-folder-item" data-fid="${dataFid}">${fname}</a>
             </li>`;
   }
+  return element;
 }
