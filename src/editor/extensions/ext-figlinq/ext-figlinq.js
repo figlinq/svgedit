@@ -110,7 +110,8 @@ export default {
               // in mm
               horizontal: 5,
               vertical: 10
-            };
+            },
+            fqToolsTopHeight = false;
           // const svgAttrWhitelist = ['class', 'height', 'width', 'x', 'y', 'id'];
           const fqPdfPageSizes = {
             A0: '2383.94x3370.39',
@@ -1540,6 +1541,41 @@ export default {
             }
           };
 
+          /**
+           * Adds resize observer to top toolbar and scroll on resize to maintain canvas position
+           * @returns {void}
+           */
+          const addObservers = () => {
+            const resizeObserver = new ResizeObserver(function(entries) {
+              // Set initial height
+              if (!fqToolsTopHeight) {
+                fqToolsTopHeight = $('#tools_top').height();
+                return;
+              }
+              // Get new height
+              const newHeight = entries[0].contentRect.height;
+              if (fqToolsTopHeight === newHeight) {
+                return;
+              }
+
+              const {workarea} = svgEditor;
+              // Set new scroll of canvas
+              let diff;
+              if (newHeight < fqToolsTopHeight) {
+                diff = fqToolsTopHeight - newHeight;
+                workarea.scrollTop = workarea.scrollTop - diff;
+              } else if (newHeight > fqToolsTopHeight) {
+                diff = newHeight - fqToolsTopHeight;
+                workarea.scrollTop = workarea.scrollTop + diff;
+              }
+              // Update current height
+              fqToolsTopHeight = newHeight;
+            });
+
+            // Start observing for top toolbar resize
+            resizeObserver.observe(document.querySelector('#tools_top'));
+          };
+
           const setModalConfirmBtnHandler = (handler, args = null) => {
             $('#fq-modal-confirm-btn-ok').unbind('click', onConfirmClear);
             $('#fq-modal-confirm-btn-ok').unbind('click', openFigure);
@@ -2117,8 +2153,8 @@ export default {
             if (newValue < 10) {
               newValue = 10;
             }
-            // eslint-disable-next-line no-magic-numbers
             if (isNaN(newValue)) {
+              // eslint-disable-next-line no-magic-numbers
               newValue = 80;
             }
             $(e.target).val(newValue);
@@ -2752,10 +2788,10 @@ export default {
 
             const svg = getSvgFromEditor();
             // IMPORTANT set to 'replace' if updating prod until new backend is live
-            const apiEndpoint = 'replace';
+            // const apiEndpoint = 'replace';
 
             // TODO set to 'upload' once new backend is live
-            // const apiEndpoint = "upload";
+            const apiEndpoint = 'upload';
 
             const imageBlob = new Blob([svg], {
               type: 'image/svg+xml'
@@ -2821,6 +2857,7 @@ export default {
           ensureRulesGrids();
           getFqUsername();
           setInteractiveOff();
+          addObservers();
           upgradeUi();
           adjustStyles();
           loadFqFigure();
