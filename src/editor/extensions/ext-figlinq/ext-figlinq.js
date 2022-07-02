@@ -211,6 +211,9 @@ export default {
 
             // Hide image URL input
             $('#image_url').hide()
+            $('#elem_id').hide()
+            $('#elem_class').hide()
+            $('#tool_length_adjust').hide()
           }
 
           // Fitting to content does not work
@@ -1911,7 +1914,7 @@ export default {
               'line_y2',
               'polySides',
               'image_width',
-              'image_height'
+              'image_height',
             ]
             ids.forEach(id => {
               style = document.createElement('style')
@@ -1920,6 +1923,15 @@ export default {
               document.getElementById(id).shadowRoot.appendChild(style)
             })
 
+            ids = [
+              'tool_length_adjust'
+            ]
+            ids.forEach(id => {
+              style = document.createElement('style')
+              style.innerHTML =
+                "label{ top: 4px; margin-right: 2px; margin-left: 2px; font-size: 12px; text-transform: capitalize;} label:after{ content: ':' }"
+              document.getElementById(id).shadowRoot.appendChild(style)
+            })
             document
               .querySelector('#se-cmenu_canvas')
               .shadowRoot.querySelector('.contextMenu')
