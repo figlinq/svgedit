@@ -139,8 +139,8 @@
 
       /* Content */
 
-      @font-face { font-family: 'Junction'; src: url(src/Junction02.otf); }
-      @font-face { font-family: 'LeagueGothic'; src: url(src/LeagueGothic.otf); }
+      /* @font-face { font-family: 'Junction'; src: url(src/Junction02.otf); }
+      @font-face { font-family: 'LeagueGothic'; src: url(src/LeagueGothic.otf); } */
 
       header {
         font-family: 'Droid Sans';

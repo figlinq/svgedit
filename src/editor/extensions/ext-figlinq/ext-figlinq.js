@@ -766,27 +766,23 @@ export default {
             const showGrid = svgEditor.configObj.curConfig.showGrid
             if (showGrid) {
               $('#fq-menu-view-show-grid')
-                .find('i')
-                .removeClass('fa-square')
-                .addClass('fa-check-square')
+                .find('.material-icons')
+                .text('check_box')
             } else {
               $('#fq-menu-view-show-grid')
-                .find('i')
-                .addClass('fa-square')
-                .removeClass('fa-check-square')
+                .find('.material-icons')
+                .text('check_box_outline_blank')
             }
 
             const showRulers = svgEditor.configObj.curConfig.showRulers
             if (showRulers) {
               $('#fq-menu-view-show-rulers')
-                .find('i')
-                .removeClass('fa-square')
-                .addClass('fa-check-square')
+              .find('.material-icons')
+              .text('check_box')
             } else {
-              $('#fq-menu-view-show-rulers')
-                .find('i')
-                .addClass('fa-square')
-                .removeClass('fa-check-square')
+                $('#fq-menu-view-show-rulers')
+                .find('.material-icons')
+                .text('check_box_outline_blank')
             }
           }
 
@@ -1100,11 +1096,11 @@ export default {
                 a.click()
                 window.URL.revokeObjectURL(blobUrl)
                 document.body.removeChild(a)
-              }
+              },
               // readable stream stub iplementation
-              // on: (event, action) => {},
-              // once: (...args) => {},
-              // emit: (...args) => {}
+              on: (_event, _action) => {},
+              once: (..._args) => {},
+              emit: (..._args) => {}
             })
             // eslint-disable-next-line new-cap
             SVGtoPDF(doc, svgString, 0, 0, {
@@ -1892,7 +1888,6 @@ export default {
 
           const adjustStyles = () => {
             let style, ids
-
             // Top panel input labels
             ids = [
               'selected_x',
@@ -1946,10 +1941,13 @@ export default {
               'elix-dropdown-list{ margin-left: 4px; margin-right: 4px} elix-dropdown-list:hover{ cursor: pointer; }'
             document.getElementById('tool_position').shadowRoot.appendChild(style)
 
-            // Color picker
+            // Color pickers
             style = document.createElement('style')
-            style.innerHTML = '#color_picker {top: 200px !important;}'
+            const style2 = document.createElement('style')
+            style.innerHTML = '#color_picker{top: 200px !important;} .jGraduate_Form_Section{width:124px !important;margin:0px 2px !important;padding:10px 0 5px 0 !important;}'
+            style2.innerHTML = '#color_picker{top: 200px !important;} .jGraduate_Form_Section{width:124px !important;margin:0px 2px !important;padding:10px 0 5px 0 !important;}'
             document.getElementById('fill_color').shadowRoot.appendChild(style)
+            document.getElementById('stroke_color').shadowRoot.appendChild(style2)
 
             // Symbol library menu
             style = document.createElement('style')
@@ -2181,14 +2179,12 @@ export default {
             const showGrid = svgEditor.configObj.curConfig.showGrid
             if (showGrid) {
               $('#fq-menu-view-show-grid')
-                .find('i')
-                .removeClass('fa-square')
-                .addClass('fa-check-square')
+                .find('.material-icons')
+                .text('check_box')
             } else {
               $('#fq-menu-view-show-grid')
-                .find('i')
-                .addClass('fa-square')
-                .removeClass('fa-check-square')
+                .find('.material-icons')
+                .text('check_box_outline_blank')
             }
           })
 
@@ -2196,14 +2192,12 @@ export default {
             const showRulers = svgEditor.configObj.curConfig.showRulers
             if (!showRulers) {
               $('#fq-menu-view-show-rulers')
-                .find('i')
-                .removeClass('fa-square')
-                .addClass('fa-check-square')
+              .find('.material-icons')
+              .text('check_box')
             } else {
-              $('#fq-menu-view-show-rulers')
-                .find('i')
-                .addClass('fa-square')
-                .removeClass('fa-check-square')
+                $('#fq-menu-view-show-rulers')
+                .find('.material-icons')
+                .text('check_box_outline_blank')
             }
             svgEditor.configObj.curConfig.showRulers = !showRulers
             svgEditor.rulers.display(!showRulers)

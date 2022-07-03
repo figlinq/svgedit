@@ -81,11 +81,14 @@
   margin-right: 4px;
   background-color: var(--input-color);
   border-radius: 3px;
+  max-height: 22px !important;  
 }
 
 #zoom select {
   background-color: #b2b2b2;
   border: 0;
+  max-height: 23px !important;
+  padding-top: 2px !important;
 }
 
 #title_panel {
@@ -128,9 +131,6 @@ html {
 @media screen and (min-width: 1024px) {
   #fq-primary-navbar {
     min-height: 60px !important;
-  }
-  #fq-secondary-navbar {
-    min-height: 20px !important;
   }
 }
 
@@ -245,17 +245,25 @@ se-select {
   background-color: #0d6b9e;
 }
 
+.dropdown-item:hover {
+  background-color: #0d6b9e !important;
+  color: white !important;
+}
+
 .fq-navbar-link {
   padding: 2px 10px 4px 10px;
-  /* background-color: #074d73;  
-  border-radius: 5px; */
+}
+
+.fq-navbar-link:hover {
+  background-color: #dbdada;
 }
 
 #fq-secondary-navbar {
   z-index: 29;
-  max-height: 28px !important;
+  height: 28px !important;
   background-color: #e5e5e5;
 }
+
 #fq-secondary-navbar .navbar-link.is-arrowless,
 #fq-secondary-navbar .dropdown-trigger.is-arrowless {
   padding-top: 0px;
