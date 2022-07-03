@@ -1490,6 +1490,9 @@ export default {
                 newId = '__' + curId
                 $(this).attr('id', newId)
 
+                console.log(jQuery(this))
+                console.log($(this))
+
                 attrArray[newId] = getAttributes(jQuery(this))
 
                 if ($(this).hasClass('fq-image')) {

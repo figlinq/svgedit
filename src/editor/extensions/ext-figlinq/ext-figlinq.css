@@ -59,11 +59,12 @@
   font-size: 11px;
   line-height: 14px;
   display: flex;
+  top: 86px;
 }
 
 #fq-powered-by-svgedit strong {
   color: white !important;
-  font-weight: bold;
+  font-weight: bold;  
 }
 
 #fq-spinner {
@@ -130,15 +131,6 @@ html {
   }
   #fq-secondary-navbar {
     min-height: 20px !important;
-  }
-  #fq-powered-by-svgedit {
-    top: 86px;
-  }
-}
-
-@media screen and (max-width: 1023px) {
-  #fq-powered-by-svgedit {
-    top: 60px;
   }
 }
 
@@ -264,7 +256,8 @@ se-select {
   max-height: 28px !important;
   background-color: #e5e5e5;
 }
-#fq-secondary-navbar .navbar-link.is-arrowless {
+#fq-secondary-navbar .navbar-link.is-arrowless,
+#fq-secondary-navbar .dropdown-trigger.is-arrowless {
   padding-top: 0px;
   padding-bottom: 0px;
   padding-left: 0.5em;
