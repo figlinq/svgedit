@@ -1,3 +1,5 @@
+/* eslint-disable no-loop-func */
+/* eslint-disable no-undef */
 /* eslint-disable consistent-return */
 /* eslint-disable no-use-before-define */
 /* eslint-disable no-invalid-this */
@@ -32,8 +34,7 @@ export default {
     return {
       name: svgEditor.i18next.t(`${name}:name`),
       callback() {
-        (function($) {
-          $(document).keydown(function(e) {
+          jQuery(document).keydown(function(e) {
             // Ctrl + z (undo)
             const zKeyCode = 90
             const yKeyCode = 89
@@ -58,7 +59,7 @@ export default {
             }
           })
 
-          $(window).bind('mousewheel DOMMouseScroll', function(event) {
+          jQuery(window).bind('mousewheel DOMMouseScroll', function(event) {
             let r = true
             if (event.ctrlKey === true) {
               event.preventDefault()
@@ -68,7 +69,7 @@ export default {
             return r
           })
 
-          $('.modal').bind('mousewheel DOMMouseScroll', function(event) {
+          jQuery('.modal').bind('mousewheel DOMMouseScroll', function(event) {
             let r = true
             if (event.ctrlKey === true) {
               event.preventDefault()
@@ -207,13 +208,13 @@ export default {
               <option value="layer">Fit to content</option>
             </select>
           </div>`
-            $('#zoom').replaceWith(element)
+            jQuery('#zoom').replaceWith(element)
 
             // Hide image URL input
-            $('#image_url').hide()
-            $('#elem_id').hide()
-            $('#elem_class').hide()
-            $('#tool_length_adjust').hide()
+            jQuery('#image_url').hide()
+            jQuery('#elem_id').hide()
+            jQuery('#elem_class').hide()
+            jQuery('#tool_length_adjust').hide()
           }
 
           // Fitting to content does not work
@@ -222,9 +223,9 @@ export default {
 
           const showZoomWarning = () => {
             const delay = 1250
-            $('#fq-modal-warning-zoom').addClass('is-active')
+            jQuery('#fq-modal-warning-zoom').addClass('is-active')
             setTimeout(function() {
-              $('#fq-modal-warning-zoom').removeClass('is-active')
+              jQuery('#fq-modal-warning-zoom').removeClass('is-active')
             }, delay)
           }
 
@@ -235,32 +236,32 @@ export default {
             })
               .done(function(data) {
                 if (data.username) {
-                  $('#fq-menu-login-btn').addClass('is-hidden')
-                  $('#fq-menu-signup-btn').addClass('is-hidden')
-                  $('.fq-menu-add-content-btn').removeClass('is-hidden')
-                  $('#fq-menu-interact-switch-item').removeClass('is-hidden')
-                  $('#fq-menu-file-open-figure').removeClass('is-hidden')
-                  $('#fq-menu-file-save-figure').removeClass('is-hidden')
-                  $('#fq-menu-file-save-figure-as').removeClass('is-hidden')
-                  $('#fq-menu-file-import-local-content').removeClass('is-hidden')
-                  $('#fq-breadcrumb-item-home')
+                  jQuery('#fq-menu-login-btn').addClass('is-hidden')
+                  jQuery('#fq-menu-signup-btn').addClass('is-hidden')
+                  jQuery('.fq-menu-add-content-btn').removeClass('is-hidden')
+                  jQuery('#fq-menu-interact-switch-item').removeClass('is-hidden')
+                  jQuery('#fq-menu-file-open-figure').removeClass('is-hidden')
+                  jQuery('#fq-menu-file-save-figure').removeClass('is-hidden')
+                  jQuery('#fq-menu-file-save-figure-as').removeClass('is-hidden')
+                  jQuery('#fq-menu-file-import-local-content').removeClass('is-hidden')
+                  jQuery('#fq-breadcrumb-item-home')
                     .data('fid', `${data.username}:-1`)
                     .find('.fq-modal-folder-item')
                     .data('fid', `${data.username}:-1`)
 
                   fqUsername = data.username
-                  $('#fq-menu-account-user-name').html(fqUsername.slice(0, 2))
-                  $('#fq-menu-account-dropdown-user-name').html(fqUsername)
-                  $('#fq-menu-account-navbar-item1').removeClass('is-hidden')
-                  $('#fq-menu-account-navbar-item2').removeClass('is-hidden')
+                  jQuery('#fq-menu-account-user-name').html(fqUsername.slice(0, 2))
+                  jQuery('#fq-menu-account-dropdown-user-name').html(fqUsername)
+                  jQuery('#fq-menu-account-navbar-item1').removeClass('is-hidden')
+                  jQuery('#fq-menu-account-navbar-item2').removeClass('is-hidden')
 
-                  $('#fq-user-link-files').attr('href', baseUrl + 'organize/home')
-                  $('#fq-user-link-charts').attr('href', baseUrl + 'create')
-                  $('#fq-user-link-figures').attr('href', baseUrl + 'figures')
-                  $('#fq-user-link-collections').attr('href', baseUrl + 'dashboard/create')
+                  jQuery('#fq-user-link-files').attr('href', baseUrl + 'organize/home')
+                  jQuery('#fq-user-link-charts').attr('href', baseUrl + 'create')
+                  jQuery('#fq-user-link-figures').attr('href', baseUrl + 'figures')
+                  jQuery('#fq-user-link-collections').attr('href', baseUrl + 'dashboard/create')
 
-                  $('#fq-menu-account-sign-out').attr('href', baseUrl + 'signout')
-                  $('#fq-menu-account-settings').attr('href', baseUrl + 'settings/profile')
+                  jQuery('#fq-menu-account-sign-out').attr('href', baseUrl + 'signout')
+                  jQuery('#fq-menu-account-settings').attr('href', baseUrl + 'settings/profile')
 
                   fqCsrfToken = data.csrf_token
                 } else {
@@ -271,22 +272,22 @@ export default {
                 }
               })
               .fail(function() {
-                $('#fq-menu-login-btn').removeClass('is-hidden')
-                $('#fq-menu-signup-btn').removeClass('is-hidden')
-                $('.fq-menu-add-content-btn').addClass('is-hidden')
-                $('.fq-menu-add-content-btn').addClass('is-hidden')
-                $('.fq-menu-add-content-btn').addClass('is-hidden')
-                $('.fq-menu-add-content-btn').addClass('is-hidden')
+                jQuery('#fq-menu-login-btn').removeClass('is-hidden')
+                jQuery('#fq-menu-signup-btn').removeClass('is-hidden')
+                jQuery('.fq-menu-add-content-btn').addClass('is-hidden')
+                jQuery('.fq-menu-add-content-btn').addClass('is-hidden')
+                jQuery('.fq-menu-add-content-btn').addClass('is-hidden')
+                jQuery('.fq-menu-add-content-btn').addClass('is-hidden')
                 showToast('Could not connect to FiglinQ - are you logged in?', 'is-danger')
               })
           }
 
           const setInteractiveOff = () => {
-            $('#fq-menu-interact-switch').prop('checked', false)
-            const fObjects = $("svg[class='fq-fobj-container']")
+            jQuery('#fq-menu-interact-switch').prop('checked', false)
+            const fObjects = jQuery("svg[class='fq-fobj-container']")
             fObjects.each(function() {
-              const ref_id = $(this).data('ref_id')
-              $('#' + ref_id).attr('visibility', 'visible')
+              const ref_id = jQuery(this).data('ref_id')
+              jQuery('#' + ref_id).attr('visibility', 'visible')
               this.remove()
             })
           }
@@ -295,11 +296,11 @@ export default {
             svgCanvas.clearSelection()
 
             // Get all plots
-            const plots = $('.fq-plot')
+            const plots = jQuery('.fq-plot')
 
             let plot, foreignObject
             plots.each(function() {
-              plot = $(this)
+              plot = jQuery(this)
 
               // Generate foreignObject JSON
               foreignObject = generateForeignObject(plot)
@@ -314,36 +315,36 @@ export default {
 
           const updateBreadcrumb = (fid, fname) => {
             let fidPresent = false
-            $('.breadcrumb-item').each(function() {
-              if ($(this).data('fid') === fid) {
+            jQuery('.breadcrumb-item').each(function() {
+              if (jQuery(this).data('fid') === fid) {
                 fidPresent = true
               }
             })
 
             if (fidPresent) {
-              $(
-                $('.breadcrumb-item')
+              jQuery(
+                jQuery('.breadcrumb-item')
                   .get()
                   .reverse()
               ).each(function() {
                 let r = true
-                if ($(this).data('fid') === fid) {
+                if (jQuery(this).data('fid') === fid) {
                   r = false
                 } else {
-                  $(this).remove()
+                  jQuery(this).remove()
                 }
                 return r
               })
             } else if (fname) {
-              $(breadcrumb(fid, fname)).insertAfter('.breadcrumb-item:last')
+              jQuery(breadcrumb(fid, fname)).insertAfter('.breadcrumb-item:last')
             } else {
-              $('.breadcrumb-item:not(#fq-breadcrumb-item-home)').remove()
+              jQuery('.breadcrumb-item:not(#fq-breadcrumb-item-home)').remove()
             }
           }
 
           const getSortedElems = (selector, attrName) => {
-            return $(
-              $(selector)
+            return jQuery(
+              jQuery(selector)
                 .toArray()
                 .sort((a, b) => {
                   const aVal = parseInt(a.getAttribute(attrName), 10),
@@ -383,9 +384,9 @@ export default {
             } else if (add) {
               // preload multiple files, open modal
               const fidArray = add.split(',')
-              const checked = $('#fq-menu-interact-switch').is(':checked')
+              const checked = jQuery('#fq-menu-interact-switch').is(':checked')
               if (checked) {
-                $('#fq-menu-interact-switch').click()
+                jQuery('#fq-menu-interact-switch').click()
               }
               fqModalFileTabMode = 'preselected'
               showModalSpinner()
@@ -468,9 +469,9 @@ export default {
                   data: dataFormatted,
                   fids: dataFid
                 }
-                $('.fq-modal-file-tab').removeClass('is-active')
-                $('#fq-modal-file-tab-preselected').removeClass('is-hidden')
-                $('#fq-modal-file-tab-preselected').addClass('is-active')
+                jQuery('.fq-modal-file-tab').removeClass('is-active')
+                jQuery('#fq-modal-file-tab-preselected').removeClass('is-hidden')
+                jQuery('#fq-modal-file-tab-preselected').addClass('is-active')
                 populateFileModal(dataFormatted)
               })
               return
@@ -510,21 +511,21 @@ export default {
           }
 
           // const resetPlotImageUrls = () => {
-          //   const plotImages = $('.fq-plot')
+          //   const plotImages = jQuery('.fq-plot')
           //   plotImages.each(function() {
-          //     const href = $(this).attr('href')
+          //     const href = jQuery(this).attr('href')
           //     const hrefCleaned = href.split('#')[0]
-          //     $(this).attr('href', hrefCleaned)
+          //     jQuery(this).attr('href', hrefCleaned)
           //   })
           // }
 
           const populateFileModal = data => {
-            $('#fq-modal-files-open-figure-confirm').prop('disabled', true)
-            const val = $('#fq-modal-save-name-input').val()
+            jQuery('#fq-modal-files-open-figure-confirm').prop('disabled', true)
+            const val = jQuery('#fq-modal-save-name-input').val()
             if (val.length) {
-              $('#fq-modal-save-confirm-btn').prop('disabled', false)
+              jQuery('#fq-modal-save-confirm-btn').prop('disabled', false)
             } else {
-              $('#fq-modal-save-confirm-btn').prop('disabled', true)
+              jQuery('#fq-modal-save-confirm-btn').prop('disabled', true)
             }
             let index = 0,
               page = 1
@@ -563,37 +564,45 @@ export default {
             })
 
             if (data.children.next === null) {
-              $('.panel-list-item').remove()
-              $('#fq-modal-item-list-container').html(fqItemListFolder + fqItemListFile)
-              $('#fq-modal-refresh-btn').removeClass('is-loading')
+              jQuery('.panel-list-item').remove()
+              jQuery('#fq-modal-item-list-container').html(fqItemListFolder + fqItemListFile)
+              jQuery('#fq-modal-refresh-btn').removeClass('is-loading')
             } else {
               page = page + 1
               updateItemList(data.fid, page)
             }
             const items = results.length === 1 ? 'item' : 'items'
-            $('#fq-modal-file-search-items-found').text(results.length + ' ' + items + ' found')
+            jQuery('#fq-modal-file-search-items-found').text(results.length + ' ' + items + ' found')
             if (fqItemListPreselected && fqModalFileTabMode === 'preselected') {
               fqItemListPreselected.fids.forEach(fid => {
-                const isDisabled = $("*[data-fid='" + fid + "']").hasClass('is-disabled')
+                const isDisabled = jQuery("*[data-fid='" + fid + "']").hasClass('is-disabled')
                 if (!isDisabled) {
-                  $("*[data-fid='" + fid + "']").addClass('is-active')
+                  jQuery("*[data-fid='" + fid + "']").addClass('is-active')
                 }
 
-                $('#fq-modal-add-confirm-btn').prop('disabled', false)
+                jQuery('#fq-modal-add-confirm-btn').prop('disabled', false)
               })
             }
 
             if (fqHighlightedFids) {
               fqHighlightedFids.forEach(fid => {
-                $("*[data-fid='" + fid + "']").addClass('is-active')
+                jQuery("*[data-fid='" + fid + "']").addClass('is-active')
               })
               fqHighlightedFids = false
             }
             hideModalSpinner()
           }
 
-          const generateForeignObject = currentImg => {
-            const imgHref = currentImg.attr('href')
+          const getElementHref = (element) => {
+            let href = jQuery(element).attr('href')
+            if (typeof href === 'undefined' || href === false || href === null) {
+              href = jQuery(element).attr('xlink:href')
+            }
+            return href
+          }
+
+          const generateForeignObject = async currentImg => {
+            const imgHref = getElementHref(currentImg)
             const contentHref = decodeURIComponent(currentImg.data('content_href'))
 
             const contentHrefGuess = imgHref.replace('.svg', '.embed')
@@ -765,22 +774,22 @@ export default {
           const ensureRulesGrids = () => {
             const showGrid = svgEditor.configObj.curConfig.showGrid
             if (showGrid) {
-              $('#fq-menu-view-show-grid')
+              jQuery('#fq-menu-view-show-grid')
                 .find('.material-icons')
                 .text('check_box')
             } else {
-              $('#fq-menu-view-show-grid')
+              jQuery('#fq-menu-view-show-grid')
                 .find('.material-icons')
                 .text('check_box_outline_blank')
             }
 
             const showRulers = svgEditor.configObj.curConfig.showRulers
             if (showRulers) {
-              $('#fq-menu-view-show-rulers')
+              jQuery('#fq-menu-view-show-rulers')
               .find('.material-icons')
               .text('check_box')
             } else {
-                $('#fq-menu-view-show-rulers')
+                jQuery('#fq-menu-view-show-rulers')
                 .find('.material-icons')
                 .text('check_box_outline_blank')
             }
@@ -788,24 +797,24 @@ export default {
 
           const closeModalOnEscape = e => {
             if (e.key === 'Escape') {
-              $('#fq-modal-file').removeClass('is-active')
-              $(document).unbind('keyup', closeModalOnEscape)
+              jQuery('#fq-modal-file').removeClass('is-active')
+              jQuery(document).unbind('keyup', closeModalOnEscape)
             }
           }
 
           const refreshModalContents = (fidArray = false) => {
             fqItemListFolder = ''
             fqItemListFile = ''
-            $('#fq-modal-file').addClass('is-active')
-            $(document).keyup(closeModalOnEscape)
+            jQuery('#fq-modal-file').addClass('is-active')
+            jQuery(document).keyup(closeModalOnEscape)
 
-            let q = $('#fq-modal-file-search-input').val()
+            let q = jQuery('#fq-modal-file-search-input').val()
             if (q && fqModalFileTabMode === 'my') {
-              $('#fq-modal-file-search-icon').removeClass('fas fa-search')
-              $('#fq-modal-file-search-icon').addClass('far fa-times-circle')
+              jQuery('#fq-modal-file-search-icon').removeClass('fas fa-search')
+              jQuery('#fq-modal-file-search-icon').addClass('far fa-times-circle')
             } else {
-              $('#fq-modal-file-search-icon').removeClass('far fa-times-circle')
-              $('#fq-modal-file-search-icon').addClass('fas fa-search')
+              jQuery('#fq-modal-file-search-icon').removeClass('far fa-times-circle')
+              jQuery('#fq-modal-file-search-icon').addClass('fas fa-search')
             }
 
             q = q.length >= 2 ? q : false
@@ -815,12 +824,12 @@ export default {
               updateItemList(fidArray, 1, q)
             } else if (q && fqModalFileTabMode === 'my') {
               // Search query present, "My files" tab
-              $('#fq-modal-file-search-title').removeClass('is-hidden')
-              $('#fq-modal-file-panel-breadcrumb').addClass('is-hidden')
+              jQuery('#fq-modal-file-search-title').removeClass('is-hidden')
+              jQuery('#fq-modal-file-panel-breadcrumb').addClass('is-hidden')
               updateItemList('shared', 1, q)
             } else {
-              $('#fq-modal-file-search-title').addClass('is-hidden')
-              $('#fq-modal-file-panel-breadcrumb').removeClass('is-hidden')
+              jQuery('#fq-modal-file-search-title').addClass('is-hidden')
+              jQuery('#fq-modal-file-panel-breadcrumb').removeClass('is-hidden')
 
               if (fqSelectedFolderId[fqModalFileTabMode]) {
                 updateItemList(fqSelectedFolderId[fqModalFileTabMode], 1)
@@ -880,7 +889,7 @@ export default {
           }
 
           const onConfirmClear = async function() {
-            $('#fq-modal-confirm').removeClass('is-active')
+            jQuery('#fq-modal-confirm').removeClass('is-active')
 
             // Remove fid from url
             const currentUrl = new URL(document.location)
@@ -904,6 +913,23 @@ export default {
             }, delay)
           }
 
+          const processSvgString = function(stringIn){
+            // Replace href attributes
+            const doc = new DOMParser().parseFromString(stringIn, 'application/xml')
+            const svg = jQuery(doc.documentElement)[0]
+            const attr = jQuery(svg).attr('xmlns:xlink');
+            if (typeof attr === 'undefined' || attr === false) {
+              jQuery(svg).attr('xmlns:xlink', NS.XLINK)
+            }
+            jQuery(svg).find("image").each(async function(){
+              const href = getElementHref(jQuery(this))
+              jQuery(this).removeAttr('href')
+              jQuery(this).attr('xlink:href', href)
+            })
+            const serializer = new XMLSerializer()
+            return serializer.serializeToString(svg)
+          }
+
           const openFigure = async function(e) {
             const url = baseUrl + 'v2/external-images/' + e.data.fid
 
@@ -921,8 +947,9 @@ export default {
                 }
                 const dataUrl = data.image_content
                 const svgString = decodeBase64(dataUrl.split(',')[1])
-                svgEditor.loadSvgString(svgString)
-                $('#fq-modal-confirm').removeClass('is-active')
+                const svgStringProcessed = processSvgString(svgString)
+                svgEditor.loadSvgString(svgStringProcessed)
+                jQuery('#fq-modal-confirm').removeClass('is-active')
                 fqCurrentFigData = data
                 if (
                   typeof fqCurrentFigData.metadata === 'string' ||
@@ -937,50 +964,35 @@ export default {
                 showToast('File "' + data.filename + '" loaded', 'is-success')
 
                 // Add fid to url
+                const initialUrl = new URL(document.location)
                 const currentUrl = new URL(document.location)
                 currentUrl.searchParams.set('fid', data.fid)
-                window.history.pushState(null, null, decodeURIComponent(currentUrl.href))
+                if (decodeURIComponent(currentUrl.href) !== initialUrl.href){
+                  window.history.pushState(null, null, decodeURIComponent(currentUrl.href))
+                }
               })
               .fail(function() {
                 showToast('This file could not be loaded', 'is-danger')
               })
           }
 
-          const inlineRasterImage = async function(imgId) {
-            const imgUrl = $('#' + imgId).attr('href')
-
-            const fetchResult = await fetch(imgUrl, {
-              method: 'GET',
-              mode: 'cors',
-              credentials: 'include',
-              headers: {
-                'X-CSRFToken': fqCsrfToken
-              }
-            }).then(async r => {
-              const blob = await r.blob()
-              const type = r.headers.get('Content-Type')
-              return {blob, type}
+          const inlineRasterImage = imgUrl => {
+            return new Promise(resolve => {
+              fetch(imgUrl, {
+                method: 'GET',
+                mode: 'cors',
+                credentials: 'include',
+                headers: {
+                  'X-CSRFToken': fqCsrfToken
+                }
+              })
+              .then(response => response.blob())
+              .then(blob => resolve(blob))
             })
-
-            const dataUrl = await new Promise(resolve => {
-              const reader = new FileReader()
-              reader.onload = () => resolve(reader.result)
-              reader.readAsDataURL(fetchResult.blob)
-            })
-            const imgType = dataUrl.substring(dataUrl.indexOf(':') + 1, dataUrl.indexOf(';'))
-            // Run PNG images through HTML canvas to fix potential interlacing issues
-            let imgSanitized
-            if (imgType === 'image/png') {
-              const imageObj = await runImageThroughCanvas(dataUrl)
-              imgSanitized = imageObj.dataURL
-            } else {
-              imgSanitized = dataUrl
-            }
-            $('#' + imgId).attr('href', imgSanitized)
           }
 
-          const runImageThroughCanvas = input =>
-            new Promise(resolve => {
+          const runImageThroughCanvas = input => {
+            return new Promise(resolve => {
               const img = new Image()
               img.onload = function() {
                 let canvas = document.createElement('CANVAS')
@@ -994,25 +1006,18 @@ export default {
               }
               img.src = input
             })
+          }
 
-          const inlineSvgImage = async function(imgId) {
-            const imgUrl = $('#fq-svg-container')
-              .find('#' + imgId)
-              .attr('href')
-
-            await fetch(imgUrl, {
-              method: 'GET',
-              mode: 'cors',
-              credentials: 'include'
-            })
-              .then(result => result.text())
-              .then(text => {
-                const replacedObj = $('#fq-svg-container').find('#' + imgId)
-                const doc = new DOMParser().parseFromString(text, 'application/xml')
-                const newObj = $(doc.documentElement).replaceAll(replacedObj)
-
-                $(newObj).attr('id', imgId)
+          const inlineSvgImage = imgUrl => {
+            return new Promise(resolve => {              
+              fetch(imgUrl, {
+                method: 'GET',
+                mode: 'cors',
+                credentials: 'include'
               })
+                .then(response => response.text())
+                .then(text => resolve(text))
+            })
           }
 
           const svgToRaster = svgString => {
@@ -1073,7 +1078,7 @@ export default {
           }
 
           const svgToPdf = svgString => {
-            const docDimsStr = $('#fq-modal-export-size-select').val()
+            const docDimsStr = jQuery('#fq-modal-export-size-select').val()
             const docDims = docDimsStr.split('x')
 
             const doc = new PDFDocument({size: fqExportDocSize})
@@ -1111,26 +1116,14 @@ export default {
             doc.end()
           }
 
-          const inlineRasterImageLoop = async function(imgIdArray) {
-            for (const imgId of imgIdArray) {
-              await inlineRasterImage(imgId)
-            }
-          }
-
-          const inlineSvgImageLoop = async function(imgIdArray) {
-            for (const imgId of imgIdArray) {
-              await inlineSvgImage(imgId)
-            }
-          }
-
           const updateExportFormSizeSelect = options => {
-            $('#fq-modal-export-size-select')
+            jQuery('#fq-modal-export-size-select')
               .find('option')
               .remove()
 
             $.each(options, function(key, value) {
-              $('#fq-modal-export-size-select').append(
-                $('<option></option>')
+              jQuery('#fq-modal-export-size-select').append(
+                jQuery('<option></option>')
                   .attr('value', value)
                   .text(key)
               )
@@ -1146,8 +1139,8 @@ export default {
               }
             )
             draggable.on('drag:stop', data => {
-              const pos = $('.draggable-mirror').position()
-              $(data.originalSource).css({
+              const pos = jQuery('.draggable-mirror').position()
+              jQuery(data.originalSource).css({
                 position: 'fixed',
                 left: pos.left,
                 top: pos.top
@@ -1156,20 +1149,20 @@ export default {
           }
 
           const updateExportFormState = () => {
-            const format = $('#fq-modal-export-format-select').val()
+            const format = jQuery('#fq-modal-export-format-select').val()
             if (format === 'jpeg') {
-              $('[id^="fq-modal-export-quality"]').prop('disabled', false)
-              $('[id^="fq-modal-export-size"]').prop('disabled', false)
+              jQuery('[id^="fq-modal-export-quality"]').prop('disabled', false)
+              jQuery('[id^="fq-modal-export-size"]').prop('disabled', false)
               updateExportFormSizeSelect(fqExportFileFormats)
-              $('#fq-modal-export-size-select').val(1)
+              jQuery('#fq-modal-export-size-select').val(1)
             } else if (format === 'png' || format === 'bmp') {
-              $('[id^="fq-modal-export-quality"]').prop('disabled', true)
+              jQuery('[id^="fq-modal-export-quality"]').prop('disabled', true)
               updateExportFormSizeSelect(fqExportFileFormats)
-              $('#fq-modal-export-size-select').val(1)
+              jQuery('#fq-modal-export-size-select').val(1)
             } else {
-              $('[id^="fq-modal-export-quality"]').prop('disabled', true)
+              jQuery('[id^="fq-modal-export-quality"]').prop('disabled', true)
               updateExportFormSizeSelect(fqPdfPageSizes)
-              $('#fq-modal-export-size-select').val(fqPdfPageSizes.A4)
+              jQuery('#fq-modal-export-size-select').val(fqPdfPageSizes.A4)
             }
           }
 
@@ -1193,10 +1186,10 @@ export default {
             keepOriginalOrder = false
           ) => {
             elems.forEach(item => {
-              const isPlot = $(item).hasClass('fq-plot') && $(item).is('image')
-              const isGroup = $(item).is('g')
+              const isPlot = jQuery(item).hasClass('fq-plot') && jQuery(item).is('image')
+              const isGroup = jQuery(item).is('g')
               if (isPlot) {
-                const originalWH = $(item)
+                const originalWH = jQuery(item)
                   .data('original_dimensions')
                   .split(',')
                 const bBox = item.getBBox()
@@ -1207,7 +1200,7 @@ export default {
                   y: bBox.y,
                   originalWidth: parseFloat(originalWH[0]),
                   originalHeight: parseFloat(originalWH[1]),
-                  fid: $(item).data('fid')
+                  fid: jQuery(item).data('fid')
                 }
                 currentElemProps.elem = item
 
@@ -1220,7 +1213,7 @@ export default {
                 plotElems.push(currentElemProps)
               } else if (isGroup && descendIntoGroups) {
                 return findPlots(
-                  $(item)
+                  jQuery(item)
                     .children()
                     .toArray(),
                   plotElems
@@ -1233,7 +1226,7 @@ export default {
           }
 
           const adjustPlots = async () => {
-            const equalizeProps = $('#fq-modal-adjust-property-equalize').is(':checked')
+            const equalizeProps = jQuery('#fq-modal-adjust-property-equalize').is(':checked')
 
             const selElems = svgCanvas.getSelectedElements()
             const i = selElems.length
@@ -1259,8 +1252,8 @@ export default {
               const plotElems = plotElems[k]
               const elem = plotElems[k].elem
               const csrfToken = fqCsrfToken
-              const fid = $(elem).data('fid')
-              const href = $(elem).attr('href')
+              const fid = jQuery(elem).data('fid')
+              const href = await getElementHref(jQuery(elem))
               const plotUrl = `${baseUrl}v2/plots/${fid}/content`
               await fetch(plotUrl, {
                 method: 'GET',
@@ -1275,12 +1268,12 @@ export default {
                 })
                 .then(resultJson => {
                   // Update properties
-                  $('.fq-modal-adjust-checkbox')
+                  jQuery('.fq-modal-adjust-checkbox')
                     .filter(':checked')
                     .map(() => {
-                      const property = $(this).data('property')
+                      const property = jQuery(this).data('property')
                       const propertyPath = property.split('-')
-                      const value = $(`input[data-property='${property}'][type='text']`).val()
+                      const value = jQuery(`input[data-property='${property}'][type='text']`).val()
                       const valueScaled = equalizeProps ? value / elem.scale : value
                       setDeep(resultJson, propertyPath, valueScaled, true)
                     })
@@ -1328,7 +1321,7 @@ export default {
                         'X-CSRFToken': csrfToken
                       }
                     }).then(() => {
-                      $(elem).attr('href', href + '#' + new Date().getTime())
+                      jQuery(elem).attr('xlink:href', href + '#' + new Date().getTime())
                     })
                   })
                 })
@@ -1463,70 +1456,115 @@ export default {
 
           const exportImageFromEditor = async () => {
             // Empty temp div
-            // $("#fq-svg-container").empty()
+            jQuery("#fq-svg-container").empty()
 
             // Clone SVG into temp div
 
             const svgString = svgCanvas.svgCanvasToString()
 
             const doc = new DOMParser().parseFromString(svgString, 'application/xml')
-            $('#fq-svg-container').append(doc.documentElement)
+            jQuery('#fq-svg-container').append(doc.documentElement)
 
             // Inline raster images and plots
-            const fqElements = $('#fq-svg-container').find('.fq-image, .fq-plot')
-            const imageIdArray = []
-            const plotIdArray = []
-            const attrArray = {}
-            let curId
-            let newId
+            var fqElements = jQuery('#svgcontent').find('.fq-image, .fq-plot')
+            var itemArray = []
+            var attrArray = {}
+            var curId
+            var newId
 
             if (fqElements.length) {
-              $(fqElements).each(() => {
-                curId = $(this).attr('id')
+              jQuery(fqElements).each(function() {
+                curId = jQuery(this).attr('id')
                 newId = '__' + curId
-                $(this).attr('id', newId)
-
-                console.log(jQuery(this))
-                console.log($(this))
+                jQuery('#fq-svg-container').find(`[id='${curId}']`).attr('id', newId)
 
                 attrArray[newId] = getAttributes(jQuery(this))
 
-                if ($(this).hasClass('fq-image')) {
-                  imageIdArray.push(newId)
-                } else if ($(this).hasClass('fq-plot')) {
-                  plotIdArray.push(newId)
+                if (jQuery(this).hasClass('fq-image')) {
+                  itemArray.push(
+                    {
+                      id: newId,
+                      type: 'image',
+                      url: getElementHref(this)
+                    })
+                } else if (jQuery(this).hasClass('fq-plot')) {
+                  itemArray.push(
+                    {
+                      id: newId,
+                      type: 'plot',
+                      url: getElementHref(this)
+                    })
                 }
               })
+              const imageActions = itemArray.map(function(item) {
+                return item.type === 'plot' 
+                  ? inlineSvgImage(item.url) 
+                  : inlineRasterImage(item.url)
+              })
+              const data = await Promise.all(imageActions)
 
-              if (imageIdArray.length) {
-                await inlineRasterImageLoop(imageIdArray)
-              }
-              if (plotIdArray.length) {
-                await inlineSvgImageLoop(plotIdArray)
-              }
+              const replacements = data.map(function(result, index){
+                let promise;
+                if (itemArray[index].type === 'plot') {
+                  promise = new Promise(resolve => {
+                    var elem = new DOMParser().parseFromString(
+                      result,
+                      "application/xml"
+                      ).documentElement;
+                    jQuery(elem).attr("id", itemArray[index].id);
+                    jQuery("#fq-svg-container").find("#" + itemArray[index].id).replaceWith(elem);
+                    resolve()
+                  })
+                } else {
+                  promise = new Promise(resolve => {
+                    const dataUrlPromise = new Promise(resolve => {
+                      const reader = new FileReader()
+                      reader.onload = () => resolve(reader.result)
+                      reader.readAsDataURL(result)
+                    })
 
-              let curAttrObj
-              for (const curId in attrArray) {
-                const isImage = $('#' + curId).hasClass('fq-image')
-                curAttrObj = attrArray[curId]
-                for (const curAttr in curAttrObj) {
-                  if (!(curAttr === 'href' && isImage)) {
-                    $('#' + curId).attr(curAttr, curAttrObj[curAttr])
-                  }
+                    dataUrlPromise.then(dataUrl => {
+                      const imgType = dataUrl.substring(dataUrl.indexOf(':') + 1, dataUrl.indexOf(';'))
+                      // Run PNG images through HTML canvas to fix potential interlacing issues
+                      let imgSanitized
+                      if (imgType === 'image/png') {
+                        const imageObj = runImageThroughCanvas(dataUrl)
+                        imageObj.then(data =>{
+                            imgSanitized = data.dataURL
+                            jQuery("#fq-svg-container").find('#' + itemArray[index].id).attr('href', imgSanitized)
+                            resolve()
+                          }
+                        )
+                      } else {
+                        imgSanitized = dataUrl
+                        jQuery('#' + itemArray[index].id).attr('xlink:href', null)
+                        resolve()
+                      }
+                    })
+                  })
                 }
+                return promise
+              })
+              await Promise.all(replacements)
+
+              let source, target
+              
+              for (const curId in attrArray) {
+                source = jQuery("#svgcontent").find('#' + curId.substring(2))[0]
+                target = jQuery("#fq-svg-container").find('#' + curId)[0]
+                copyAttributes(source, target)
               }
               // Remove non-whitelisted attributes
               // if( $.inArray(key, svgAttrWhitelist) === -1 ) {
-              //   $("#fq-svg-container").find("#" + info.id).removeAttr(key)
+              //   jQuery("#fq-svg-container").find("#" + info.id).removeAttr(key)
               // }
             }
-
             // Get the svg string
             const el = document.getElementById('fq-svg-container')
             const svgEl = el.firstChild
             const serializer = new XMLSerializer()
             const svgStr = serializer.serializeToString(svgEl)
-            $('#fq-svg-container').empty()
+            // jQuery('#fq-svg-container').empty()
 
             // Create image
             if (fqExportDocType === 'pdf') {
@@ -1541,6 +1579,15 @@ export default {
             }
           }
 
+          const copyAttributes = (source, target) => {
+            return Array.from(source.attributes).forEach(attribute => {
+              target.setAttribute(
+                attribute.nodeName === 'id' ? 'data-id' : attribute.nodeName,
+                attribute.nodeValue,
+              );
+            });
+          }
+
           /**
            * Adds resize observer to top toolbar and scroll on resize to maintain canvas position
            * @returns {void}
@@ -1549,7 +1596,7 @@ export default {
             const resizeObserver = new ResizeObserver(function(entries) {
               // Set initial height
               if (!fqToolsTopHeight) {
-                fqToolsTopHeight = $('#tools_top').height()
+                fqToolsTopHeight = jQuery('#tools_top').height()
                 return
               }
               // Get new height
@@ -1577,10 +1624,10 @@ export default {
           }
 
           const setModalConfirmBtnHandler = (handler, args = null) => {
-            $('#fq-modal-confirm-btn-ok').unbind('click', onConfirmClear)
-            $('#fq-modal-confirm-btn-ok').unbind('click', openFigure)
+            jQuery('#fq-modal-confirm-btn-ok').unbind('click', onConfirmClear)
+            jQuery('#fq-modal-confirm-btn-ok').unbind('click', openFigure)
 
-            $('#fq-modal-confirm-btn-ok').on('click', args, handler)
+            jQuery('#fq-modal-confirm-btn-ok').on('click', args, handler)
           }
 
           const uploadFileToFiglinQ = (
@@ -1642,7 +1689,7 @@ export default {
             })
               .done(function(response) {
                 if (updateModal) {
-                  $('#fq-modal-refresh-btn').addClass('is-loading')
+                  jQuery('#fq-modal-refresh-btn').addClass('is-loading')
                   fqItemListFolder = ''
                   fqItemListFile = ''
                   if (fqExportMode === 'upload') {
@@ -1666,8 +1713,8 @@ export default {
 
                     placeElement(elementProps)
                   } else {
-                    $('#fq-modal-file').removeClass('is-active')
-                    $(document).unbind('keyup', closeModalOnEscape)
+                    jQuery('#fq-modal-file').removeClass('is-active')
+                    jQuery(document).unbind('keyup', closeModalOnEscape)
                     const currentUrl = new URL(document.location)
                     currentUrl.searchParams.set('fid', response.file.fid)
                     window.history.pushState(null, null, decodeURIComponent(currentUrl.href))
@@ -1686,39 +1733,39 @@ export default {
                   }
                 }
 
-                $('#fq-menu-file-save-figure')
+                jQuery('#fq-menu-file-save-figure')
                   .find('i')
                   .removeClass('fa-spinner fa-pulse')
                   .addClass('fa-save')
-                $('#fq-modal-save-confirm-btn').removeClass('is-loading')
+                jQuery('#fq-modal-save-confirm-btn').removeClass('is-loading')
                 if (fqExportMode !== 'upload') {
-                  $('#fq-modal-file').removeClass('is-active')
+                  jQuery('#fq-modal-file').removeClass('is-active')
                 }
               })
               .fail(function() {
-                $('#fq-menu-file-save-figure')
+                jQuery('#fq-menu-file-save-figure')
                   .find('i')
                   .removeClass('fa-spinner fa-pulse')
                   .addClass('fa-save')
-                $('#fq-modal-save-confirm-btn').removeClass('is-loading')
+                jQuery('#fq-modal-save-confirm-btn').removeClass('is-loading')
                 showToast('Error - file was not' + errorMsg, 'is-danger')
               })
           }
 
           const showModalSpinner = () => {
-            $('#fq-loading-overlay').show()
+            jQuery('#fq-loading-overlay').show()
           }
           const hideModalSpinner = () => {
-            $('#fq-loading-overlay').hide()
+            jQuery('#fq-loading-overlay').hide()
           }
 
           const showSaveFigureAsDialog = () => {
             if (fqCurrentFigData) {
               const fName = fqCurrentFigData.filename.replace(/\.[^/.]+$/, '')
-              $('#fq-modal-save-name-input').val(fName)
-              $('#fq-modal-save-confirm-btn').prop('disabled', false)
+              jQuery('#fq-modal-save-name-input').val(fName)
+              jQuery('#fq-modal-save-confirm-btn').prop('disabled', false)
             } else {
-              $('#fq-modal-save-name-input').val('')
+              jQuery('#fq-modal-save-name-input').val('')
             }
             fqModalFileTabMode = 'my'
             prepareFileModal('saveFigureAs')
@@ -1772,20 +1819,20 @@ export default {
             const shTarget = Math.round((shPx / _typeMap[curUnit]) * 100) / 100
             const svTarget = Math.round((svPx / _typeMap[curUnit]) * 100) / 100
 
-            $('.margin-unit').html(curUnit)
-            $('#fq-content-add-magin-left').val(mlTarget)
-            $('#fq-content-add-magin-top').val(mtTarget)
-            $('#fq-content-add-magin-right').val(mrTarget)
-            $('#fq-content-add-magin-bottom').val(mbTarget)
-            $('#fq-content-add-spacing-horizontal').val(shTarget)
-            $('#fq-content-add-spacing-vertical').val(svTarget)
+            jQuery('.margin-unit').html(curUnit)
+            jQuery('#fq-content-add-magin-left').val(mlTarget)
+            jQuery('#fq-content-add-magin-top').val(mtTarget)
+            jQuery('#fq-content-add-magin-right').val(mrTarget)
+            jQuery('#fq-content-add-magin-bottom').val(mbTarget)
+            jQuery('#fq-content-add-spacing-horizontal').val(shTarget)
+            jQuery('#fq-content-add-spacing-vertical').val(svTarget)
           }
 
           const prepareFileModal = (mode, launchModal = true) => {
             showModalSpinner()
             const elements = []
             let heading = ''
-            $('.fq-modal-file-tab').removeClass('is-active')
+            jQuery('.fq-modal-file-tab').removeClass('is-active')
             switch (mode) {
               case 'openFigure':
                 elements.hide = '.modal-action-panel, .fq-modal-file-tab'
@@ -1852,13 +1899,13 @@ export default {
                 break
             }
 
-            $('#file-panel-heading').html(heading)
-            $(elements.hide).addClass('is-hidden')
-            $(elements.disable).prop('disabled', true)
-            $(elements.reveal).removeClass('is-hidden')
-            $(elements.activate).addClass('is-active')
+            jQuery('#file-panel-heading').html(heading)
+            jQuery(elements.hide).addClass('is-hidden')
+            jQuery(elements.disable).prop('disabled', true)
+            jQuery(elements.reveal).removeClass('is-hidden')
+            jQuery(elements.activate).addClass('is-active')
             if (launchModal) {
-              $('#fq-modal-file').addClass('is-active')
+              jQuery('#fq-modal-file').addClass('is-active')
             }
           }
 
@@ -1974,33 +2021,33 @@ export default {
               : defaultPropValue
           }
 
-          $(document).on('change', '#fq-file-upload-input', () => {
-            const fileName = $('#fq-file-upload-input')[0].files.length
-              ? $('#fq-file-upload-input')[0].files[0].name
+          jQuery(document).on('change', '#fq-file-upload-input', () => {
+            const fileName = jQuery('#fq-file-upload-input')[0].files.length
+              ? jQuery('#fq-file-upload-input')[0].files[0].name
               : false
             if (fileName) {
-              $('#fq-modal-upload-confirm-btn').prop('disabled', false)
-              $('#fq-file-upload-input-label').html(fileName)
+              jQuery('#fq-modal-upload-confirm-btn').prop('disabled', false)
+              jQuery('#fq-file-upload-input-label').html(fileName)
             } else {
-              $('#fq-modal-upload-confirm-btn').prop('disabled', true)
+              jQuery('#fq-modal-upload-confirm-btn').prop('disabled', true)
             }
           })
 
-          $(document).on('click', '#fq-modal-upload-confirm-btn', e => {
+          jQuery(document).on('click', '#fq-modal-upload-confirm-btn', e => {
             e.target.blur()
-            if (!$('#fq-file-upload-input')[0].files.length) {
+            if (!jQuery('#fq-file-upload-input')[0].files.length) {
               showToast('Please select the file first!', 'is-warning')
               return
             }
             const apiEndpoint = 'upload'
-            const world_readable = $('#fq-file-upload-world-readable').val()
-            const imageFile = $('#fq-file-upload-input')[0].files[0]
-            fqExportDocFname = $('#fq-file-upload-input-label').html()
+            const world_readable = jQuery('#fq-file-upload-world-readable').val()
+            const imageFile = jQuery('#fq-file-upload-input')[0].files[0]
+            fqExportDocFname = jQuery('#fq-file-upload-input-label').html()
             fqExportMode = 'upload'
 
             const formData = new FormData()
             formData.append('files', imageFile)
-            $('#fq-modal-file').removeClass('is-active')
+            jQuery('#fq-modal-file').removeClass('is-active')
             uploadFileToFiglinQ(
               formData,
               apiEndpoint,
@@ -2011,16 +2058,16 @@ export default {
             )
           })
 
-          $(document).on('change', '#fq-modal-export-format-select', () => {
+          jQuery(document).on('change', '#fq-modal-export-format-select', () => {
             updateExportFormState()
           })
 
-          $(document).on('change', '#fq-doc-baseunit', e => {
+          jQuery(document).on('change', '#fq-doc-baseunit', e => {
             const curUnit = svgEditor.configObj.curConfig.baseUnit
-            const targetUnit = $(e.target).val()
+            const targetUnit = jQuery(e.target).val()
 
-            const w = $('#fq-doc-setup-width').val()
-            const h = $('#fq-doc-setup-height').val()
+            const w = jQuery('#fq-doc-setup-width').val()
+            const h = jQuery('#fq-doc-setup-height').val()
 
             const wNum = w.match(/\d+/)[0]
             const hNum = h.match(/\d+/)[0]
@@ -2035,32 +2082,32 @@ export default {
             svgEditor.updateCanvas()
 
             // Update inputs
-            $('#fq-doc-setup-width').val(String(wToTargetUnit) + targetUnit)
-            $('#fq-doc-setup-height').val(String(hToTargetUnit) + targetUnit)
-            $('#fq-doc-size').val('')
+            jQuery('#fq-doc-setup-width').val(String(wToTargetUnit) + targetUnit)
+            jQuery('#fq-doc-setup-height').val(String(hToTargetUnit) + targetUnit)
+            jQuery('#fq-doc-size').val('')
           })
 
-          $(document).on('change', '#fq-doc-setup-width', e => {
-            $('#fq-doc-size').val('')
+          jQuery(document).on('change', '#fq-doc-setup-width', e => {
+            jQuery('#fq-doc-size').val('')
 
-            const w = $(e.target).val()
+            const w = jQuery(e.target).val()
             const resolution = svgEditor.svgCanvas.getResolution()
             const x = w
             svgEditor.svgCanvas.setResolution(x, resolution.h)
           })
 
-          $(document).on('change', '#fq-doc-setup-height', e => {
-            $('#fq-doc-size').val('')
+          jQuery(document).on('change', '#fq-doc-setup-height', e => {
+            jQuery('#fq-doc-size').val('')
 
-            const h = $(e.target).val()
+            const h = jQuery(e.target).val()
             const resolution = svgEditor.svgCanvas.getResolution()
             const y = h
             svgEditor.svgCanvas.setResolution(resolution.w, y)
           })
 
-          $(document).on('change', '#fq-doc-size', e => {
+          jQuery(document).on('change', '#fq-doc-size', e => {
             let w, h
-            const val = $(e.target).val()
+            const val = jQuery(e.target).val()
             if (val) {
               const baseUnit = svgEditor.configObj.curConfig.baseUnit
               const wh = val.split('x')
@@ -2072,26 +2119,26 @@ export default {
 
               svgEditor.svgCanvas.setResolution(w, h)
 
-              $('#fq-doc-setup-width').val(w)
-              $('#fq-doc-setup-height').val(h)
+              jQuery('#fq-doc-setup-width').val(w)
+              jQuery('#fq-doc-setup-height').val(h)
             }
           })
 
-          $(document).on('click', '#fq-menu-file-export', () => {
-            $('#fq-modal-export').addClass('is-active')
+          jQuery(document).on('click', '#fq-menu-file-export', () => {
+            jQuery('#fq-modal-export').addClass('is-active')
           })
 
-          $(document).on('click', '#fq-menu-object-adjust', () => {
-            $('#fq-modal-adjust').addClass('is-active')
+          jQuery(document).on('click', '#fq-menu-object-adjust', () => {
+            jQuery('#fq-modal-adjust').addClass('is-active')
           })
 
-          $(document).on('click', '#fq-menu-object-align', () => {
-            $('#fq-modal-align').addClass('is-active')
+          jQuery(document).on('click', '#fq-menu-object-align', () => {
+            jQuery('#fq-modal-align').addClass('is-active')
           })
 
-          $(document).on('click', '.fq-modal-export-quality', e => {
-            const incr = parseInt($(e.target).data('increment'), 10)
-            const value = parseInt($('#fq-modal-export-quality-input').val(), 10)
+          jQuery(document).on('click', '.fq-modal-export-quality', e => {
+            const incr = parseInt(jQuery(e.target).data('increment'), 10)
+            const value = parseInt(jQuery('#fq-modal-export-quality-input').val(), 10)
             let newValue = value + incr
             if (newValue > 100) {
               newValue = 100
@@ -2099,68 +2146,68 @@ export default {
             if (newValue < 10) {
               newValue = 10
             }
-            $('#fq-modal-export-quality-input').val(newValue)
+            jQuery('#fq-modal-export-quality-input').val(newValue)
           })
 
-          $(document).on('click', '#fq-modal-btn-confirm-save-figure', () => {
-            $('#fq-modal-import-newfig').removeClass('is-active')
+          jQuery(document).on('click', '#fq-modal-btn-confirm-save-figure', () => {
+            jQuery('#fq-modal-import-newfig').removeClass('is-active')
             showSaveFigureAsDialog()
           })
 
-          $(document).on('click', '.navbar-dropdown .navbar-item', e => {
+          jQuery(document).on('click', '.navbar-dropdown .navbar-item', e => {
             e.target.blur()
-            $(e.target)
+            jQuery(e.target)
               .parents('.navbar-item.has-dropdown')
               .removeClass('is-hoverable')
             setTimeout(function() {
-              $(e.target)
+              jQuery(e.target)
                 .parents('.navbar-item.has-dropdown')
                 .addClass('is-hoverable')
             }, 100)
           })
 
-          $(document).on('click', '#fq-menu-file-import-local-content', () => {
+          jQuery(document).on('click', '#fq-menu-file-import-local-content', () => {
             fqModalFileTabMode = 'my'
             prepareFileModal('importLocalContent')
             refreshModalContents()
           })
 
-          $(document).on('click', '#fq-modal-adjust-btn-adjust', async e => {
-            $(e.currentTarget).addClass('is-loading')
+          jQuery(document).on('click', '#fq-modal-adjust-btn-adjust', async e => {
+            jQuery(e.currentTarget).addClass('is-loading')
             await adjustPlots()
-            $(e.currentTarget).removeClass('is-loading')
+            jQuery(e.currentTarget).removeClass('is-loading')
           })
 
-          $(document).on('click', '#fq-modal-align-btn-x', async e => {
-            $(e.currentTarget).addClass('is-loading')
+          jQuery(document).on('click', '#fq-modal-align-btn-x', async e => {
+            jQuery(e.currentTarget).addClass('is-loading')
             await alignPlots('x')
-            $(e.currentTarget).removeClass('is-loading')
+            jQuery(e.currentTarget).removeClass('is-loading')
           })
 
-          $(document).on('click', '#fq-modal-align-btn-y', async e => {
-            $(e.currentTarget).addClass('is-loading')
+          jQuery(document).on('click', '#fq-modal-align-btn-y', async e => {
+            jQuery(e.currentTarget).addClass('is-loading')
             await alignPlots('y')
-            $(e.currentTarget).removeClass('is-loading')
+            jQuery(e.currentTarget).removeClass('is-loading')
           })
 
-          $(document).on('click', '#fq-modal-export-btn-export', async e => {
-            $(e.currentTarget).addClass('is-loading')
+          jQuery(document).on('click', '#fq-modal-export-btn-export', async e => {
+            jQuery(e.currentTarget).addClass('is-loading')
             fqExportMode = 'download'
-            fqExportDocType = $('#fq-modal-export-format-select').val()
-            fqExportDocQuality = parseFloat($('#fq-modal-export-quality-input').val()) / 100
-            fqExportDocFname = $('#fq-modal-export-fname-input').val()
+            fqExportDocType = jQuery('#fq-modal-export-format-select').val()
+            fqExportDocQuality = parseFloat(jQuery('#fq-modal-export-quality-input').val()) / 100
+            fqExportDocFname = jQuery('#fq-modal-export-fname-input').val()
             if (fqExportDocType === 'pdf') {
-              fqExportDocSize = $('#fq-modal-export-size-select option:selected').text()
+              fqExportDocSize = jQuery('#fq-modal-export-size-select option:selected').text()
             } else {
-              fqExportDocSize = parseInt($('#fq-modal-export-size-select').val(), 10)
+              fqExportDocSize = parseInt(jQuery('#fq-modal-export-size-select').val(), 10)
             }
 
             await exportImageFromEditor()
-            $(e.currentTarget).removeClass('is-loading')
+            jQuery(e.currentTarget).removeClass('is-loading')
           })
 
-          $(document).on('focusout', '#fq-modal-export-quality-input', e => {
-            let newValue = parseInt($(e.target).val(), 10)
+          jQuery(document).on('focusout', '#fq-modal-export-quality-input', e => {
+            let newValue = parseInt(jQuery(e.target).val(), 10)
             if (newValue > 100) {
               newValue = 100
             }
@@ -2171,31 +2218,31 @@ export default {
               // eslint-disable-next-line no-magic-numbers
               newValue = 80
             }
-            $(e.target).val(newValue)
+            jQuery(e.target).val(newValue)
           })
 
-          $(document).on('click', '#fq-menu-view-show-grid', () => {
-            $('#view_grid').click()
+          jQuery(document).on('click', '#fq-menu-view-show-grid', () => {
+            jQuery('#view_grid').click()
             const showGrid = svgEditor.configObj.curConfig.showGrid
             if (showGrid) {
-              $('#fq-menu-view-show-grid')
+              jQuery('#fq-menu-view-show-grid')
                 .find('.material-icons')
                 .text('check_box')
             } else {
-              $('#fq-menu-view-show-grid')
+              jQuery('#fq-menu-view-show-grid')
                 .find('.material-icons')
                 .text('check_box_outline_blank')
             }
           })
 
-          $(document).on('click', '#fq-menu-view-show-rulers', () => {
+          jQuery(document).on('click', '#fq-menu-view-show-rulers', () => {
             const showRulers = svgEditor.configObj.curConfig.showRulers
             if (!showRulers) {
-              $('#fq-menu-view-show-rulers')
+              jQuery('#fq-menu-view-show-rulers')
               .find('.material-icons')
               .text('check_box')
             } else {
-                $('#fq-menu-view-show-rulers')
+                jQuery('#fq-menu-view-show-rulers')
                 .find('.material-icons')
                 .text('check_box_outline_blank')
             }
@@ -2203,62 +2250,62 @@ export default {
             svgEditor.rulers.display(!showRulers)
           })
 
-          $(document).on('click', '#fq-menu-file-document-properties', () => {
-            $('#fq-doc-size').val('')
+          jQuery(document).on('click', '#fq-menu-file-document-properties', () => {
+            jQuery('#fq-doc-size').val('')
             const baseUnit = svgEditor.configObj.curConfig.baseUnit
             const resolution = svgEditor.svgCanvas.getResolution()
 
-            $('#fq-doc-baseunit').val(baseUnit)
+            jQuery('#fq-doc-baseunit').val(baseUnit)
 
             const gridSnappingOn = svgEditor.configObj.curConfig.gridSnapping
             const gridSnappingStep = svgEditor.configObj.curConfig.snappingStep
 
-            $('#fq-doc-setup-snapping-enabled').prop('checked', gridSnappingOn)
-            $('#fq-doc-setup-snapping-step').val(gridSnappingStep)
+            jQuery('#fq-doc-setup-snapping-enabled').prop('checked', gridSnappingOn)
+            jQuery('#fq-doc-setup-snapping-step').val(gridSnappingStep)
 
-            $('#fq-doc-setup-width').val(resolution.w / _typeMap[baseUnit] + baseUnit)
-            $('#fq-doc-setup-height').val(resolution.h / _typeMap[baseUnit] + baseUnit)
-            $('#fq-modal-doc-setup').addClass('is-active')
+            jQuery('#fq-doc-setup-width').val(resolution.w / _typeMap[baseUnit] + baseUnit)
+            jQuery('#fq-doc-setup-height').val(resolution.h / _typeMap[baseUnit] + baseUnit)
+            jQuery('#fq-modal-doc-setup').addClass('is-active')
           })
 
-          $(document).on('change', '#fq-doc-setup-snapping-enabled', e => {
-            const gridSnappingOn = $(e.target).prop('checked')
+          jQuery(document).on('change', '#fq-doc-setup-snapping-enabled', e => {
+            const gridSnappingOn = jQuery(e.target).prop('checked')
             svgEditor.configObj.curConfig.gridSnapping = gridSnappingOn
             svgCanvas.setConfig(svgEditor.configObj.curConfig)
             svgEditor.updateCanvas()
           })
 
-          $(document).on('keyup', '#fq-doc-setup-snapping-step', e => {
-            const snappingStep = parseInt($(e.target).val(), 10)
+          jQuery(document).on('keyup', '#fq-doc-setup-snapping-step', e => {
+            const snappingStep = parseInt(jQuery(e.target).val(), 10)
             svgEditor.configObj.curConfig.snappingStep = snappingStep
             svgCanvas.setConfig(svgEditor.configObj.curConfig)
             svgEditor.updateCanvas()
           })
 
-          $(document).on('click', '.fq-modal-adjust-copy', e => {
-            const property = $(e.target).data('property')
-            const refValue = $(`input[data-property='${property}'][type='text']`).val()
-            const inputs = $('.fq-modal-adjust-input')
+          jQuery(document).on('click', '.fq-modal-adjust-copy', e => {
+            const property = jQuery(e.target).data('property')
+            const refValue = jQuery(`input[data-property='${property}'][type='text']`).val()
+            const inputs = jQuery('.fq-modal-adjust-input')
             let visited = false
             inputs.each(function() {
               if (visited) {
-                $(this).val(refValue)
+                jQuery(this).val(refValue)
               }
-              if ($(this).data('property') === property) {
+              if (jQuery(this).data('property') === property) {
                 visited = true
               }
             })
           })
 
-          $(document).on('click', '#fq-doc-setup-save-btn', () => {
-            const predefined = $('#fq-doc-size').val()
-            const gridSnappingStep = parseInt($('#fq-doc-setup-snapping-step').val(), 10)
-            const gridSnappingOn = $('#fq-doc-setup-snapping-enabled').prop('checked')
+          jQuery(document).on('click', '#fq-doc-setup-save-btn', () => {
+            const predefined = jQuery('#fq-doc-size').val()
+            const gridSnappingStep = parseInt(jQuery('#fq-doc-setup-snapping-step').val(), 10)
+            const gridSnappingOn = jQuery('#fq-doc-setup-snapping-enabled').prop('checked')
 
-            const w = predefined === 'fit' ? 'fit' : $('#fq-doc-setup-width').val()
-            const h = predefined === 'fit' ? 'fit' : $('#fq-doc-setup-height').val()
-            const baseunit = $('#fq-doc-baseunit').val()
-            $('#fq-modal-doc-setup').removeClass('is-active')
+            const w = predefined === 'fit' ? 'fit' : jQuery('#fq-doc-setup-width').val()
+            const h = predefined === 'fit' ? 'fit' : jQuery('#fq-doc-setup-height').val()
+            const baseunit = jQuery('#fq-doc-baseunit').val()
+            jQuery('#fq-modal-doc-setup').removeClass('is-active')
 
             if (w !== 'fit' && !isValidUnit('width', w)) {
               showToast('Invalid width unit!', 'is-danger')
@@ -2281,24 +2328,24 @@ export default {
             svgEditor.updateCanvas()
           })
 
-          $(document).on('click', '.fq-modal-cancel-btn', () => {
-            $('.modal').removeClass('is-active')
+          jQuery(document).on('click', '.fq-modal-cancel-btn', () => {
+            jQuery('.modal').removeClass('is-active')
           })
 
-          $(document).on('click', '.fq-modal-file-tab', e => {
+          jQuery(document).on('click', '.fq-modal-file-tab', e => {
             showModalSpinner()
-            $('.fq-modal-file-tab').removeClass('is-active')
-            $('#fq-modal-add-confirm-btn, #col_select').prop('disabled', true)
-            $(e.currentTarget).addClass('is-active')
+            jQuery('.fq-modal-file-tab').removeClass('is-active')
+            jQuery('#fq-modal-add-confirm-btn, #col_select').prop('disabled', true)
+            jQuery(e.currentTarget).addClass('is-active')
 
-            fqModalFileTabMode = $(e.currentTarget).data('mode')
+            fqModalFileTabMode = jQuery(e.currentTarget).data('mode')
             if (fqModalFileTabMode === 'shared') {
-              $('#fq-modal-file-search-wrapper').prop('disabled', true)
+              jQuery('#fq-modal-file-search-wrapper').prop('disabled', true)
             } else if (fqModalFileTabMode === 'my') {
-              $('#fq-modal-file-search-wrapper').prop('disabled', false)
+              jQuery('#fq-modal-file-search-wrapper').prop('disabled', false)
             } else if (fqModalFileTabMode === 'preselected') {
-              $('#fq-modal-file-search-wrapper').prop('disabled', true)
-              $('#fq-modal-file-panel-breadcrumb').addClass('is-hidden')
+              jQuery('#fq-modal-file-search-wrapper').prop('disabled', true)
+              jQuery('#fq-modal-file-panel-breadcrumb').addClass('is-hidden')
               refreshModalContents(fqItemListPreselected.fids)
               return
             }
@@ -2311,78 +2358,75 @@ export default {
             refreshModalContents()
           })
 
-          $(document).on('click', '#fq-modal-refresh-btn', () => {
+          jQuery(document).on('click', '#fq-modal-refresh-btn', () => {
             showModalSpinner()
             refreshModalContents()
           })
 
-          $(document).on(
+          jQuery(document).on(
             'click',
             '.fq-modal-plot-item, .fq-modal-image-item, .fq-modal-figure-item',
             e => {
               if (fqModalMode === 'saveFigure') {
-                if ($(e.target).hasClass('fq-modal-figure-item')) {
-                  $('.fq-modal-plot-item, .fq-modal-image-item, .fq-modal-figure-item').removeClass(
+                if (jQuery(e.target).hasClass('fq-modal-figure-item')) {
+                  jQuery('.fq-modal-plot-item, .fq-modal-image-item, .fq-modal-figure-item').removeClass(
                     'is-active'
                   )
-                  $(e.target).addClass('is-active')
-                  let text = $(e.target)
+                  jQuery(e.target).addClass('is-active')
+                  const text = jQuery(e.target)
                     .find('.fq-list-item-text')
-                    .html()
-                  if (text.toLowerCase().endsWith('.svg')) {
-                    text = text.replace(/\.[^/.]+$/, '')
-                    $('#fq-modal-save-name-input').val(text)
-                    $('#fq-modal-save-confirm-btn').prop('disabled', false)
-                  }
+                    .text()
+                  jQuery('#fq-modal-save-name-input').val(text)
+                  jQuery('#fq-modal-save-confirm-btn').prop('disabled', false)
                 }
                 return
               }
 
               if (fqModalMode === 'openFigure') {
-                $('.fq-modal-plot-item, .fq-modal-image-item, .fq-modal-figure-item').removeClass(
+                jQuery('.fq-modal-plot-item, .fq-modal-image-item, .fq-modal-figure-item').removeClass(
                   'is-active'
                 )
-                $(e.target).addClass('is-active')
-                $('#fq-modal-files-open-figure-confirm').prop('disabled', false)
+                jQuery(e.target).addClass('is-active')
+                jQuery('#fq-modal-files-open-figure-confirm').prop('disabled', false)
                 return
               }
 
-              if ($(e.target).hasClass('is-active')) {
-                $(e.target).removeClass('is-active')
+              if (jQuery(e.target).hasClass('is-active')) {
+                jQuery(e.target).removeClass('is-active')
               } else {
-                $(e.target).addClass('is-active')
+                jQuery(e.target).addClass('is-active')
               }
 
               let activePresent = false
               const activeList = []
-              $('.fq-modal-plot-item, .fq-modal-image-item, .fq-modal-figure-item').each(
+              jQuery('.fq-modal-plot-item, .fq-modal-image-item, .fq-modal-figure-item').each(
                 function() {
-                  if ($(this).hasClass('is-active')) {
+                  if (jQuery(this).hasClass('is-active')) {
                     activePresent = true
-                    activeList.push($(this).data('fid'))
+                    activeList.push(jQuery(this).data('fid'))
                   }
                 }
               )
 
               if (activePresent) {
-                $('#fq-modal-add-confirm-btn').prop('disabled', false)
-                $('#fq-modal-add-confirm-btn').data('selectedFid', activeList)
+                jQuery('#fq-modal-add-confirm-btn').prop('disabled', false)
+                jQuery('#fq-modal-add-confirm-btn').data('selectedFid', activeList)
                 if (activeList.length > 1) {
-                  $('#col_select').prop('disabled', false)
+                  jQuery('#col_select').prop('disabled', false)
                 } else {
-                  $('#col_select').prop('disabled', true)
+                  jQuery('#col_select').prop('disabled', true)
                 }
               } else {
-                $('#fq-modal-add-confirm-btn').prop('disabled', true)
+                jQuery('#fq-modal-add-confirm-btn').prop('disabled', true)
               }
             }
           )
 
-          $(document).on('click', '.fq-modal-folder-item', e => {
-            const dataFid = $(e.currentTarget)
+          jQuery(document).on('click', '.fq-modal-folder-item', e => {
+            const dataFid = jQuery(e.currentTarget)
               .data('fid')
               .toString()
-            const fname = $(e.target)
+            const fname = jQuery(e.target)
               .text()
               .trim()
 
@@ -2393,13 +2437,13 @@ export default {
             fqItemListFolder = ''
             fqItemListFile = ''
             updateItemList(dataFid, 1)
-            $('#fq-modal-add-confirm-btn').prop('disabled', true)
-            $('#fq-modal-refresh-btn').addClass('is-loading')
+            jQuery('#fq-modal-add-confirm-btn').prop('disabled', true)
+            jQuery('#fq-modal-refresh-btn').addClass('is-loading')
           })
 
-          $(document).on('click', '#fq-menu-interact-switch', e => {
+          jQuery(document).on('click', '#fq-menu-interact-switch', e => {
             e.target.blur()
-            const checked = $('#fq-menu-interact-switch').is(':checked')
+            const checked = jQuery('#fq-menu-interact-switch').is(':checked')
             if (checked) {
               setInteractiveOn()
             } else {
@@ -2407,24 +2451,24 @@ export default {
             }
           })
 
-          $(document).on('click', '#fq-modal-add-confirm-btn', e => {
+          jQuery(document).on('click', '#fq-modal-add-confirm-btn', e => {
             e.target.blur()
             svgCanvas.clearSelection()
-            $(e.target).addClass('is-loading')
+            jQuery(e.target).addClass('is-loading')
 
             const selector =
               '.fq-modal-plot-item.is-active, .fq-modal-image-item.is-active, .fq-modal-figure-item.is-active'
             const selectedItems = getSortedElems(selector, 'data-index')
-            const columnNumber = parseInt($('#col_select').val(), 10)
+            const columnNumber = parseInt(jQuery('#col_select').val(), 10)
             const margins = {
-              left: parseFloat($('#fq-content-add-magin-left').val()),
-              top: parseFloat($('#fq-content-add-magin-top').val()),
-              right: parseFloat($('#fq-content-add-magin-right').val()),
-              bottom: parseFloat($('#fq-content-add-magin-bottom').val())
+              left: parseFloat(jQuery('#fq-content-add-magin-left').val()),
+              top: parseFloat(jQuery('#fq-content-add-magin-top').val()),
+              right: parseFloat(jQuery('#fq-content-add-magin-right').val()),
+              bottom: parseFloat(jQuery('#fq-content-add-magin-bottom').val())
             }
             const spacing = {
-              horizontal: parseFloat($('#fq-content-add-spacing-horizontal').val()),
-              vertical: parseFloat($('#fq-content-add-spacing-vertical').val())
+              horizontal: parseFloat(jQuery('#fq-content-add-spacing-horizontal').val()),
+              vertical: parseFloat(jQuery('#fq-content-add-spacing-vertical').val())
             }
 
             // Calculate margins/spacing in pixels
@@ -2440,10 +2484,10 @@ export default {
             }
 
             const elementProps = []
-            $.each(selectedItems, index => {
+            $.each(selectedItems, function(index){
               elementProps[index] = {
-                fid: $(selectedItems[index]).data('fid'),
-                endpoint: $(selectedItems[index]).data('ftype') === 'plot' ? 'plots' : 'files'
+                fid: jQuery(selectedItems[index]).data('fid'),
+                endpoint: jQuery(selectedItems[index]).data('ftype') === 'plot' ? 'plots' : 'files'
               }
             })
 
@@ -2537,7 +2581,7 @@ export default {
 
               // Finally, place new elements and add letters
 
-              const addLetters = $('#fq-add-panel-letters').val()
+              const addLetters = jQuery('#fq-add-panel-letters').val()
 
               data.some((element, index) => {
                 element.widthScaled = element.widthScaled * pageScaleFactor
@@ -2589,9 +2633,9 @@ export default {
                 }
               })
 
-              $(e.target).removeClass('is-loading')
-              $('#fq-modal-file').removeClass('is-active')
-              $(document).unbind('keyup', closeModalOnEscape)
+              jQuery(e.target).removeClass('is-loading')
+              jQuery('#fq-modal-file').removeClass('is-active')
+              jQuery(document).unbind('keyup', closeModalOnEscape)
               const delay = 500
               setTimeout(function() {
                 svgEditor.zoomChanged(window, 'layer')
@@ -2599,70 +2643,70 @@ export default {
             })
           })
 
-          $(document).on('click', '#fq-modal-file-search-icon.fa-times-circle', () => {
-            $('#fq-modal-file-search-input')
+          jQuery(document).on('click', '#fq-modal-file-search-icon.fa-times-circle', () => {
+            jQuery('#fq-modal-file-search-input')
               .val('')
               .keyup()
           })
 
-          $(document).on('keyup', '#fq-modal-file-search-input', () => {
+          jQuery(document).on('keyup', '#fq-modal-file-search-input', () => {
             refreshModalContents()
           })
 
-          $(document).on('keyup', '#fq-modal-save-name-input', e => {
-            const val = $(e.target).val()
+          jQuery(document).on('keyup', '#fq-modal-save-name-input', e => {
+            const val = jQuery(e.target).val()
 
             if (val.length) {
-              $('#fq-modal-save-confirm-btn').prop('disabled', false)
+              jQuery('#fq-modal-save-confirm-btn').prop('disabled', false)
             } else {
-              $('#fq-modal-save-confirm-btn').prop('disabled', true)
+              jQuery('#fq-modal-save-confirm-btn').prop('disabled', true)
             }
           })
 
-          $(document).on('click', '#fq-modal-files-open-figure-confirm', () => {
-            $('#fq-modal-file').removeClass('is-active')
-            $(document).unbind('keyup', closeModalOnEscape)
-            $('#fq-modal-confirm-btn-ok').html('Open figure')
-            $('#fq-modal-confirm').addClass('is-active')
-            const fid = $('.fq-modal-figure-item.is-active').data('fid')
+          jQuery(document).on('click', '#fq-modal-files-open-figure-confirm', () => {
+            jQuery('#fq-modal-file').removeClass('is-active')
+            jQuery(document).unbind('keyup', closeModalOnEscape)
+            jQuery('#fq-modal-confirm-btn-ok').html('Open figure')
+            jQuery('#fq-modal-confirm').addClass('is-active')
+            const fid = jQuery('.fq-modal-figure-item.is-active').data('fid')
             setModalConfirmBtnHandler(openFigure, {fid: fid})
           })
 
-          $(document).on('click', '#fq-menu-file-new-figure', () => {
-            $('#fq-modal-confirm-btn-ok').html('New figure')
+          jQuery(document).on('click', '#fq-menu-file-new-figure', () => {
+            jQuery('#fq-modal-confirm-btn-ok').html('New figure')
             setModalConfirmBtnHandler(onConfirmClear)
-            $('#fq-modal-confirm').addClass('is-active')
+            jQuery('#fq-modal-confirm').addClass('is-active')
           })
 
-          $(document).on('click', '#fq-modal-save-confirm-btn', async event => {
-            $('#fq-modal-save-confirm-btn').addClass('is-loading')
+          jQuery(document).on('click', '#fq-modal-save-confirm-btn', async event => {
+            jQuery('#fq-modal-save-confirm-btn').addClass('is-loading')
             event.target.blur()
             fqExportMode = 'thumb'
             fqExportDocType = 'png'
-            fqExportDocFname = $('#fq-modal-save-name-input').val()
-            fqExportDocSize = parseInt($('#fq-modal-export-size-select').val(), 10)
+            fqExportDocFname = jQuery('#fq-modal-save-name-input').val()
+            fqExportDocSize = parseInt(jQuery('#fq-modal-export-size-select').val(), 10)
 
-            const world_readable = $('#file_upload_world_readable').val()
+            const world_readable = jQuery('#file_upload_world_readable').val()
 
             // TODO *properly* check if file name exists via API
             let replacedFid,
               nameExists = false
-            $('.fq-modal-image-item, .fq-modal-figure-item').each(function() {
+            jQuery('.fq-modal-image-item, .fq-modal-figure-item').each(function() {
               if (
-                $(this)
+                jQuery(this)
                   .find('.fq-list-item-text')
-                  .html() ===
-                fqExportDocFname + '.svg'
+                  .text() ===
+                fqExportDocFname
               ) {
                 nameExists = true
-                replacedFid = $(this).data('fid')
+                replacedFid = jQuery(this).data('fid')
               }
             })
 
             if (nameExists) {
               // eslint-disable-next-line no-alert
               if (!confirm('File already exists. Overwrite?')) {
-                $('#fq-modal-save-confirm-btn').removeClass('is-loading')
+                jQuery('#fq-modal-save-confirm-btn').removeClass('is-loading')
                 return
               }
             }
@@ -2691,7 +2735,7 @@ export default {
             formData.append('thumb', thumbFile)
 
             // Check if figure contains any linked content
-            const fqElements = $('.fq-image, .fq-plot, .fq-figure')
+            const fqElements = jQuery('.fq-image, .fq-plot, .fq-figure')
             const hasLinkedContent = fqElements.length > 0
 
             // Add metadata
@@ -2718,8 +2762,8 @@ export default {
             )
           })
 
-          $(document).on('change', '#zoom', e => {
-            let value = $(e.target).val()
+          jQuery(document).on('change', '#zoom', e => {
+            let value = jQuery(e.target).val()
             switch (value) {
               case 'default':
                 return
@@ -2759,17 +2803,17 @@ export default {
                 )
               }
             }
-            $(e.target).val('default')
+            jQuery(e.target).val('default')
           })
 
-          $(document).on('click', '.fq-menu-add-content-btn', () => {
+          jQuery(document).on('click', '.fq-menu-add-content-btn', () => {
             setInteractiveOff()
             prepareFileModal('addFiglinqContent')
             fqModalFileTabMode = 'my'
             refreshModalContents()
           })
 
-          $(document).on('click', '#fq-menu-file-save-figure', async event => {
+          jQuery(document).on('click', '#fq-menu-file-save-figure', async event => {
             setInteractiveOff()
 
             if (!fqCurrentFigData) {
@@ -2778,7 +2822,7 @@ export default {
               return
             }
 
-            $('#fq-menu-file-save-figure')
+            jQuery('#fq-menu-file-save-figure')
               .find('i')
               .removeClass('fa-save')
               .addClass('fa-spinner fa-pulse')
@@ -2818,7 +2862,7 @@ export default {
             formData.append('replaced_fid', replacedFid)
 
             // Check if figure contains any linked content
-            const fqElements = $('.fq-image, .fq-plot, .fq-figure')
+            const fqElements = jQuery('.fq-image, .fq-plot, .fq-figure')
             const hasLinkedContent = fqElements.length > 0
 
             const metadata = fqCurrentFigData.metadata || {}
@@ -2841,23 +2885,23 @@ export default {
             uploadFileToFiglinQ(formData, apiEndpoint, world_readable, false, false, 'replace')
           })
 
-          $(document).on('click', '#fq-menu-file-save-figure-as', () => {
+          jQuery(document).on('click', '#fq-menu-file-save-figure-as', () => {
             setInteractiveOff()
             showSaveFigureAsDialog()
           })
 
-          $(document).on('click', '.navbar-burger', () => {
-            $('.navbar-burger').toggleClass('is-active')
-            $('.navbar-menu').toggleClass('is-active')
+          jQuery(document).on('click', '.navbar-burger', () => {
+            jQuery('.navbar-burger').toggleClass('is-active')
+            jQuery('.navbar-menu').toggleClass('is-active')
           })
 
-          $(document).on('keyup', '.fq-margin-input', e => {
-            if ($('#fq-content-add-link-margins').prop('checked') === true) {
-              $('.fq-margin-input').val($(e.target).val())
+          jQuery(document).on('keyup', '.fq-margin-input', e => {
+            if (jQuery('#fq-content-add-link-margins').prop('checked') === true) {
+              jQuery('.fq-margin-input').val(jQuery(e.target).val())
             }
           })
 
-          $(document).on('click', '#fq-menu-file-open-figure', () => {
+          jQuery(document).on('click', '#fq-menu-file-open-figure', () => {
             prepareFileModal('openFigure')
             refreshModalContents()
           })
@@ -2874,7 +2918,6 @@ export default {
           updateExportFormState()
           activateDraggableModals()
           // eslint-disable-next-line no-undef
-        })($)
       }
     }
   }
