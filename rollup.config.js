@@ -81,6 +81,14 @@ const config = [{
             return replace1.replace('<script type="module">', '<script src="./iife-Editor.js"></script><script>')
           }
         },
+        {
+          src: 'src/editor/extensions/ext-figlinq/images',
+          dest: 'dist/editor/extensions/ext-figlinq'
+        },
+        {
+          src: 'src/editor/extensions/ext-figlinq/ext-figlinq.css',
+          dest: 'dist/editor/extensions/ext-figlinq'
+        },
         { src: 'src/editor/images', dest },
         { src: 'src/editor/components/jgraduate/images', dest: dest.map((d) => `${d}/components/jgraduate`) },
         { src: 'src/editor/extensions/ext-shapes/shapelib', dest: dest.map((d) => `${d}/extensions/ext-shapes`) },
@@ -88,7 +96,6 @@ const config = [{
         { src: 'src/editor/embedapi.js', dest },
         { src: 'src/editor/browser-not-supported.html', dest },
         { src: 'src/editor/browser-not-supported.js', dest },
-        { src: 'src/editor/svgedit.css', dest }
       ]
     }),
     html({
