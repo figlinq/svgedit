@@ -1,11 +1,11 @@
-export function folderItem(name, fid) {
+export function folderItem (name, fid) {
   return `
     <a class="is-relative panel-block panel-list-item fq-modal-folder-item noselect is-size-7" data-fid="${fid}">
         <span class="panel-icon has-text-black">
             <i class="fas fa-folder-open" aria-hidden="true"></i>
         </span>${name}</a>`
 }
-export function plotItem(name, fid, index) {
+export function plotItem (name, fid, index) {
   return `
     <a class="is-relative panel-block panel-list-item fq-modal-image-item noselect is-size-7" data-ftype="plot" data-fid="${fid}" data-index="${index}">
         <span class="panel-icon">
@@ -15,7 +15,7 @@ export function plotItem(name, fid, index) {
     </a>`
 }
 
-export function imageItem(name, fid, index) {
+export function imageItem (name, fid, index) {
   return `
     <a class="is-relative panel-block panel-list-item fq-modal-image-item noselect is-size-7" data-ftype="image" data-fid="${fid}" data-index="${index}">
         <span class="panel-icon">
@@ -25,10 +25,10 @@ export function imageItem(name, fid, index) {
     </a>`
 }
 
-export function figureItem(name, fid, index, haslinkedcontent = false) {
+export function figureItem (name, fid, index, haslinkedcontent = false) {
   const disabledStr = haslinkedcontent ? 'is-disabled' : ''
   const explanation = haslinkedcontent
-    ? `<span class="fq-list-item-text panel-list-explanation"><i class="fas fa-exclamation-triangle mr-2"></i>Figure with linked content cannot be added to another figure.</span>`
+    ? '<span class="fq-list-item-text panel-list-explanation"><i class="fas fa-exclamation-triangle mr-2"></i>Figure with linked content cannot be added to another figure.</span>'
     : ''
   return `
     <a class="is-relative panel-block panel-list-item fq-modal-figure-item noselect is-size-7 ${disabledStr}" data-ftype="figure" data-fid="${fid}" data-index="${index}">
@@ -41,7 +41,7 @@ export function figureItem(name, fid, index, haslinkedcontent = false) {
     </a>`
 }
 
-export function breadcrumb(dataFid, fname) {
+export function breadcrumb (dataFid, fname) {
   const fid = dataFid.includes(':') ? dataFid.substring(dataFid.indexOf(':') + 1) : dataFid
   let element
   if (fid === -1) {

@@ -2,38 +2,38 @@
 // This rollup script is run by the command:
 // 'npm run build'
 
-import path from 'path';
-import {lstatSync, readdirSync} from 'fs';
-import rimraf from 'rimraf';
-import babel from '@rollup/plugin-babel';
-import copy from 'rollup-plugin-copy-watch';
-import {nodeResolve} from '@rollup/plugin-node-resolve';
-import commonjs from '@rollup/plugin-commonjs';
-import url from '@rollup/plugin-url'; // for XML/SVG files
-import html from 'rollup-plugin-html';
+import path from 'path'
+import { lstatSync, readdirSync } from 'fs'
+import rimraf from 'rimraf'
+import babel from '@rollup/plugin-babel'
+import copy from 'rollup-plugin-copy-watch'
+import { nodeResolve } from '@rollup/plugin-node-resolve'
+import commonjs from '@rollup/plugin-commonjs'
+import url from '@rollup/plugin-url' // for XML/SVG files
+import html from 'rollup-plugin-html'
 
-import dynamicImportVars from '@rollup/plugin-dynamic-import-vars';
-import {terser} from 'rollup-plugin-terser';
+import dynamicImportVars from '@rollup/plugin-dynamic-import-vars'
+import { terser } from 'rollup-plugin-terser'
 // import progress from 'rollup-plugin-progress';
-import filesize from 'rollup-plugin-filesize';
+import filesize from 'rollup-plugin-filesize'
 
 // utility function
 const getDirectories = source => {
   const isDirectory = dir => {
-    return lstatSync(dir).isDirectory();
-  };
+    return lstatSync(dir).isDirectory()
+  }
   return readdirSync(source)
     .map(name => path.join(source, name))
-    .filter(i => isDirectory(i));
-};
+    .filter(i => isDirectory(i))
+}
 
 // capture the list of files to build for extensions and ext-locales
-const extensionDirs = getDirectories('src/editor/extensions');
+const extensionDirs = getDirectories('src/editor/extensions')
 
-const dest = ['dist/editor'];
+const dest = ['dist/editor']
 
 // remove existing distribution
-rimraf('./dist', () => console.info('recreating dist'));
+rimraf('./dist', () => console.info('recreating dist'))
 
 // config for svgedit core module
 const config = [
@@ -92,7 +92,7 @@ const config = [
           //     return replace1.replace('<script type="module">', '<script src="./iife-Editor.js"></script><script>')
           //   }
           // },
-          {src: 'src/editor/images', dest},
+          { src: 'src/editor/images', dest },
           {
             src: 'src/editor/components/jgraduate/images',
             dest: dest.map(d => `${d}/components/jgraduate`)
@@ -101,11 +101,11 @@ const config = [
             src: 'src/editor/extensions/ext-shapes/shapelib',
             dest: dest.map(d => `${d}/extensions/ext-shapes`)
           },
-          {src: 'src/editor/embedapi.html', dest},
-          {src: 'src/editor/embedapi.js', dest},
-          {src: 'src/editor/browser-not-supported.html', dest},
-          {src: 'src/editor/browser-not-supported.js', dest},
-          {src: 'src/editor/svgedit.css', dest}
+          { src: 'src/editor/embedapi.html', dest },
+          { src: 'src/editor/embedapi.js', dest },
+          { src: 'src/editor/browser-not-supported.html', dest },
+          { src: 'src/editor/browser-not-supported.js', dest },
+          { src: 'src/editor/svgedit.css', dest }
         ],
         watch: 'src/editor/extensions/ext-figlinq'
       }),
@@ -121,17 +121,17 @@ const config = [
         preferBuiltins: false
       }),
       commonjs(),
-      dynamicImportVars({include: 'src/editor/locale.js'}),
-      babel({babelHelpers: 'bundled', exclude: [/\/core-js\//]}), // exclude core-js to avoid circular dependencies.
+      dynamicImportVars({ include: 'src/editor/locale.js' }),
+      babel({ babelHelpers: 'bundled', exclude: [/\/core-js\//] }), // exclude core-js to avoid circular dependencies.
       // terser({ keep_fnames: true }), // keep_fnames is needed to avoid an error when calling extensions.
       filesize()
     ]
   }
-];
+]
 
 // config for dynamic extensions
 extensionDirs.forEach(extensionDir => {
-  const extensionName = path.basename(extensionDir);
+  const extensionName = path.basename(extensionDir)
   extensionName &&
     config.push({
       input: `./src/editor/extensions/${extensionName}/${extensionName}.js`,
@@ -156,12 +156,12 @@ extensionDirs.forEach(extensionDir => {
           browser: true,
           preferBuiltins: true
         }),
-        commonjs({exclude: `src/editor/extensions/${extensionName}/${extensionName}.js`}),
-        dynamicImportVars({include: `src/editor/extensions/${extensionName}/${extensionName}.js`}),
-        babel({babelHelpers: 'bundled', exclude: [/\/core-js\//]}),
-        terser({keep_fnames: true})
+        commonjs({ exclude: `src/editor/extensions/${extensionName}/${extensionName}.js` }),
+        dynamicImportVars({ include: `src/editor/extensions/${extensionName}/${extensionName}.js` }),
+        babel({ babelHelpers: 'bundled', exclude: [/\/core-js\//] }),
+        terser({ keep_fnames: true })
       ]
-    });
-});
+    })
+})
 
-export default config;
+export default config
