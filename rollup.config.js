@@ -89,6 +89,10 @@ const config = [{
           src: 'src/editor/extensions/ext-figlinq/ext-figlinq.css',
           dest: 'dist/editor/extensions/ext-figlinq'
         },
+        {
+          src: 'src/editor/components/jgraduate/images',
+          dest: 'dist/editor/jgraduate'
+        },
         { src: 'src/editor/images', dest },
         { src: 'src/editor/components/jgraduate/images', dest: dest.map((d) => `${d}/components/jgraduate`) },
         { src: 'src/editor/extensions/ext-shapes/shapelib', dest: dest.map((d) => `${d}/extensions/ext-shapes`) },
