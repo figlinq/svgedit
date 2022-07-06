@@ -132,6 +132,7 @@ export default class ConfigObj {
       // PATH CONFIGURATION
       // The following path configuration items are disallowed in the URL (as should any future path configurations)
       imgPath: './images',
+      extPath: './extensions',
       // DOCUMENT PROPERTIES
       // Change the following to a preference (already in the Document Properties dialog)?
       dimensions: [640, 480],
@@ -393,7 +394,7 @@ export default class ConfigObj {
      * @returns {void}
      */
     const extendOrAdd = (cfgObj, key, val) => {
-      if (cfgObj[key] && typeof cfgObj[key] === 'object') {
+      if (cfgObj[key] && typeof cfgObj[key] === 'object' && !Array.isArray(cfgObj[key])) {
         cfgObj[key] = mergeDeep(cfgObj[key], val)
       } else {
         cfgObj[key] = val
