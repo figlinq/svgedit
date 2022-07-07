@@ -16,7 +16,7 @@ import { isValidUnit } from "../../../common/units.js";
 import * as hstry from "../../../svgcanvas/history";
 import {
   getRotationAngle,
-  getBBox as utilsGetBBox
+  getBBox as utilsGetBBox 
 } from "../../../svgcanvas/utilities.js";
 import { moveSelectedElements } from "../../../svgcanvas/selected-elem.js";
 
