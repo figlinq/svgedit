@@ -87,7 +87,6 @@
     "jspdf": "2.5.1",
     "pathseg": "1.2.1",
     "regenerator-runtime": "0.13.9",
-    "rollup-plugin-copy-watch": "^0.0.1",
     "svg2pdf.js": "2.2.0"
   },
   "devDependencies": {
@@ -133,9 +132,5 @@
     "rollup-plugin-terser": "7.0.2",
     "standard": "17.0.0",
     "start-server-and-test": "1.14.0"
-  },
-  "volta": {
-    "node": "16.14.0",
-    "yarn": "1.22.18"
   }
 }
