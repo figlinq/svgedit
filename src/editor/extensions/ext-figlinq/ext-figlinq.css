@@ -16,7 +16,7 @@
   background-color: #eef8ff;
 }
 
-.panel-block span {
+.panel-block span, {
   pointer-events: none;
 }
 
@@ -401,4 +401,12 @@ se-select {
 
 #color_picker {
   top: 200px !important;
+}
+
+#fq-save-indicator {
+  display: none;
+  font-size: 14px;
+}
+#fq-save-indicator div{
+  height: 100%;
 }

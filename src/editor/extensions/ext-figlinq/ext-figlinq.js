@@ -15,7 +15,7 @@ import { NS } from './namespaces.js'
 import { isValidUnit } from '../../../common/units.js'
 import * as hstry from '../../../svgcanvas/history'
 
-const { InsertElementCommand, BatchCommand } = hstry
+const { InsertElementCommand, BatchCommand, resetUndoStack } = hstry
 
 /**
  * @file ext-figlinq.js
@@ -380,7 +380,7 @@ export default {
           const add = getUrlParameter('add')
           if (fid) {
             svgCanvas.clear()
-            openFigure({ data: { fid } })
+            openFigure({ data: { fid } })                        
           } else if (add) {
             // preload multiple files, open modal
             const fidArray = add.split(',')
@@ -698,7 +698,7 @@ export default {
             id: svgCanvas.getNextId(),
             style: 'pointer-events:inherit',
             class: 'fq-' + imgProps.filetype,
-            href: imgProps.imgHref,
+            "xlink:href": imgProps.imgHref,
             width: imgProps.width,
             height: imgProps.height,
             x: imgProps.x,
@@ -960,6 +960,7 @@ export default {
               const delay = 300
               setTimeout(function () {
                 svgEditor.zoomChanged(window, 'canvas')
+                svgCanvas.undoMgr.resetUndoStack()
               }, delay)
               showToast('File "' + data.filename + '" loaded', 'is-success')
 
@@ -976,7 +977,7 @@ export default {
             })
         }
 
-        const inlineRasterImage = imgUrl => {
+        const fetchImageBase64 = imgUrl => {
           return new Promise(resolve => {
             fetch(imgUrl, {
               method: 'GET',
@@ -986,8 +987,25 @@ export default {
                 'X-CSRFToken': fqCsrfToken
               }
             })
-              .then(response => response.blob())
-              .then(blob => resolve(blob))
+            .then(response => response.json())
+            .then(result => {
+              fetch(result.thumbnail_url, {
+                method: 'GET',
+                mode: 'cors',
+                credentials: 'include',
+                headers: {
+                  'X-CSRFToken': fqCsrfToken
+                }
+              })
+              .then((res) => res.blob())
+              .then(blob => {
+                const reader = new FileReader();
+                reader.onloadend = () => {                  
+                  resolve(reader.result)
+                }
+                reader.readAsDataURL(blob);
+              })
+            })
           })
         }
 
@@ -1008,7 +1026,7 @@ export default {
           })
         }
 
-        const inlineSvgImage = imgUrl => {
+        const fetchSvgString = imgUrl => {
           return new Promise(resolve => {
             fetch(imgUrl, {
               method: 'GET',
@@ -1244,18 +1262,14 @@ export default {
             alert('Please select at least one plot!')
             return
           }
-
           // Adjust props iteratively
-          const j = plotElems.length
-          let k = 0
-          while (k < j) {
-            const plotElems = plotElems[k]
-            const elem = plotElems[k].elem
+          const plotActions = plotElems.map(function (plotElem) {
+            const elem = plotElem.elem
             const csrfToken = fqCsrfToken
             const fid = jQuery(elem).data('fid')
-            const href = await getElementHref(jQuery(elem))
+            const href = getElementHref(jQuery(elem))
             const plotUrl = `${baseUrl}v2/plots/${fid}/content`
-            await fetch(plotUrl, {
+            fetch(plotUrl, {
               method: 'GET',
               mode: 'cors',
               credentials: 'include',
@@ -1270,7 +1284,7 @@ export default {
                 // Update properties
                 jQuery('.fq-modal-adjust-checkbox')
                   .filter(':checked')
-                  .map(() => {
+                  .map(function(){
                     const property = jQuery(this).data('property')
                     const propertyPath = property.split('-')
                     const value = jQuery(`input[data-property='${property}'][type='text']`).val()
@@ -1325,8 +1339,8 @@ export default {
                   })
                 })
               })
-            k++
-          }
+          })
+          await Promise.all(plotActions)
         }
 
         const getPlotAxesProps = jsonObj => {
@@ -1455,110 +1469,93 @@ export default {
         }
 
         const exportImageFromEditor = async () => {
+          const fqElements = jQuery('#svgcontent').find('.fq-image, .fq-plot')          
+          
           // Empty temp div
           jQuery('#fq-svg-container').empty()
 
           // Clone SVG into temp div
-
           const svgString = svgCanvas.svgCanvasToString()
 
+          // Get SVG document
           const doc = new DOMParser().parseFromString(svgString, 'application/xml')
           jQuery('#fq-svg-container').append(doc.documentElement)
 
           // Inline raster images and plots
-          const fqElements = jQuery('#svgcontent').find('.fq-image, .fq-plot')
           const itemArray = []
           const attrArray = {}
           let curId
           let newId
-
           if (fqElements.length) {
+            let tempObj = {};
             jQuery(fqElements).each(function () {
+              // Replace IDs
               curId = jQuery(this).attr('id')
               newId = '__' + curId
-              jQuery('#fq-svg-container').find(`[id='${curId}']`).attr('id', newId)
+              const type = jQuery(this).hasClass('fq-image') ? 'image' : 'plot'
+              jQuery('#fq-svg-container').find(`[id='${curId}']`).attr('id', newId)              
 
+              // Get attributes
               attrArray[newId] = getAttributes(jQuery(this))
 
-              if (jQuery(this).hasClass('fq-image')) {
-                itemArray.push(
-                  {
-                    id: newId,
-                    type: 'image',
-                    url: getElementHref(this)
-                  })
-              } else if (jQuery(this).hasClass('fq-plot')) {
-                itemArray.push(
-                  {
-                    id: newId,
-                    type: 'plot',
-                    url: getElementHref(this)
-                  })
+              tempObj = {
+                id: newId,
+                type: type
               }
-            })
-            const imageActions = itemArray.map(function (item) {
-              return item.type === 'plot'
-                ? inlineSvgImage(item.url)
-                : inlineRasterImage(item.url)
-            })
-            const data = await Promise.all(imageActions)
 
-            const replacements = data.map(function (result, index) {
+              if (type === "image"){
+                const fid = parseFid(attrArray[newId]["data-fid"], 0) + ":" + parseFid(attrArray[newId]["data-fid"], 1)
+                tempObj.url = baseUrl + 'v2/external-images/' + fid + "/get_thumbnail"
+              } else {
+                tempObj.url = getElementHref(this)
+              }
+
+              itemArray.push(tempObj)
+            })
+
+            // Get plot svg string or image blob
+            const fetchPromises = itemArray.map(function (item) {
+              item.imageData = item.type === 'plot' ? 
+                fetchSvgString(item.url) : 
+                fetchImageBase64(item.url)
+              return item
+            })
+            const data = await Promise.all(fetchPromises)            
+
+            const newElemPromises = data.map(async function (item) {
               let promise
-              if (itemArray[index].type === 'plot') {
+              if (item.type === 'plot') {
+                const svgString = await item.imageData
                 promise = new Promise(resolve => {
-                  const elem = new DOMParser().parseFromString(
-                    result,
+                  const elem = new DOMParser().parseFromString(                  
+                    svgString,
                     'application/xml'
                   ).documentElement
-                  jQuery(elem).attr('id', itemArray[index].id)
-                  jQuery('#fq-svg-container').find('#' + itemArray[index].id).replaceWith(elem)
+                  jQuery(elem).attr('id', item.id)
+                  jQuery('#fq-svg-container').find('#' + item.id).replaceWith(elem)
                   resolve()
                 })
               } else {
-                promise = new Promise(resolve => {
-                  const dataUrlPromise = new Promise(resolve => {
-                    const reader = new FileReader()
-                    reader.onload = () => resolve(reader.result)
-                    reader.readAsDataURL(result)
-                  })
-
-                  dataUrlPromise.then(dataUrl => {
-                    const imgType = dataUrl.substring(dataUrl.indexOf(':') + 1, dataUrl.indexOf(';'))
-                    // Run PNG images through HTML canvas to fix potential interlacing issues
-                    let imgSanitized
-                    if (imgType === 'image/png') {
-                      const imageObj = runImageThroughCanvas(dataUrl)
-                      imageObj.then(data => {
-                        imgSanitized = data.dataURL
-                        jQuery('#fq-svg-container').find('#' + itemArray[index].id).attr('href', imgSanitized)
-                        resolve()
-                      }
-                      )
-                    } else {
-                      imgSanitized = dataUrl
-                      jQuery('#' + itemArray[index].id).attr('xlink:href', null)
-                      resolve()
-                    }
-                  })
-                })
+                const imageBase64 = await item.imageData
+                jQuery('#fq-svg-container').find('#' + item.id).attr('href', imageBase64 + '#' + new Date().getTime())
+                promise = new Promise(resolve => {resolve()})
               }
               return promise
             })
-            await Promise.all(replacements)
-
-            let source, target
-
-            for (const curId in attrArray) {
-              source = jQuery('#svgcontent').find('#' + curId.substring(2))[0]
-              target = jQuery('#fq-svg-container').find('#' + curId)[0]
-              copyAttributes(source, target)
-            }
-            // Remove non-whitelisted attributes
-            // if( $.inArray(key, svgAttrWhitelist) === -1 ) {
-            //   jQuery("#fq-svg-container").find("#" + info.id).removeAttr(key)
-            // }
+            await Promise.all(newElemPromises)
           }
+
+          let source, target
+
+          for (const curId in attrArray) {
+            source = jQuery('#svgcontent').find('#' + curId.substring(2))[0]
+            target = jQuery('#fq-svg-container').find('#' + curId)[0]
+            copyAttributes(source, target)
+          }
+          // Remove non-whitelisted attributes
+          // if( $.inArray(key, svgAttrWhitelist) === -1 ) {
+          //   jQuery("#fq-svg-container").find("#" + info.id).removeAttr(key)
+          // }
           // Get the svg string
           const el = document.getElementById('fq-svg-container')
           const svgEl = el.firstChild
@@ -1733,20 +1730,14 @@ export default {
                 }
               }
 
-              jQuery('#fq-menu-file-save-figure')
-                .find('i')
-                .removeClass('fa-spinner fa-pulse')
-                .addClass('fa-save')
+              jQuery('#fq-save-indicator').hide()
               jQuery('#fq-modal-save-confirm-btn').removeClass('is-loading')
               if (fqExportMode !== 'upload') {
                 jQuery('#fq-modal-file').removeClass('is-active')
               }
             })
             .fail(function () {
-              jQuery('#fq-menu-file-save-figure')
-                .find('i')
-                .removeClass('fa-spinner fa-pulse')
-                .addClass('fa-save')
+              jQuery('#fq-save-indicator').hide()
               jQuery('#fq-modal-save-confirm-btn').removeClass('is-loading')
               showToast('Error - file was not' + errorMsg, 'is-danger')
             })
@@ -2031,6 +2022,10 @@ export default {
           } else {
             jQuery('#fq-modal-upload-confirm-btn').prop('disabled', true)
           }
+        })
+
+        jQuery(document).on('mouseup', '.draggable-source', e => {
+          e.target.blur()
         })
 
         jQuery(document).on('click', '#fq-modal-upload-confirm-btn', e => {
@@ -2727,6 +2722,7 @@ export default {
           const imageFile = new File([imageBlob], fqExportDocFname + '.svg')
 
           const thumbBlob = await exportImageFromEditor()
+          
           const thumbFile = new File([thumbBlob], fqExportDocFname + '_thumb.png')
 
           const formData = new FormData()
@@ -2822,10 +2818,9 @@ export default {
             return
           }
 
-          jQuery('#fq-menu-file-save-figure')
-            .find('i')
-            .removeClass('fa-save')
-            .addClass('fa-spinner fa-pulse')
+          
+
+          jQuery('#fq-save-indicator').show()
           event.target.blur()
 
           fqExportMode = 'thumb'
