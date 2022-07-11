@@ -15,7 +15,7 @@ import { NS } from './namespaces.js'
 import { isValidUnit } from '../../../common/units.js'
 import * as hstry from '../../../svgcanvas/history'
 
-const { InsertElementCommand, BatchCommand, resetUndoStack } = hstry
+const { InsertElementCommand, BatchCommand } = hstry
 
 /**
  * @file ext-figlinq.js
@@ -44,17 +44,13 @@ export default {
               e.originalEvent.keyCode === zKeyCode
           ) {
             clickUndo()
-          }
-          // Ctrl + Shift + z (redo)
-          else if (
+          } else if ( // Ctrl + Shift + z (redo)
             e.originalEvent.ctrlKey &&
               e.originalEvent.shiftKey &&
               e.originalEvent.keyCode === zKeyCode
           ) {
             clickRedo()
-          }
-          // Ctrl + y (redo)
-          else if (e.originalEvent.ctrlKey && e.originalEvent.keyCode === yKeyCode) {
+          } else if (e.originalEvent.ctrlKey && e.originalEvent.keyCode === yKeyCode) { // Ctrl + y (redo)
             clickRedo()
           }
         })
@@ -286,8 +282,8 @@ export default {
           jQuery('#fq-menu-interact-switch').prop('checked', false)
           const fObjects = jQuery("svg[class='fq-fobj-container']")
           fObjects.each(function () {
-            const ref_id = jQuery(this).data('ref_id')
-            jQuery('#' + ref_id).attr('visibility', 'visible')
+            const refId = jQuery(this).data('ref_id')
+            jQuery('#' + refId).attr('visibility', 'visible')
             this.remove()
           })
         }
@@ -380,7 +376,7 @@ export default {
           const add = getUrlParameter('add')
           if (fid) {
             svgCanvas.clear()
-            openFigure({ data: { fid } })                        
+            openFigure({ data: { fid } })
           } else if (add) {
             // preload multiple files, open modal
             const fidArray = add.split(',')
@@ -698,7 +694,7 @@ export default {
             id: svgCanvas.getNextId(),
             style: 'pointer-events:inherit',
             class: 'fq-' + imgProps.filetype,
-            "xlink:href": imgProps.imgHref,
+            'xlink:href': imgProps.imgHref,
             width: imgProps.width,
             height: imgProps.height,
             x: imgProps.x,
@@ -987,44 +983,44 @@ export default {
                 'X-CSRFToken': fqCsrfToken
               }
             })
-            .then(response => response.json())
-            .then(result => {
-              fetch(result.thumbnail_url, {
-                method: 'GET',
-                mode: 'cors',
-                credentials: 'include',
-                headers: {
-                  'X-CSRFToken': fqCsrfToken
-                }
+              .then(response => response.json())
+              .then(result => {
+                fetch(result.thumbnail_url, {
+                  method: 'GET',
+                  mode: 'cors',
+                  credentials: 'include',
+                  headers: {
+                    'X-CSRFToken': fqCsrfToken
+                  }
+                })
+                  .then((res) => res.blob())
+                  .then(blob => {
+                    const reader = new FileReader()
+                    reader.onloadend = () => {
+                      resolve(reader.result)
+                    }
+                    reader.readAsDataURL(blob)
+                  })
               })
-              .then((res) => res.blob())
-              .then(blob => {
-                const reader = new FileReader();
-                reader.onloadend = () => {                  
-                  resolve(reader.result)
-                }
-                reader.readAsDataURL(blob);
-              })
-            })
           })
         }
 
-        const runImageThroughCanvas = input => {
-          return new Promise(resolve => {
-            const img = new Image()
-            img.onload = function () {
-              let canvas = document.createElement('CANVAS')
-              const ctx = canvas.getContext('2d')
-              canvas.height = img.height
-              canvas.width = img.width
-              ctx.drawImage(img, 0, 0, img.width, img.height)
-              const dataURL = canvas.toDataURL()
-              canvas = null
-              resolve({ dataURL })
-            }
-            img.src = input
-          })
-        }
+        // const runImageThroughCanvas = input => {
+        //   return new Promise(resolve => {
+        //     const img = new Image()
+        //     img.onload = function () {
+        //       let canvas = document.createElement('CANVAS')
+        //       const ctx = canvas.getContext('2d')
+        //       canvas.height = img.height
+        //       canvas.width = img.width
+        //       ctx.drawImage(img, 0, 0, img.width, img.height)
+        //       const dataURL = canvas.toDataURL()
+        //       canvas = null
+        //       resolve({ dataURL })
+        //     }
+        //     img.src = input
+        //   })
+        // }
 
         const fetchSvgString = imgUrl => {
           return new Promise(resolve => {
@@ -1284,7 +1280,7 @@ export default {
                 // Update properties
                 jQuery('.fq-modal-adjust-checkbox')
                   .filter(':checked')
-                  .map(function(){
+                  .map(function () {
                     const property = jQuery(this).data('property')
                     const propertyPath = property.split('-')
                     const value = jQuery(`input[data-property='${property}'][type='text']`).val()
@@ -1469,8 +1465,8 @@ export default {
         }
 
         const exportImageFromEditor = async () => {
-          const fqElements = jQuery('#svgcontent').find('.fq-image, .fq-plot')          
-          
+          const fqElements = jQuery('#svgcontent').find('.fq-image, .fq-plot')
+
           // Empty temp div
           jQuery('#fq-svg-container').empty()
 
@@ -1487,25 +1483,25 @@ export default {
           let curId
           let newId
           if (fqElements.length) {
-            let tempObj = {};
+            let tempObj = {}
             jQuery(fqElements).each(function () {
               // Replace IDs
               curId = jQuery(this).attr('id')
               newId = '__' + curId
               const type = jQuery(this).hasClass('fq-image') ? 'image' : 'plot'
-              jQuery('#fq-svg-container').find(`[id='${curId}']`).attr('id', newId)              
+              jQuery('#fq-svg-container').find(`[id='${curId}']`).attr('id', newId)
 
               // Get attributes
               attrArray[newId] = getAttributes(jQuery(this))
 
               tempObj = {
                 id: newId,
-                type: type
+                type
               }
 
-              if (type === "image"){
-                const fid = parseFid(attrArray[newId]["data-fid"], 0) + ":" + parseFid(attrArray[newId]["data-fid"], 1)
-                tempObj.url = baseUrl + 'v2/external-images/' + fid + "/get_thumbnail"
+              if (type === 'image') {
+                const fid = parseFid(attrArray[newId]['data-fid'], 0) + ':' + parseFid(attrArray[newId]['data-fid'], 1)
+                tempObj.url = baseUrl + 'v2/external-images/' + fid + '/get_thumbnail'
               } else {
                 tempObj.url = getElementHref(this)
               }
@@ -1515,19 +1511,19 @@ export default {
 
             // Get plot svg string or image blob
             const fetchPromises = itemArray.map(function (item) {
-              item.imageData = item.type === 'plot' ? 
-                fetchSvgString(item.url) : 
-                fetchImageBase64(item.url)
+              item.imageData = item.type === 'plot'
+                ? fetchSvgString(item.url)
+                : fetchImageBase64(item.url)
               return item
             })
-            const data = await Promise.all(fetchPromises)            
+            const data = await Promise.all(fetchPromises)
 
             const newElemPromises = data.map(async function (item) {
               let promise
               if (item.type === 'plot') {
                 const svgString = await item.imageData
                 promise = new Promise(resolve => {
-                  const elem = new DOMParser().parseFromString(                  
+                  const elem = new DOMParser().parseFromString(
                     svgString,
                     'application/xml'
                   ).documentElement
@@ -1538,7 +1534,7 @@ export default {
               } else {
                 const imageBase64 = await item.imageData
                 jQuery('#fq-svg-container').find('#' + item.id).attr('href', imageBase64 + '#' + new Date().getTime())
-                promise = new Promise(resolve => {resolve()})
+                promise = new Promise(resolve => { resolve() })
               }
               return promise
             })
@@ -1630,7 +1626,7 @@ export default {
         const uploadFileToFiglinQ = (
           formData,
           apiEndpoint,
-          world_readable,
+          worldReadable,
           updateModal,
           parentId,
           mode
@@ -1649,7 +1645,7 @@ export default {
 
           const headers = {
             'X-File-Name': fqExportDocFname,
-            'Plotly-World-Readable': world_readable,
+            'Plotly-World-Readable': worldReadable,
             'X-CSRFToken': fqCsrfToken
           }
 
@@ -2035,7 +2031,7 @@ export default {
             return
           }
           const apiEndpoint = 'upload'
-          const world_readable = jQuery('#fq-file-upload-world-readable').val()
+          const worldReadable = jQuery('#fq-file-upload-world-readable').val()
           const imageFile = jQuery('#fq-file-upload-input')[0].files[0]
           fqExportDocFname = jQuery('#fq-file-upload-input-label').html()
           fqExportMode = 'upload'
@@ -2046,7 +2042,7 @@ export default {
           uploadFileToFiglinQ(
             formData,
             apiEndpoint,
-            world_readable,
+            worldReadable,
             true,
             fqSelectedFolderId[fqModalFileTabMode],
             'upload'
@@ -2681,7 +2677,7 @@ export default {
           fqExportDocFname = jQuery('#fq-modal-save-name-input').val()
           fqExportDocSize = parseInt(jQuery('#fq-modal-export-size-select').val(), 10)
 
-          const world_readable = jQuery('#file_upload_world_readable').val()
+          const worldReadable = jQuery('#file_upload_world_readable').val()
 
           // TODO *properly* check if file name exists via API
           let replacedFid
@@ -2722,7 +2718,7 @@ export default {
           const imageFile = new File([imageBlob], fqExportDocFname + '.svg')
 
           const thumbBlob = await exportImageFromEditor()
-          
+
           const thumbFile = new File([thumbBlob], fqExportDocFname + '_thumb.png')
 
           const formData = new FormData()
@@ -2751,7 +2747,7 @@ export default {
           uploadFileToFiglinQ(
             formData,
             apiEndpoint,
-            world_readable,
+            worldReadable,
             true,
             fqSelectedFolderId[fqModalFileTabMode],
             'upload'
@@ -2818,8 +2814,6 @@ export default {
             return
           }
 
-          
-
           jQuery('#fq-save-indicator').show()
           event.target.blur()
 
@@ -2829,7 +2823,7 @@ export default {
 
           fqSelectedFolderId[fqModalFileTabMode] =
               parseFid(fqCurrentFigData.fid, 0) + ':' + fqCurrentFigData.parent
-          const world_readable = fqCurrentFigData.world_readable
+          const worldReadable = fqCurrentFigData.world_readable
           const replacedFid = fqCurrentFigData.fid
 
           // Clean up image URLs to remove cachebusting hashes (see adjustPlots())
@@ -2877,7 +2871,7 @@ export default {
           //   username === fqUsername ? fqCurrentFigData.parent : -1
           // console.log(fqCurrentFigData)
 
-          uploadFileToFiglinQ(formData, apiEndpoint, world_readable, false, false, 'replace')
+          uploadFileToFiglinQ(formData, apiEndpoint, worldReadable, false, false, 'replace')
         })
 
         jQuery(document).on('click', '#fq-menu-file-save-figure-as', () => {
