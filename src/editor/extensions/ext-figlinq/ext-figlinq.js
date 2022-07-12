@@ -211,6 +211,10 @@ export default {
           jQuery('#elem_id').hide()
           jQuery('#elem_class').hide()
           jQuery('#tool_length_adjust').hide()
+
+          // Hide image URL input
+          jQuery(jQuery(jQuery('#stroke_linecap')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot).find("#popupToggle").hide()
+          jQuery(jQuery(jQuery('#stroke_linejoin')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot).find("#popupToggle").hide()
         }
 
         // Fitting to content does not work
@@ -2020,8 +2024,12 @@ export default {
           }
         })
 
-        jQuery(document).on('mouseup', '.draggable-source', e => {
-          e.target.blur()
+        jQuery(document).on('mouseup', '.draggable-source', e => {          
+          document.activeElement.blur()
+        })
+
+        jQuery(document).on('mouseup', '.fq-modal-adjust-input', e => {
+          e.stopPropagation()
         })
 
         jQuery(document).on('click', '#fq-modal-upload-confirm-btn', e => {

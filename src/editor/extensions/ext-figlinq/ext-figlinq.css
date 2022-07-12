@@ -346,8 +346,11 @@ se-select {
 }
 
 .fq-modal-adjust-table input[type='text'] {
-  padding: 0px;
+  width: 30px;
+  padding-left: 4px;
+  padding-right: 4px;
 }
+
 .fq-modal-adjust-table td {
   padding: 2px;
   padding-right: 6px;
