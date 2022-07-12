@@ -2324,6 +2324,7 @@ export default {
         })
 
         jQuery(document).on('click', '.fq-modal-file-tab', e => {
+          e.preventDefault()
           showModalSpinner()
           jQuery('.fq-modal-file-tab').removeClass('is-active')
           jQuery('#fq-modal-add-confirm-btn, #col_select').prop('disabled', true)
@@ -2357,7 +2358,7 @@ export default {
         jQuery(document).on(
           'click',
           '.fq-modal-plot-item, .fq-modal-image-item, .fq-modal-figure-item',
-          e => {
+          e => {            
             if (fqModalMode === 'saveFigure') {
               if (jQuery(e.target).hasClass('fq-modal-figure-item')) {
                 jQuery('.fq-modal-plot-item, .fq-modal-image-item, .fq-modal-figure-item').removeClass(
@@ -2414,6 +2415,7 @@ export default {
         )
 
         jQuery(document).on('click', '.fq-modal-folder-item', e => {
+          e.preventDefault();
           const dataFid = jQuery(e.currentTarget)
             .data('fid')
             .toString()
