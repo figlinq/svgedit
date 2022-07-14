@@ -2039,7 +2039,7 @@ export default {
             return
           }
           const apiEndpoint = 'upload'
-          const worldReadable = jQuery('#fq-file-upload-world-readable').val()
+          const worldReadable = false
           const imageFile = jQuery('#fq-file-upload-input')[0].files[0]
           fqExportDocFname = jQuery('#fq-file-upload-input-label').html()
           fqExportMode = 'upload'
