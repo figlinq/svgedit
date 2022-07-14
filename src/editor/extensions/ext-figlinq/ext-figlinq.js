@@ -2687,7 +2687,7 @@ export default {
           fqExportDocFname = jQuery('#fq-modal-save-name-input').val()
           fqExportDocSize = parseInt(jQuery('#fq-modal-export-size-select').val(), 10)
 
-          const worldReadable = jQuery('#file_upload_world_readable').val()
+          const worldReadable = false
 
           // TODO *properly* check if file name exists via API
           let replacedFid
