@@ -292,7 +292,7 @@ export default {
           })
         }
 
-        const setInteractiveOn = () => {
+        const setInteractiveOn = async () => {
           svgCanvas.clearSelection()
 
           // Get all plots
@@ -601,7 +601,7 @@ export default {
           return href
         }
 
-        const generateForeignObject = async currentImg => {
+        const generateForeignObject = currentImg => {
           const imgHref = getElementHref(currentImg)
           const contentHref = decodeURIComponent(currentImg.data('content_href'))
 
