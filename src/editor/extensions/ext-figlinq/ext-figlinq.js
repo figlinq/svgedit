@@ -381,7 +381,8 @@ export default {
           if (fid) {
             svgCanvas.clear()
             openFigure({ data: { fid } })
-          } else if (add) {
+          } 
+          if (add) {
             // preload multiple files, open modal
             const fidArray = add.split(',')
             const checked = jQuery('#fq-menu-interact-switch').is(':checked')
