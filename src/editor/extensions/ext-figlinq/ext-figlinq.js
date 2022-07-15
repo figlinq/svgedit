@@ -211,6 +211,9 @@ export default {
           jQuery('#elem_id').hide()
           jQuery('#elem_class').hide()
           jQuery('#tool_length_adjust').hide()
+          if(window.location.host === 'plotly.local'){
+            jQuery('#editor_panel').hide()
+          }
 
           // Hide image URL input
           jQuery(jQuery(jQuery('#stroke_linecap')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot).find("#popupToggle").hide()
