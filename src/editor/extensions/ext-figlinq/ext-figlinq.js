@@ -211,9 +211,7 @@ export default {
           jQuery('#elem_id').hide()
           jQuery('#elem_class').hide()
           jQuery('#tool_length_adjust').hide()
-          if(window.location.host === 'plotly.local'){
-            jQuery('#editor_panel').hide()
-          }
+          jQuery('#editor_panel').hide()
 
           // Hide image URL input
           jQuery(jQuery(jQuery('#stroke_linecap')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot).find("#popupToggle").hide()
@@ -935,6 +933,7 @@ export default {
         }
 
         const openFigure = async function (e) {
+          jQuery('#fq-load-indicator').show()
           const url = baseUrl + 'v2/external-images/' + e.data.fid
 
           $.ajax({
@@ -975,9 +974,11 @@ export default {
               if (decodeURIComponent(currentUrl.href) !== initialUrl.href) {
                 window.history.pushState(null, null, decodeURIComponent(currentUrl.href))
               }
+              jQuery('#fq-load-indicator').hide()
             })
             .fail(function () {
               showToast('This file could not be loaded', 'is-danger')
+              jQuery('#fq-load-indicator').hide()
             })
         }
 
@@ -2028,7 +2029,7 @@ export default {
           }
         })
 
-        jQuery(document).on('mouseup', '.draggable-source', e => {          
+        jQuery(document).on('mouseup', '.draggable-source', () => {          
           document.activeElement.blur()
         })
 
@@ -2331,8 +2332,9 @@ export default {
           svgEditor.updateCanvas()
         })
 
-        jQuery(document).on('click', '.fq-modal-cancel-btn', () => {
-          jQuery('.modal').removeClass('is-active')
+        jQuery(document).on('click', '.fq-modal-cancel-btn', (e) => {
+          jQuery(e.target).parent().closest('.modal').removeClass('is-active')
+          // jQuery('.modal').removeClass('is-active')
         })
 
         jQuery(document).on('click', '.fq-modal-file-tab', e => {
@@ -2669,7 +2671,7 @@ export default {
         })
 
         jQuery(document).on('click', '#fq-modal-files-open-figure-confirm', () => {
-          jQuery('#fq-modal-file').removeClass('is-active')
+          jQuery('#fq-modal-file').removeClass('is-active')          
           jQuery(document).unbind('keyup', closeModalOnEscape)
           jQuery('#fq-modal-confirm-btn-ok').html('Open figure')
           jQuery('#fq-modal-confirm').addClass('is-active')

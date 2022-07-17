@@ -16,7 +16,7 @@
   background-color: #eef8ff;
 }
 
-.panel-block span, {
+.panel-block span {
   pointer-events: none;
 }
 
@@ -64,7 +64,7 @@
 
 #fq-powered-by-svgedit strong {
   color: white !important;
-  font-weight: bold;  
+  font-weight: bold;
 }
 
 #fq-spinner {
@@ -81,7 +81,7 @@
   margin-right: 4px;
   background-color: var(--input-color);
   border-radius: 3px;
-  max-height: 22px !important;  
+  max-height: 22px !important;
 }
 
 #zoom select {
@@ -385,6 +385,7 @@ se-select {
 
 .drag-handle {
   cursor: move;
+  user-select: none;
 }
 
 .control .input {
@@ -406,13 +407,40 @@ se-select {
   top: 200px !important;
 }
 
-#fq-save-indicator {
+#fq-save-indicator,
+#fq-load-indicator {
   display: none;
   font-size: 14px;
 }
-#fq-save-indicator div{
+#fq-save-indicator div,
+#fq-load-indicator div {
   height: 100%;
 }
-.fq-list-item-text, .panel-icon{
+
+.fq-list-item-text,
+.panel-icon {
   pointer-events: none;
+}
+
+.spinning {
+  font-size: 16px !important;
+  -webkit-animation: spin 1s linear infinite;
+  -moz-animation: spin 1s linear infinite;
+  animation: spin 1s linear infinite;
+}
+@-moz-keyframes spin {
+  100% {
+    -moz-transform: rotate(360deg);
+  }
+}
+@-webkit-keyframes spin {
+  100% {
+    -webkit-transform: rotate(360deg);
+  }
+}
+@keyframes spin {
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
 }
