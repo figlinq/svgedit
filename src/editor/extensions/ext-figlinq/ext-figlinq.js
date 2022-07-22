@@ -17,6 +17,35 @@ import * as hstry from '../../../svgcanvas/history'
 
 const { InsertElementCommand, BatchCommand } = hstry
 
+// Cookies
+function createCookie(name, value, days) {
+  let expires
+  if (days) {
+      let date = new Date();
+      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+      expires = "; expires=" + date.toGMTString();
+  } else {
+    expires = "";
+  }               
+
+  document.cookie = name + "=" + value + expires + "; path=/";
+}
+
+function readCookie(name) {
+  var nameEQ = name + "=";
+  var ca = document.cookie.split(';');
+  for (var i = 0; i < ca.length; i++) {
+      var c = ca[i];
+      while (c.charAt(0) === ' ') {c = c.substring(1, c.length)};
+      if (c.indexOf(nameEQ) === 0) {return c.substring(nameEQ.length, c.length)};
+  }
+  return null;
+}
+
+function eraseCookie(name) {
+  createCookie(name, "", -1);
+}
+
 /**
  * @file ext-figlinq.js
  * @license MIT
@@ -377,12 +406,22 @@ export default {
            * @returns {void}
            */
         const loadFqFigure = () => {
+
+          // First try to load figure from URL fid
           const fid = getUrlParameter('fid')
           const add = getUrlParameter('add')
           if (fid) {
             svgCanvas.clear()
             openFigure({ data: { fid } })
-          } 
+          }
+
+          // Load figure from cookie fid 
+          const cookieFid = readCookie( 'figlinq-fid' )
+          if (cookieFid && !add) {
+            svgCanvas.clear()
+            openFigure({ data: { fid: cookieFid } })
+          }
+
           if (add) {
             // preload multiple files, open modal
             const fidArray = add.split(',')
@@ -394,6 +433,7 @@ export default {
             showModalSpinner()
             prepareFileModal('addFiglinqPreselectedContent')
             refreshModalContents(fidArray)
+            window.history.replaceState({}, document.location, "/figures/");
           }
         }
 
@@ -968,12 +1008,17 @@ export default {
               showToast('File "' + data.filename + '" loaded', 'is-success')
 
               // Add fid to url
-              const initialUrl = new URL(document.location)
-              const currentUrl = new URL(document.location)
-              currentUrl.searchParams.set('fid', data.fid)
-              if (decodeURIComponent(currentUrl.href) !== initialUrl.href) {
-                window.history.pushState(null, null, decodeURIComponent(currentUrl.href))
-              }
+              // const initialUrl = new URL(document.location)
+              // const currentUrl = new URL(document.location)
+              // currentUrl.searchParams.set('fid', data.fid)
+              // if (decodeURIComponent(currentUrl.href) !== initialUrl.href) {
+                //   window.history.pushState(null, null, decodeURIComponent(currentUrl.href))
+                // }
+                
+              // Add fid to cookie and remove from URL
+              createCookie('figlinq-fid', data.fid, 365)
+              window.history.replaceState({}, document.location, "/figures/");
+
               jQuery('#fq-load-indicator').hide()
             })
             .fail(function () {
@@ -1978,6 +2023,10 @@ export default {
             .shadowRoot.querySelector('.contextMenu')
             .setAttribute('style', 'min-width:250px;')
 
+          document.addEventListener('click', function(){
+            jQuery(jQuery('#se-cmenu_canvas')[0].shadowRoot).find('#cmenu_canvas').hide()
+          });
+            
           // Top panel position input
           style = document.createElement('style')
           style.innerHTML =
