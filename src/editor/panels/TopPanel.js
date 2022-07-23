@@ -428,8 +428,8 @@ class TopPanel {
       selElems.forEach(elem => {
         const { tagName } = elem
         tagNames.push(tagName)
-      });      
-      const allElemsSameTag = tagNames.every( (val, i, arr) => val === arr[0] )
+      })
+      const allElemsSameTag = tagNames.every((val, i, arr) => val === arr[0])
 
       // Enable panels specific for selected elements
       if (allElemsSameTag) {
