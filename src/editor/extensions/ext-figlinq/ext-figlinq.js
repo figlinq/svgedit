@@ -206,7 +206,7 @@ export default {
           </div>`
           jQuery('#zoom').replaceWith(element)
 
-          // Hide image URL input
+          // Hide image URL input and other elements
           jQuery('#image_url').hide()
           jQuery('#elem_id').hide()
           jQuery('#elem_class').hide()
@@ -216,6 +216,11 @@ export default {
           // Hide image URL input
           jQuery(jQuery(jQuery('#stroke_linecap')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot).find("#popupToggle").hide()
           jQuery(jQuery(jQuery('#stroke_linejoin')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot).find("#popupToggle").hide()
+          jQuery(jQuery(jQuery('#tool_position')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot).find("#popupToggle").hide()
+          jQuery(jQuery(jQuery('#tool_text_anchor')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot).find("#popupToggle").hide()
+          jQuery(jQuery(jQuery('#start_marker_list_opts')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot).find("#popupToggle").hide()
+          jQuery(jQuery(jQuery('#mid_marker_list_opts')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot).find("#popupToggle").hide()
+          jQuery(jQuery(jQuery('#end_marker_list_opts')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot).find("#popupToggle").hide()
         }
 
         // Fitting to content does not work
