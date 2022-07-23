@@ -21,8 +21,9 @@ const { InsertElementCommand, BatchCommand } = hstry
 function createCookie(name, value, days) {
   let expires
   if (days) {
-      let date = new Date();
-      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+      const date = new Date();
+      const h = 24, m = 60, s = 60, ms = 1000; 
+      date.setTime(date.getTime() + (days * h * m * s * ms));
       expires = "; expires=" + date.toGMTString();
   } else {
     expires = "";
@@ -141,7 +142,7 @@ export default {
         }
 
         const fqThumbWidth = 1200
-
+        const cookieExpiryDays = 365
         const fqPdfPageSizes = {
           A0: '2383.94x3370.39',
           A1: '1683.78x2383.94',
@@ -412,12 +413,13 @@ export default {
           const add = getUrlParameter('add')
           if (fid) {
             svgCanvas.clear()
+            eraseCookie( 'figlinq-fid' )
             openFigure({ data: { fid } })
           }
 
           // Load figure from cookie fid 
           const cookieFid = readCookie( 'figlinq-fid' )
-          if (cookieFid && !add) {
+          if (!fid && cookieFid && !add) {
             svgCanvas.clear()
             openFigure({ data: { fid: cookieFid } })
           }
@@ -932,11 +934,8 @@ export default {
 
         const onConfirmClear = async function () {
           jQuery('#fq-modal-confirm').removeClass('is-active')
-
-          // Remove fid from url
-          const currentUrl = new URL(document.location)
-          currentUrl.searchParams.delete('fid')
-          window.history.pushState(null, null, currentUrl.href)
+          // Clear fid cookie
+          eraseCookie('figlinq-fid')
 
           fqCurrentFigData = false
 
@@ -1006,17 +1005,9 @@ export default {
                 svgCanvas.undoMgr.resetUndoStack()
               }, delay)
               showToast('File "' + data.filename + '" loaded', 'is-success')
-
-              // Add fid to url
-              // const initialUrl = new URL(document.location)
-              // const currentUrl = new URL(document.location)
-              // currentUrl.searchParams.set('fid', data.fid)
-              // if (decodeURIComponent(currentUrl.href) !== initialUrl.href) {
-                //   window.history.pushState(null, null, decodeURIComponent(currentUrl.href))
-                // }
-                
+              
               // Add fid to cookie and remove from URL
-              createCookie('figlinq-fid', data.fid, 365)
+              createCookie('figlinq-fid', data.fid, cookieExpiryDays)
               window.history.replaceState({}, document.location, "/figures/");
 
               jQuery('#fq-load-indicator').hide()
@@ -1762,9 +1753,8 @@ export default {
                 } else {
                   jQuery('#fq-modal-file').removeClass('is-active')
                   jQuery(document).unbind('keyup', closeModalOnEscape)
-                  const currentUrl = new URL(document.location)
-                  currentUrl.searchParams.set('fid', response.file.fid)
-                  window.history.pushState(null, null, decodeURIComponent(currentUrl.href))
+                  
+                  createCookie('figlinq-fid', response.file.fid, cookieExpiryDays)    
                   refreshModalContents()
                 }
               }
@@ -2079,6 +2069,9 @@ export default {
         })
 
         jQuery(document).on('mouseup', '.draggable-source', () => {          
+          document.activeElement.blur()
+        })
+        jQuery(document).on('mouseup', '#workarea', () => {          
           document.activeElement.blur()
         })
 
@@ -2728,7 +2721,7 @@ export default {
           setModalConfirmBtnHandler(openFigure, { fid })
         })
 
-        jQuery(document).on('click', '#fq-menu-file-new-figure', () => {
+        jQuery(document).on('click', '#fq-menu-file-new-figure', () => {          
           jQuery('#fq-modal-confirm-btn-ok').html('New figure')
           setModalConfirmBtnHandler(onConfirmClear)
           jQuery('#fq-modal-confirm').addClass('is-active')
