@@ -17,6 +17,36 @@ import * as hstry from '../../../svgcanvas/history'
 
 const { InsertElementCommand, BatchCommand } = hstry
 
+// Cookies
+function createCookie (name, value, days) {
+  let expires
+  if (days) {
+    const date = new Date()
+    const h = 24; const m = 60; const s = 60; const ms = 1000
+    date.setTime(date.getTime() + (days * h * m * s * ms))
+    expires = '; expires=' + date.toGMTString()
+  } else {
+    expires = ''
+  }
+
+  document.cookie = name + '=' + value + expires + '; path=/'
+}
+
+function readCookie (name) {
+  const nameEQ = name + '='
+  const ca = document.cookie.split(';')
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i]
+    while (c.charAt(0) === ' ') { c = c.substring(1, c.length) };
+    if (c.indexOf(nameEQ) === 0) { return c.substring(nameEQ.length, c.length) };
+  }
+  return null
+}
+
+function eraseCookie (name) {
+  createCookie(name, '', -1)
+}
+
 /**
  * @file ext-figlinq.js
  * @license MIT
@@ -112,7 +142,7 @@ export default {
         }
 
         const fqThumbWidth = 1200
-
+        const cookieExpiryDays = 365
         const fqPdfPageSizes = {
           A0: '2383.94x3370.39',
           A1: '1683.78x2383.94',
@@ -221,6 +251,7 @@ export default {
           jQuery(jQuery(jQuery('#start_marker_list_opts')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot).find("#popupToggle").hide()
           jQuery(jQuery(jQuery('#mid_marker_list_opts')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot).find("#popupToggle").hide()
           jQuery(jQuery(jQuery('#end_marker_list_opts')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot).find("#popupToggle").hide()
+
         }
 
         // Fitting to content does not work
@@ -382,12 +413,22 @@ export default {
            * @returns {void}
            */
         const loadFqFigure = () => {
+          // First try to load figure from URL fid
           const fid = getUrlParameter('fid')
           const add = getUrlParameter('add')
           if (fid) {
             svgCanvas.clear()
+            eraseCookie('figlinq-fid')
             openFigure({ data: { fid } })
-          } 
+          }
+
+          // Load figure from cookie fid
+          const cookieFid = readCookie('figlinq-fid')
+          if (!fid && cookieFid && !add) {
+            svgCanvas.clear()
+            openFigure({ data: { fid: cookieFid } })
+          }
+
           if (add) {
             // preload multiple files, open modal
             const fidArray = add.split(',')
@@ -399,6 +440,7 @@ export default {
             showModalSpinner()
             prepareFileModal('addFiglinqPreselectedContent')
             refreshModalContents(fidArray)
+            window.history.replaceState({}, document.location, '/figures/')
           }
         }
 
@@ -897,11 +939,8 @@ export default {
 
         const onConfirmClear = async function () {
           jQuery('#fq-modal-confirm').removeClass('is-active')
-
-          // Remove fid from url
-          const currentUrl = new URL(document.location)
-          currentUrl.searchParams.delete('fid')
-          window.history.pushState(null, null, currentUrl.href)
+          // Clear fid cookie
+          eraseCookie('figlinq-fid')
 
           fqCurrentFigData = false
 
@@ -972,13 +1011,10 @@ export default {
               }, delay)
               showToast('File "' + data.filename + '" loaded', 'is-success')
 
-              // Add fid to url
-              const initialUrl = new URL(document.location)
-              const currentUrl = new URL(document.location)
-              currentUrl.searchParams.set('fid', data.fid)
-              if (decodeURIComponent(currentUrl.href) !== initialUrl.href) {
-                window.history.pushState(null, null, decodeURIComponent(currentUrl.href))
-              }
+              // Add fid to cookie and remove from URL
+              createCookie('figlinq-fid', data.fid, cookieExpiryDays)
+              window.history.replaceState({}, document.location, '/figures/')
+
               jQuery('#fq-load-indicator').hide()
             })
             .fail(function () {
@@ -1722,9 +1758,8 @@ export default {
                 } else {
                   jQuery('#fq-modal-file').removeClass('is-active')
                   jQuery(document).unbind('keyup', closeModalOnEscape)
-                  const currentUrl = new URL(document.location)
-                  currentUrl.searchParams.set('fid', response.file.fid)
-                  window.history.pushState(null, null, decodeURIComponent(currentUrl.href))
+
+                  createCookie('figlinq-fid', response.file.fid, cookieExpiryDays)
                   refreshModalContents()
                 }
               }
@@ -1983,6 +2018,10 @@ export default {
             .shadowRoot.querySelector('.contextMenu')
             .setAttribute('style', 'min-width:250px;')
 
+          document.addEventListener('click', function () {
+            jQuery(jQuery('#se-cmenu_canvas')[0].shadowRoot).find('#cmenu_canvas').hide()
+          })
+
           // Top panel position input
           style = document.createElement('style')
           style.innerHTML =
@@ -2034,7 +2073,10 @@ export default {
           }
         })
 
-        jQuery(document).on('mouseup', '.draggable-source', () => {          
+        jQuery(document).on('mouseup', '.draggable-source', () => {
+          document.activeElement.blur()
+        })
+        jQuery(document).on('mouseup', '#workarea', () => {
           document.activeElement.blur()
         })
 
@@ -2377,7 +2419,7 @@ export default {
         jQuery(document).on(
           'click',
           '.fq-modal-plot-item, .fq-modal-image-item, .fq-modal-figure-item',
-          e => {            
+          e => {
             if (fqModalMode === 'saveFigure') {
               if (jQuery(e.target).hasClass('fq-modal-figure-item')) {
                 jQuery('.fq-modal-plot-item, .fq-modal-image-item, .fq-modal-figure-item').removeClass(
@@ -2434,7 +2476,7 @@ export default {
         )
 
         jQuery(document).on('click', '.fq-modal-folder-item', e => {
-          e.preventDefault();
+          e.preventDefault()
           const dataFid = jQuery(e.currentTarget)
             .data('fid')
             .toString()
@@ -2676,7 +2718,7 @@ export default {
         })
 
         jQuery(document).on('click', '#fq-modal-files-open-figure-confirm', () => {
-          jQuery('#fq-modal-file').removeClass('is-active')          
+          jQuery('#fq-modal-file').removeClass('is-active')
           jQuery(document).unbind('keyup', closeModalOnEscape)
           jQuery('#fq-modal-confirm-btn-ok').html('Open figure')
           jQuery('#fq-modal-confirm').addClass('is-active')
