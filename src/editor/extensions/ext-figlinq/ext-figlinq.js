@@ -428,6 +428,10 @@ export default {
             openFigure({ data: { fid: cookieFid } })
           }
 
+          if (!fid && !cookieFid) {
+            jQuery('#fq-figure-name .contents').html('Untitled figure')
+          }
+
           if (add) {
             // preload multiple files, open modal
             const fidArray = add.split(',')
@@ -940,6 +944,8 @@ export default {
           jQuery('#fq-modal-confirm').removeClass('is-active')
           // Clear fid cookie
           eraseCookie('figlinq-fid')
+          // Set figure title
+          jQuery('#fq-figure-name .contents').html('Untitled figure')
 
           fqCurrentFigData = false
 
@@ -1013,10 +1019,11 @@ export default {
               // Add fid to cookie and remove from URL
               createCookie('figlinq-fid', data.fid, cookieExpiryDays)
               window.history.replaceState({}, document.location, '/figures/')
-
+              jQuery('#fq-figure-name .contents').html(data.filename)
               jQuery('#fq-load-indicator').hide()
             })
             .fail(function () {
+              jQuery('#fq-figure-name .contents').html('')
               showToast('This file could not be loaded', 'is-danger')
               jQuery('#fq-load-indicator').hide()
             })
@@ -2876,6 +2883,7 @@ export default {
             return
           }
 
+          jQuery('#fq-save-indicator .contents').html('Saving...')
           jQuery('#fq-save-indicator').show()
           event.target.blur()
 
