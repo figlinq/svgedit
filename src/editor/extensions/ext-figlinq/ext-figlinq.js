@@ -2189,6 +2189,15 @@ export default {
           jQuery('#fq-modal-adjust').addClass('is-active')
         })
 
+        jQuery(document).on('click', '#fq-menu-select-all-text', () => {
+          const elements = jQuery('#svgcontent').find('text')
+          if (elements.length === 1) {
+            svgCanvas.addToSelection(elements, true)
+          } else if (elements.length > 1) {
+            svgCanvas.addToSelection(elements, false)
+          }
+        })
+
         jQuery(document).on('click', '#fq-menu-object-align', () => {
           jQuery('#fq-modal-align').addClass('is-active')
         })
