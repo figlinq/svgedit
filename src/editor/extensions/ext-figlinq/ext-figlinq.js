@@ -244,14 +244,13 @@ export default {
           jQuery('#editor_panel').hide()
 
           // Hide image URL input
-          jQuery(jQuery(jQuery('#stroke_linecap')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot).find("#popupToggle").hide()
-          jQuery(jQuery(jQuery('#stroke_linejoin')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot).find("#popupToggle").hide()
-          jQuery(jQuery(jQuery('#tool_position')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot).find("#popupToggle").hide()
-          jQuery(jQuery(jQuery('#tool_text_anchor')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot).find("#popupToggle").hide()
-          jQuery(jQuery(jQuery('#start_marker_list_opts')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot).find("#popupToggle").hide()
-          jQuery(jQuery(jQuery('#mid_marker_list_opts')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot).find("#popupToggle").hide()
-          jQuery(jQuery(jQuery('#end_marker_list_opts')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot).find("#popupToggle").hide()
-
+          jQuery(jQuery(jQuery('#stroke_linecap')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot).find('#popupToggle').hide()
+          jQuery(jQuery(jQuery('#stroke_linejoin')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot).find('#popupToggle').hide()
+          jQuery(jQuery(jQuery('#tool_position')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot).find('#popupToggle').hide()
+          jQuery(jQuery(jQuery('#tool_text_anchor')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot).find('#popupToggle').hide()
+          jQuery(jQuery(jQuery('#start_marker_list_opts')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot).find('#popupToggle').hide()
+          jQuery(jQuery(jQuery('#mid_marker_list_opts')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot).find('#popupToggle').hide()
+          jQuery(jQuery(jQuery('#end_marker_list_opts')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot).find('#popupToggle').hide()
         }
 
         // Fitting to content does not work
