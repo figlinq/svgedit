@@ -2024,6 +2024,10 @@ export default {
             .shadowRoot.querySelector('.contextMenu')
             .setAttribute('style', 'min-width:250px;')
 
+          style = document.createElement('style')
+          style.innerHTML = "li a:not(.disabled):hover{background-color: lightgray;}"
+          document.querySelector('#se-cmenu_canvas').shadowRoot.appendChild(style)
+
           document.addEventListener('click', function () {
             jQuery(jQuery('#se-cmenu_canvas')[0].shadowRoot).find('#cmenu_canvas').hide()
           })
