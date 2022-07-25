@@ -2086,8 +2086,14 @@ export default {
         jQuery(document).on('mouseup', '.draggable-source', () => {
           document.activeElement.blur()
         })
+
+        // This is a very complicated way to blur inputs when user clicks canvas area
         jQuery(document).on('mouseup', '#workarea', () => {
-          document.activeElement.blur()
+          const ae = document.activeElement
+          const input = ae?.shadowRoot?.childNodes[3]?.childNodes[4]?.shadowRoot?.children[2]?.shadowRoot?.children[1]
+          if(typeof input !== 'undefined'){
+            jQuery(input).trigger('blur')
+          }
         })
 
         jQuery(document).on('mouseup', '.fq-modal-adjust-input', e => {
