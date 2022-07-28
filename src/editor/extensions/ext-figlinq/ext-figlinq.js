@@ -29,7 +29,7 @@ function createCookie (name, value, days) {
     expires = ''
   }
 
-  document.cookie = name + '=' + value + expires + '; path=/'
+  document.cookie = name + '=' + value + expires + '; path=/figures/'
 }
 
 function readCookie (name) {
@@ -1017,6 +1017,7 @@ export default {
               showToast('File "' + data.filename + '" loaded', 'is-success')
 
               // Add fid to cookie and remove from URL
+              eraseCookie('figlinq-fid')
               createCookie('figlinq-fid', data.fid, cookieExpiryDays)
               window.history.replaceState({}, document.location, '/figures/')
               jQuery('#fq-figure-name .contents').html(data.filename)
@@ -1765,11 +1766,11 @@ export default {
                   jQuery('#fq-modal-file').removeClass('is-active')
                   jQuery(document).unbind('keyup', closeModalOnEscape)
 
-                  createCookie('figlinq-fid', response.file.fid, cookieExpiryDays)
                   refreshModalContents()
                 }
               }
-
+              createCookie('figlinq-fid', response.file.fid, cookieExpiryDays)
+              jQuery('#fq-figure-name .contents').html(response.file.filename)
               showToast('File ' + response.file.filename + successMsg, 'is-success')
               if (fqExportMode !== 'upload') {
                 fqCurrentFigData = response.file
