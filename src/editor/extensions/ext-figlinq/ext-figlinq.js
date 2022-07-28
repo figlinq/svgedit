@@ -1340,7 +1340,7 @@ export default {
                     const property = jQuery(this).data('property')
                     const propertyPath = property.split('-')
                     const value = jQuery(`input[data-property='${property}'][type='text']`).val()
-                    const valueScaled = equalizeProps ? value / elem.scale : value
+                    const valueScaled = equalizeProps ? value / plotElem.scale : value
                     setDeep(resultJson, propertyPath, valueScaled, true)
                   })
                 return resultJson
