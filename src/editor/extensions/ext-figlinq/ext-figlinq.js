@@ -1631,10 +1631,12 @@ export default {
 
         const copyAttributes = (source, target) => {
           return Array.from(source.attributes).forEach(attribute => {
-            target.setAttribute(
-              attribute.nodeName === 'id' ? 'data-id' : attribute.nodeName,
-              attribute.nodeValue
-            )
+            if (attribute.nodeName !== 'href' && attribute.nodeName !== 'xlink:href') {
+              target.setAttribute(
+                attribute.nodeName === 'id' ? 'data-id' : attribute.nodeName,
+                attribute.nodeValue
+              )
+            }
           })
         }
 
@@ -2026,7 +2028,7 @@ export default {
             .setAttribute('style', 'min-width:250px;')
 
           style = document.createElement('style')
-          style.innerHTML = "li a:not(.disabled):hover{background-color: lightgray;}"
+          style.innerHTML = 'li a:not(.disabled):hover{background-color: lightgray;}'
           document.querySelector('#se-cmenu_canvas').shadowRoot.appendChild(style)
 
           document.addEventListener('click', function () {
@@ -2092,7 +2094,7 @@ export default {
         jQuery(document).on('mouseup', '#workarea', () => {
           const ae = document.activeElement
           const input = ae?.shadowRoot?.childNodes[3]?.childNodes[4]?.shadowRoot?.children[2]?.shadowRoot?.children[1]
-          if(typeof input !== 'undefined'){
+          if (typeof input !== 'undefined') {
             jQuery(input).trigger('blur')
           }
         })
