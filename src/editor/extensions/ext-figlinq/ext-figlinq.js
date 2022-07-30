@@ -798,7 +798,7 @@ export default {
             svgCanvas.setSvgOption(key, value)
           }
 
-          const svg = '<?xml version="1.0"?>' + svgCanvas.svgCanvasToString()
+          const svg = '<?xml version="1.0"?>' + svgCanvas.svgToString(svgCanvas.getSvgContent(), 0)
 
           // Revert back to previous units
           if (initialUnit !== 'px' && revertUnit) {
@@ -1719,12 +1719,6 @@ export default {
               // Uploading a new file
               headers['Plotly-Parent'] = -1
               headers['target-fid'] = parentId
-            } else if (mode === 'replace') {
-              // Overwriting an existing file
-              headers['Plotly-Parent'] = -1
-              // headers["target-fid"] = `${parseFid(fqCurrentFigData.fid, 0)}:${
-              //   fqCurrentFigData.parent
-              // }`
             }
           } else if (parentId) {
             headers['Plotly-Parent'] = parentIndex
@@ -2922,10 +2916,6 @@ export default {
           // resetPlotImageUrls()
 
           const svg = getSvgFromEditor()
-          // IMPORTANT set to 'replace' if updating prod until new backend is live
-          // const apiEndpoint = 'replace'
-
-          // TODO set to 'upload' once new backend is live
           const apiEndpoint = 'upload'
 
           const imageBlob = new Blob([svg], {
