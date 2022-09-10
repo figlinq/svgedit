@@ -789,7 +789,7 @@ export default {
           }
 
           const saveOpts = {
-            images: svgEditor.configObj.pref('img_save'),
+            images: 'ref',
             round_digits: 6,
             apply: true
           }
@@ -2978,7 +2978,6 @@ export default {
         })
 
         // Init
-        svgCanvas.setSvgOption('images', 'ref')
         createUnitMap()
         ensureRulesGrids()
         getFqUsername()
