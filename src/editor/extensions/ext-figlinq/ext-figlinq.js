@@ -2978,6 +2978,7 @@ export default {
         })
 
         // Init
+        svgCanvas.setSvgOption('images', 'ref')
         createUnitMap()
         ensureRulesGrids()
         getFqUsername()
