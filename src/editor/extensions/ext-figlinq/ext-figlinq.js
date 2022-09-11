@@ -788,15 +788,7 @@ export default {
             svgEditor.updateCanvas()
           }
 
-          const saveOpts = {
-            images: 'ref',
-            round_digits: 6,
-            apply: true
-          }
-          const saveOptions = svgCanvas.mergeDeep(svgCanvas.getSvgOption(), saveOpts)
-          for (const [key, value] of Object.entries(saveOptions)) {
-            svgCanvas.setSvgOption(key, value)
-          }
+          setCanvasOptions()
 
           const svg = '<?xml version="1.0"?>' + svgCanvas.svgToString(svgCanvas.getSvgContent(), 0)
 
@@ -807,6 +799,18 @@ export default {
             svgEditor.updateCanvas()
           }
           return svg
+        }
+
+        const setCanvasOptions = () => {
+          const saveOpts = {
+            images: 'ref',
+            round_digits: 2,
+            apply: true
+          }
+          const saveOptions = svgCanvas.mergeDeep(svgCanvas.getSvgOption(), saveOpts)
+          for (const [key, value] of Object.entries(saveOptions)) {
+            svgCanvas.setSvgOption(key, value)
+          }
         }
 
         const showToast = (msg, type) => {
@@ -2978,6 +2982,7 @@ export default {
         })
 
         // Init
+        setCanvasOptions()
         createUnitMap()
         ensureRulesGrids()
         getFqUsername()
