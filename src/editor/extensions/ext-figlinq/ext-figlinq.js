@@ -2985,7 +2985,7 @@ export default {
         setCanvasOptions()
         createUnitMap()
         ensureRulesGrids()
-        getFqUsername()
+        // getFqUsername()
         setInteractiveOff()
         addObservers()
         upgradeUi()
@@ -3010,7 +3010,42 @@ export default {
         });
         
         const getCurrentUser = async ()=>{
-          console.log(await askParent('getCurrentUser'));
+          const currentUser = await askParent('getCurrentUser');
+          if (currentUser.username) {
+            jQuery('#fq-menu-login-btn').addClass('is-hidden')
+            jQuery('#fq-menu-signup-btn').addClass('is-hidden')
+            jQuery('.fq-menu-add-content-btn').removeClass('is-hidden')
+            jQuery('#fq-menu-interact-switch-item').removeClass('is-hidden')
+            jQuery('#fq-menu-file-open-figure').removeClass('is-hidden')
+            jQuery('#fq-menu-file-save-figure').removeClass('is-hidden')
+            jQuery('#fq-menu-file-save-figure-as').removeClass('is-hidden')
+            jQuery('#fq-menu-file-import-local-content').removeClass('is-hidden')
+            jQuery('#fq-breadcrumb-item-home')
+              .data('fid', `${currentUser.username}:-1`)
+              .find('.fq-modal-folder-item')
+              .data('fid', `${currentUser.username}:-1`)
+
+            fqUsername = currentUser.username
+            jQuery('#fq-menu-account-user-name').html(fqUsername.slice(0, 2))
+            jQuery('#fq-menu-account-dropdown-user-name').html(fqUsername)
+            jQuery('#fq-menu-account-navbar-item1').removeClass('is-hidden')
+            jQuery('#fq-menu-account-navbar-item2').removeClass('is-hidden')
+
+            jQuery('#fq-user-link-files').attr('href', baseUrl + 'organize/home')
+            jQuery('#fq-user-link-charts').attr('href', baseUrl + 'create')
+            jQuery('#fq-user-link-figures').attr('href', baseUrl + 'figures')
+            jQuery('#fq-user-link-collections').attr('href', baseUrl + 'dashboard/create')
+
+            jQuery('#fq-menu-account-sign-out').attr('href', baseUrl + 'signout')
+            jQuery('#fq-menu-account-settings').attr('href', baseUrl + 'settings/profile')
+
+            fqCsrfToken = currentUser.csrf_token
+          } else {
+            showToast(
+              'It looks like you are not logged in to FiglinQ in this browser!',
+              'is-danger'
+            )
+          }
         }
         getCurrentUser()
       }
