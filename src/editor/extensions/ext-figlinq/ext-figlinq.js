@@ -265,59 +265,6 @@ export default {
           }, delay)
         }
 
-        const getFqUsername = () => {
-          $.ajax({
-            url: baseUrl + 'v2/users/current',
-            xhrFields: { withCredentials: true }
-          })
-            .done(function (data) {
-              if (data.username) {
-                jQuery('#fq-menu-login-btn').addClass('is-hidden')
-                jQuery('#fq-menu-signup-btn').addClass('is-hidden')
-                jQuery('.fq-menu-add-content-btn').removeClass('is-hidden')
-                jQuery('#fq-menu-interact-switch-item').removeClass('is-hidden')
-                jQuery('#fq-menu-file-open-figure').removeClass('is-hidden')
-                jQuery('#fq-menu-file-save-figure').removeClass('is-hidden')
-                jQuery('#fq-menu-file-save-figure-as').removeClass('is-hidden')
-                jQuery('#fq-menu-file-import-local-content').removeClass('is-hidden')
-                jQuery('#fq-breadcrumb-item-home')
-                  .data('fid', `${data.username}:-1`)
-                  .find('.fq-modal-folder-item')
-                  .data('fid', `${data.username}:-1`)
-
-                fqUsername = data.username
-                jQuery('#fq-menu-account-user-name').html(fqUsername.slice(0, 2))
-                jQuery('#fq-menu-account-dropdown-user-name').html(fqUsername)
-                jQuery('#fq-menu-account-navbar-item1').removeClass('is-hidden')
-                jQuery('#fq-menu-account-navbar-item2').removeClass('is-hidden')
-
-                jQuery('#fq-user-link-files').attr('href', baseUrl + 'organize/home')
-                jQuery('#fq-user-link-charts').attr('href', baseUrl + 'create')
-                jQuery('#fq-user-link-figures').attr('href', baseUrl + 'figures')
-                jQuery('#fq-user-link-collections').attr('href', baseUrl + 'dashboard/create')
-
-                jQuery('#fq-menu-account-sign-out').attr('href', baseUrl + 'signout')
-                jQuery('#fq-menu-account-settings').attr('href', baseUrl + 'settings/profile')
-
-                fqCsrfToken = data.csrf_token
-              } else {
-                showToast(
-                  'It looks like you are not logged in to FiglinQ in this browser!',
-                  'is-danger'
-                )
-              }
-            })
-            .fail(function () {
-              jQuery('#fq-menu-login-btn').removeClass('is-hidden')
-              jQuery('#fq-menu-signup-btn').removeClass('is-hidden')
-              jQuery('.fq-menu-add-content-btn').addClass('is-hidden')
-              jQuery('.fq-menu-add-content-btn').addClass('is-hidden')
-              jQuery('.fq-menu-add-content-btn').addClass('is-hidden')
-              jQuery('.fq-menu-add-content-btn').addClass('is-hidden')
-              showToast('Could not connect to FiglinQ - are you logged in?', 'is-danger')
-            })
-        }
-
         const setInteractiveOff = () => {
           jQuery('#fq-menu-interact-switch').prop('checked', false)
           const fObjects = jQuery("svg[class='fq-fobj-container']")
@@ -2072,6 +2019,58 @@ export default {
               : defaultPropValue
         }
 
+        const getCurrentUser = async ()=>{
+          const currentUser = await askParent('GET_CURRENT_USER')
+          if (currentUser.username) {
+            jQuery('#fq-menu-login-btn').addClass('is-hidden')
+            jQuery('#fq-menu-signup-btn').addClass('is-hidden')
+            jQuery('.fq-menu-add-content-btn').removeClass('is-hidden')
+            jQuery('#fq-menu-interact-switch-item').removeClass('is-hidden')
+            jQuery('#fq-menu-file-open-figure').removeClass('is-hidden')
+            jQuery('#fq-menu-file-save-figure').removeClass('is-hidden')
+            jQuery('#fq-menu-file-save-figure-as').removeClass('is-hidden')
+            jQuery('#fq-menu-file-import-local-content').removeClass('is-hidden')
+            jQuery('#fq-breadcrumb-item-home')
+              .data('fid', `${currentUser.username}:-1`)
+              .find('.fq-modal-folder-item')
+              .data('fid', `${currentUser.username}:-1`)
+
+            fqUsername = currentUser.username
+            jQuery('#fq-menu-account-user-name').html(fqUsername.slice(0, 2))
+            jQuery('#fq-menu-account-dropdown-user-name').html(fqUsername)
+            jQuery('#fq-menu-account-navbar-item1').removeClass('is-hidden')
+            jQuery('#fq-menu-account-navbar-item2').removeClass('is-hidden')
+
+            jQuery('#fq-user-link-files').attr('href', baseUrl + 'organize/home')
+            jQuery('#fq-user-link-charts').attr('href', baseUrl + 'create')
+            jQuery('#fq-user-link-figures').attr('href', baseUrl + 'figures')
+            jQuery('#fq-user-link-collections').attr('href', baseUrl + 'dashboard/create')
+
+            jQuery('#fq-menu-account-sign-out').attr('href', baseUrl + 'signout')
+            jQuery('#fq-menu-account-settings').attr('href', baseUrl + 'settings/profile')
+
+            fqCsrfToken = currentUser.csrf_token
+          } else {
+            showToast(
+              'It looks like you are not logged in to FiglinQ in this browser!',
+              'is-danger'
+            )
+          }
+        }
+
+        const askParent = (action, payload = null) => new Promise((res, rej) => {        
+          const channel = new MessageChannel()
+          channel.port1.onmessage = ({data}) => {
+            channel.port1.close()
+            if (data.error) {
+              rej(data.error)
+            } else {
+              res(data.result)
+            }
+          }
+          parent.postMessage([action, payload], '*', [channel.port2])
+        })
+
         jQuery(document).on('change', '#fq-file-upload-input', () => {
           const fileName = jQuery('#fq-file-upload-input')[0].files.length
             ? jQuery('#fq-file-upload-input')[0].files[0].name
@@ -2888,10 +2887,11 @@ export default {
         })
 
         jQuery(document).on('click', '.fq-menu-add-content-btn', () => {
-          setInteractiveOff()
-          prepareFileModal('addFiglinqContent')
-          fqModalFileTabMode = 'my'
-          refreshModalContents()
+          askParent('OPEN_FILES_MODAL', {mode: 'select', selectFileType: ['external_image', 'plot']})
+          // setInteractiveOff()
+          // prepareFileModal('addFiglinqContent')
+          // fqModalFileTabMode = 'my'
+          // refreshModalContents()
         })
 
         jQuery(document).on('click', '#fq-menu-file-save-figure', async event => {
@@ -2985,7 +2985,6 @@ export default {
         setCanvasOptions()
         createUnitMap()
         ensureRulesGrids()
-        // getFqUsername()
         setInteractiveOff()
         addObservers()
         upgradeUi()
@@ -2993,61 +2992,7 @@ export default {
         loadFqFigure()
         updateExportFormState()
         activateDraggableModals()
-        // eslint-disable-next-line no-undef
-
-        
-        const askParent = (action, payload = null) => new Promise((res, rej) => {        
-          const channel = new MessageChannel(); 
-          channel.port1.onmessage = ({data}) => {
-            channel.port1.close();
-            if (data.error) {
-              rej(data.error);
-            } else {
-              res(data.result);
-            }
-          };        
-          parent.postMessage([action, payload], '*', [channel.port2]);
-        });
-        
-        const getCurrentUser = async ()=>{
-          const currentUser = await askParent('getCurrentUser');
-          if (currentUser.username) {
-            jQuery('#fq-menu-login-btn').addClass('is-hidden')
-            jQuery('#fq-menu-signup-btn').addClass('is-hidden')
-            jQuery('.fq-menu-add-content-btn').removeClass('is-hidden')
-            jQuery('#fq-menu-interact-switch-item').removeClass('is-hidden')
-            jQuery('#fq-menu-file-open-figure').removeClass('is-hidden')
-            jQuery('#fq-menu-file-save-figure').removeClass('is-hidden')
-            jQuery('#fq-menu-file-save-figure-as').removeClass('is-hidden')
-            jQuery('#fq-menu-file-import-local-content').removeClass('is-hidden')
-            jQuery('#fq-breadcrumb-item-home')
-              .data('fid', `${currentUser.username}:-1`)
-              .find('.fq-modal-folder-item')
-              .data('fid', `${currentUser.username}:-1`)
-
-            fqUsername = currentUser.username
-            jQuery('#fq-menu-account-user-name').html(fqUsername.slice(0, 2))
-            jQuery('#fq-menu-account-dropdown-user-name').html(fqUsername)
-            jQuery('#fq-menu-account-navbar-item1').removeClass('is-hidden')
-            jQuery('#fq-menu-account-navbar-item2').removeClass('is-hidden')
-
-            jQuery('#fq-user-link-files').attr('href', baseUrl + 'organize/home')
-            jQuery('#fq-user-link-charts').attr('href', baseUrl + 'create')
-            jQuery('#fq-user-link-figures').attr('href', baseUrl + 'figures')
-            jQuery('#fq-user-link-collections').attr('href', baseUrl + 'dashboard/create')
-
-            jQuery('#fq-menu-account-sign-out').attr('href', baseUrl + 'signout')
-            jQuery('#fq-menu-account-settings').attr('href', baseUrl + 'settings/profile')
-
-            fqCsrfToken = currentUser.csrf_token
-          } else {
-            showToast(
-              'It looks like you are not logged in to FiglinQ in this browser!',
-              'is-danger'
-            )
-          }
-        }
-        getCurrentUser()
+        getCurrentUser()      
       }
     }
   }
