@@ -2994,6 +2994,25 @@ export default {
         updateExportFormState()
         activateDraggableModals()
         // eslint-disable-next-line no-undef
+
+        
+        const askParent = (action, payload = null) => new Promise((res, rej) => {        
+          const channel = new MessageChannel(); 
+          channel.port1.onmessage = ({data}) => {
+            channel.port1.close();
+            if (data.error) {
+              rej(data.error);
+            } else {
+              res(data.result);
+            }
+          };        
+          parent.postMessage([action, payload], '*', [channel.port2]);
+        });
+        
+        const getCurrentUser = async ()=>{
+          console.log(await askParent('getCurrentUser'));
+        }
+        getCurrentUser()
       }
     }
   }
