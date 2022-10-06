@@ -2071,6 +2071,31 @@ export default {
           parent.postMessage([action, payload], '*', [channel.port2])
         })
 
+        const addParentEventListener = () => {
+          addEventListener(
+            'message',
+            (event) => {
+              let result;
+              const action = event.data[0];
+              const payload = event.data[1];
+              switch (action) {
+                // case FIGEDIT_ACTIONS.GET_CURRENT_USER:
+                //   result = currentUser;
+                //   break;
+      
+                case 'test':
+                  console.log(action, payload);
+                  break;
+      
+                default:
+                  break;
+              }
+              event.ports[0].postMessage({result: result});
+            },
+            false
+          );      
+        }
+
         jQuery(document).on('change', '#fq-file-upload-input', () => {
           const fileName = jQuery('#fq-file-upload-input')[0].files.length
             ? jQuery('#fq-file-upload-input')[0].files[0].name
@@ -2992,7 +3017,8 @@ export default {
         loadFqFigure()
         updateExportFormState()
         activateDraggableModals()
-        getCurrentUser()      
+        getCurrentUser()
+        addParentEventListener()
       }
     }
   }
