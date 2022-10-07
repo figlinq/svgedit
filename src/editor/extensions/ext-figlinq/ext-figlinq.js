@@ -2912,7 +2912,7 @@ export default {
         })
 
         jQuery(document).on('click', '.fq-menu-add-content-btn', () => {
-          askParent('OPEN_FILES_MODAL', {mode: 'select', selectFileType: ['external_image', 'plot']})
+          askParent('OPEN_FILES_MODAL', {mode: 'select', defaultFilters: ['plots', 'folders', 'images']})
           // setInteractiveOff()
           // prepareFileModal('addFiglinqContent')
           // fqModalFileTabMode = 'my'
