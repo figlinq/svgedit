@@ -85,11 +85,6 @@ export default {
         let fqModalMode;
         let fqModalFileTabMode = 'my';
         let fqCsrfToken;
-        let fqSelectedFolderId = {
-          my: false,
-          shared: false,
-          preselected: false
-        };
         let fqHighlightedFids = false;
         let fqExportDocType;
         let fqExportDocQuality;
@@ -98,6 +93,7 @@ export default {
         let fqExportMode;
         let _typeMap;
         let fqToolsTopHeight = false;
+        let fqExportWhiteBg;
         // const svgAttrWhitelist = ['class', 'height', 'width', 'x', 'y', 'id']
         const fqDefaultMargins = {
           // in mm
@@ -393,7 +389,6 @@ export default {
           }
 
           if (add) {
-            console.log('add');
             // preload multiple files, open modal
             const checked = jQuery('#fq-menu-interact-switch').is(':checked');
             if (checked) {
@@ -1097,7 +1092,7 @@ export default {
             img.onload = function() {
               const ctx = canvas.getContext('2d');
 
-              if (fqExportDocType !== 'png') {
+              if (fqExportDocType !== 'png' || fqExportWhiteBg) {
                 ctx.fillStyle = 'white';
                 ctx.fillRect(0, 0, w, h);
               }
@@ -1204,12 +1199,18 @@ export default {
 
         const updateExportFormState = () => {
           const format = jQuery('#fq-modal-export-format-select').val();
+          jQuery('#fq-doc-setup-transparent-background').hide();
           if (format === 'jpeg') {
             jQuery('[id^="fq-modal-export-quality"]').prop('disabled', false);
             jQuery('[id^="fq-modal-export-size"]').prop('disabled', false);
             updateExportFormSizeSelect(fqExportFileFormats);
             jQuery('#fq-modal-export-size-select').val(1);
-          } else if (format === 'png' || format === 'bmp') {
+          } else if (format === 'png') {
+            jQuery('#fq-doc-setup-transparent-background').show();
+            jQuery('[id^="fq-modal-export-quality"]').prop('disabled', true);
+            updateExportFormSizeSelect(fqExportFileFormats);
+            jQuery('#fq-modal-export-size-select').val(1);
+          } else if (format === 'bmp') {
             jQuery('[id^="fq-modal-export-quality"]').prop('disabled', true);
             updateExportFormSizeSelect(fqExportFileFormats);
             jQuery('#fq-modal-export-size-select').val(1);
@@ -1228,7 +1229,7 @@ export default {
           return attrs;
         };
         /*
-          Find all plots (elements of type image, with class 'fq-iplot')
+          Find all plots (elements of type image, with class 'fq-plot')
           in input array of nodes, including plots nested in <g> elements (groups).
           Input: Array of node elements
           Output: Array of plot objects
@@ -1672,121 +1673,6 @@ export default {
           jQuery('#fq-modal-confirm-btn-ok').on('click', args, handler);
         };
 
-        const uploadFileToFiglinQ = (
-          formData,
-          apiEndpoint,
-          worldReadable,
-          updateModal,
-          parentId,
-          mode
-        ) => {
-          let successMsg, errorMsg;
-          if (mode === 'upload') {
-            // Uploading a new file
-            successMsg = ' uploaded';
-            errorMsg = ' uploaded';
-          } else if (mode === 'replace') {
-            // Overwriting an existing file
-            // parentId = fqCurrentFigData.fid
-            successMsg = ' saved';
-            errorMsg = ' saved';
-          }
-
-          const headers = {
-            'X-File-Name': fqExportDocFname,
-            'Plotly-World-Readable': worldReadable,
-            'X-CSRFToken': fqCsrfToken
-          };
-
-          const parentUsername = parentId
-            ? parseFid(parentId, 0)
-            : parseFid(fqCurrentFigData.fid, 0);
-          const parentIndex = parseFid(parentId, 1);
-          const savingIntoSharedFolder = parentUsername !== fqUsername;
-
-          if (savingIntoSharedFolder) {
-            if (mode === 'upload') {
-              // Uploading a new file
-              headers['Plotly-Parent'] = -1;
-              headers['target-fid'] = parentId;
-            }
-          } else if (parentId) {
-            headers['Plotly-Parent'] = parentIndex;
-          }
-
-          $.ajax({
-            method: 'POST',
-            url: baseUrl + 'v2/external-images/' + apiEndpoint,
-            xhrFields: {withCredentials: true},
-            headers,
-            data: formData,
-            processData: false,
-            contentType: false
-          })
-            .done(function(response) {
-              if (updateModal) {
-                jQuery('#fq-modal-refresh-btn').addClass('is-loading');
-                fqItemListFolder = '';
-                fqItemListFile = '';
-                if (fqExportMode === 'upload') {
-                  const userId = parseFid(response.file.fid, 0);
-                  const fileNumId = parseFid(response.file.fid, 1);
-                  const baseHref = `${baseUrl}~${userId}/${fileNumId}.`;
-
-                  const ext = response.file.filetype === 'plot' ? 'svg' : 'src';
-                  const elementProps = {
-                    width: response.file.metadata.width,
-                    height: response.file.metadata.height,
-                    widthOriginal: response.file.metadata.width,
-                    heightOriginal: response.file.metadata.height,
-                    x: 0,
-                    y: 0,
-                    filetype: getSvgeditFiletype(response.file.filetype),
-                    fid: response.file.fid,
-                    contentHref: baseHref + 'embed',
-                    imgHref: baseHref + ext
-                  };
-
-                  placeElement(elementProps);
-                } else {
-                  jQuery('#fq-modal-file').removeClass('is-active');
-                  jQuery(document).unbind('keyup', closeModalOnEscape);
-
-                  refreshModalContents();
-                }
-              }
-              callParent('CREATE_COOKIE', {
-                name: 'figlinq-fid',
-                value: response.file.fid,
-                days: cookieExpiryDays,
-                path: '/figures/'
-              });
-
-              jQuery('#fq-figure-name .contents').html(response.file.filename);
-              showToast('File ' + response.file.filename + successMsg, 'is-success');
-              if (fqExportMode !== 'upload') {
-                fqCurrentFigData = response.file;
-                if (
-                  typeof fqCurrentFigData.metadata === 'string' ||
-                  fqCurrentFigData.metadata instanceof String
-                ) {
-                  fqCurrentFigData.metadata = JSON.parse(fqCurrentFigData.metadata);
-                }
-              }
-
-              jQuery('#fq-save-indicator').hide();
-              jQuery('#fq-modal-save-confirm-btn').removeClass('is-loading');
-              if (fqExportMode !== 'upload') {
-                jQuery('#fq-modal-file').removeClass('is-active');
-              }
-            })
-            .fail(function() {
-              jQuery('#fq-save-indicator').hide();
-              jQuery('#fq-modal-save-confirm-btn').removeClass('is-loading');
-              showToast('Error - file was not' + errorMsg, 'is-danger');
-            });
-        };
-
         const updateFigure = file => {
           callParent('CREATE_COOKIE', {
             name: 'figlinq-fid',
@@ -1974,17 +1860,6 @@ export default {
             scaledDims.height = refHeight;
           }
           return scaledDims;
-        };
-
-        const getSvgeditFiletype = filetype => {
-          switch (filetype) {
-            case 'external_image':
-              return 'image';
-            case 'plot':
-              return 'plot';
-            default:
-              return false;
-          }
         };
 
         const adjustStyles = () => {
@@ -2205,31 +2080,6 @@ export default {
           e.stopPropagation();
         });
 
-        jQuery(document).on('click', '#fq-modal-upload-confirm-btn', e => {
-          e.target.blur();
-          if (!jQuery('#fq-file-upload-input')[0].files.length) {
-            showToast('Please select the file first!', 'is-warning');
-            return;
-          }
-          const apiEndpoint = 'upload';
-          const worldReadable = false;
-          const imageFile = jQuery('#fq-file-upload-input')[0].files[0];
-          fqExportDocFname = jQuery('#fq-file-upload-input-label').html();
-          fqExportMode = 'upload';
-
-          const formData = new FormData();
-          formData.append('files', imageFile);
-          jQuery('#fq-modal-file').removeClass('is-active');
-          uploadFileToFiglinQ(
-            formData,
-            apiEndpoint,
-            worldReadable,
-            true,
-            fqSelectedFolderId[fqModalFileTabMode],
-            'upload'
-          );
-        });
-
         jQuery(document).on('change', '#fq-modal-export-format-select', () => {
           updateExportFormState();
         });
@@ -2375,6 +2225,7 @@ export default {
           fqExportDocType = jQuery('#fq-modal-export-format-select').val();
           fqExportDocQuality = parseFloat(jQuery('#fq-modal-export-quality-input').val()) / 100;
           fqExportDocFname = jQuery('#fq-modal-export-fname-input').val();
+          fqExportWhiteBg = !jQuery('#fq-doc-setup-transparent-background').prop('checked');
           if (fqExportDocType === 'pdf') {
             fqExportDocSize = jQuery('#fq-modal-export-size-select option:selected').text();
           } else {
@@ -2857,90 +2708,6 @@ export default {
           jQuery('#fq-modal-confirm').addClass('is-active');
         });
 
-        jQuery(document).on('click', '#fq-modal-save-confirm-btn', async event => {
-          jQuery('#fq-modal-save-confirm-btn').addClass('is-loading');
-          event.target.blur();
-          fqExportMode = 'thumb';
-          fqExportDocType = 'png';
-          fqExportDocFname = jQuery('#fq-modal-save-name-input').val();
-          fqExportDocSize = parseInt(jQuery('#fq-modal-export-size-select').val(), 10);
-
-          const worldReadable = false;
-
-          // TODO *properly* check if file name exists via API
-          let replacedFid;
-          let nameExists = false;
-          jQuery('.fq-modal-image-item, .fq-modal-figure-item').each(function() {
-            if (
-              jQuery(this)
-                .find('.fq-list-item-text')
-                .text() === fqExportDocFname
-            ) {
-              nameExists = true;
-              replacedFid = jQuery(this).data('fid');
-            }
-          });
-
-          if (nameExists) {
-            // eslint-disable-next-line no-alert
-            if (!confirm('File already exists. Overwrite?')) {
-              jQuery('#fq-modal-save-confirm-btn').removeClass('is-loading');
-              return;
-            }
-          }
-
-          if (fqSelectedFolderId[fqModalFileTabMode] === 'shared:-1') {
-            showToast('Please select one of the shared folders!', 'is-danger');
-            return;
-          }
-
-          // Clean up image URLs to remove cachebusting hashes (see adjustPlots())
-          // resetPlotImageUrls()
-
-          const svg = getSvgFromEditor();
-
-          const apiEndpoint = 'upload';
-
-          const imageBlob = new Blob([svg], {type: 'image/svg+xml'});
-          const imageFile = new File([imageBlob], fqExportDocFname + '.svg');
-
-          const thumbBlob = await exportImageFromEditor();
-
-          const thumbFile = new File([thumbBlob], fqExportDocFname + '_thumb.png');
-
-          const formData = new FormData();
-
-          formData.append('files', imageFile);
-          formData.append('thumb', thumbFile);
-
-          // Check if figure contains any linked content
-          const fqElements = jQuery('.fq-image, .fq-plot, .fq-figure');
-          const hasLinkedContent = fqElements.length > 0;
-
-          // Add metadata
-          const metadata = fqCurrentFigData ? fqCurrentFigData.metadata : {};
-          metadata.svgedit = metadata.svgedit || {};
-          if (hasLinkedContent) {
-            metadata.svgedit.haslinkedcontent = true;
-          } else {
-            metadata.svgedit.haslinkedcontent = false;
-          }
-          formData.append('metadata', JSON.stringify(metadata));
-
-          if (nameExists) {
-            formData.append('replaced_fid', replacedFid);
-          }
-
-          uploadFileToFiglinQ(
-            formData,
-            apiEndpoint,
-            worldReadable,
-            true,
-            fqSelectedFolderId[fqModalFileTabMode],
-            'upload'
-          );
-        });
-
         const getFigure = async filename => {
           fqExportMode = 'thumb';
           fqExportDocType = 'png';
@@ -3026,68 +2793,24 @@ export default {
           callParent('SHOW_FILES_ADD_MODAL');
         });
 
-        jQuery(document).on('click', '#fq-menu-file-save-figure', async event => {
+        jQuery(document).on('click', '#fq-menu-file-save-figure', async () => {
           setInteractiveOff();
 
           if (!fqCurrentFigData) {
             // New figure >> show save as dialog
-            showSaveFigureAsDialog();
+            callParent('SHOW_FIGURE_SAVE_MODAL');
             return;
           }
-
           jQuery('#fq-save-indicator .contents').html('Saving...');
           jQuery('#fq-save-indicator').show();
-          event.target.blur();
-
-          fqExportMode = 'thumb';
-          fqExportDocType = 'png';
-          fqExportDocFname = fqCurrentFigData.filename;
-
-          fqSelectedFolderId[fqModalFileTabMode] =
-            parseFid(fqCurrentFigData.fid, 0) + ':' + fqCurrentFigData.parent;
-          const worldReadable = fqCurrentFigData.world_readable;
-          const replacedFid = fqCurrentFigData.fid;
-
-          // Clean up image URLs to remove cachebusting hashes (see adjustPlots())
-          // resetPlotImageUrls()
-
-          const svg = getSvgFromEditor();
-          const apiEndpoint = 'upload';
-
-          const imageBlob = new Blob([svg], {
-            type: 'image/svg+xml'
-          });
-          const imageFile = new File([imageBlob], fqExportDocFname + '.svg');
-
-          const thumbBlob = await exportImageFromEditor();
-          const thumbFile = new File([thumbBlob], fqExportDocFname + '_thumb.svg');
-
-          const formData = new FormData();
-
-          formData.append('files', imageFile);
-          formData.append('thumb', thumbFile);
-          formData.append('replaced_fid', replacedFid);
-
-          // Check if figure contains any linked content
-          const fqElements = jQuery('.fq-image, .fq-plot, .fq-figure');
-          const hasLinkedContent = fqElements.length > 0;
-
-          const metadata = fqCurrentFigData.metadata || {};
-          metadata.svgedit = metadata.svgedit || {};
-          if (hasLinkedContent) {
-            metadata.svgedit.haslinkedcontent = true;
-          } else {
-            metadata.svgedit.haslinkedcontent = false;
-          }
-          formData.append('metadata', JSON.stringify(metadata));
-
-          uploadFileToFiglinQ(formData, apiEndpoint, worldReadable, false, false, 'replace');
+          await callParent('SAVE_FIGURE');
+          jQuery('#fq-save-indicator').hide();
+          return;
         });
 
         jQuery(document).on('click', '#fq-menu-file-save-figure-as', () => {
           setInteractiveOff();
           callParent('SHOW_FIGURE_SAVE_MODAL');
-          // showSaveFigureAsDialog()
         });
 
         jQuery(document).on('click', '.navbar-burger', () => {
