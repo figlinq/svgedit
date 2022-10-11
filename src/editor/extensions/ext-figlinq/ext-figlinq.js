@@ -392,7 +392,8 @@ export default {
             jQuery('#fq-figure-name .contents').html('Untitled figure');
           }
 
-          if (add && !preloadFigure) {
+          if (add) {
+            console.log('add');
             // preload multiple files, open modal
             const checked = jQuery('#fq-menu-interact-switch').is(':checked');
             if (checked) {
@@ -402,10 +403,6 @@ export default {
             showModalSpinner();
             prepareFileModal('addFiglinqPreselectedContent');
             window.parent.history.replaceState({}, document.location, '/figures/');
-            const fidArray = add.split(',');
-            refreshModalContents(fidArray);
-          }
-          if (add && preloadFigure) {
             const fidArray = add.split(',');
             refreshModalContents(fidArray);
           }
@@ -536,13 +533,13 @@ export default {
         // }
 
         const populateFileModal = data => {
-          jQuery('#fq-modal-files-open-figure-confirm').prop('disabled', true);
-          const val = jQuery('#fq-modal-save-name-input').val();
-          if (val.length) {
-            jQuery('#fq-modal-save-confirm-btn').prop('disabled', false);
-          } else {
-            jQuery('#fq-modal-save-confirm-btn').prop('disabled', true);
-          }
+          // jQuery('#fq-modal-files-open-figure-confirm').prop('disabled', true);
+          // const val = jQuery('#fq-modal-save-name-input').val();
+          // if (val.length) {
+          //   jQuery('#fq-modal-save-confirm-btn').prop('disabled', false);
+          // } else {
+          //   jQuery('#fq-modal-save-confirm-btn').prop('disabled', true);
+          // }
           let index = 0;
           let page = 1;
           const results = data.children.results;
@@ -828,16 +825,17 @@ export default {
           jQuery('#fq-modal-file').addClass('is-active');
           jQuery(document).keyup(closeModalOnEscape);
 
-          let q = jQuery('#fq-modal-file-search-input').val();
-          if (q && fqModalFileTabMode === 'my') {
-            jQuery('#fq-modal-file-search-icon').removeClass('fas fa-search');
-            jQuery('#fq-modal-file-search-icon').addClass('far fa-times-circle');
-          } else {
-            jQuery('#fq-modal-file-search-icon').removeClass('far fa-times-circle');
-            jQuery('#fq-modal-file-search-icon').addClass('fas fa-search');
-          }
+          // let q = jQuery('#fq-modal-file-search-input').val();
+          // if (q && fqModalFileTabMode === 'my') {
+          //   jQuery('#fq-modal-file-search-icon').removeClass('fas fa-search');
+          //   jQuery('#fq-modal-file-search-icon').addClass('far fa-times-circle');
+          // } else {
+          //   jQuery('#fq-modal-file-search-icon').removeClass('far fa-times-circle');
+          //   jQuery('#fq-modal-file-search-icon').addClass('fas fa-search');
+          // }
 
-          q = q.length >= 2 ? q : false;
+          // q = q.length >= 2 ? q : false;
+          const q = false;
 
           if (fidArray) {
             // Open specific fids in modal
@@ -1909,7 +1907,7 @@ export default {
 
             case 'saveFigureAs':
               elements.hide =
-                '.modal-action-panel, .fq-modal-file-tab, #fq-modal-file-search-block, #fq-modal-file-tab-preselected';
+                '.modal-action-panel, .fq-modal-file-tab, #fq-modal-file-tab-preselected';
               elements.reveal =
                 '.file-save-panel, #fq-modal-file-tab-my, #fq-modal-file-tab-shared';
               elements.disable = '';
@@ -1920,7 +1918,7 @@ export default {
 
             case 'importLocalContent':
               elements.hide =
-                '.modal-action-panel, .fq-modal-file-tab, #fq-modal-file-search-block, #fq-modal-file-tab-preselected, #fq-modal-file-tab-shared';
+                '.modal-action-panel, .fq-modal-file-tab, #fq-modal-file-tab-preselected, #fq-modal-file-tab-shared';
               elements.reveal = '.file-upload-panel, #fq-modal-file-tab-my';
               elements.disable = '#fq-modal-upload-confirm-btn';
               elements.activate = '#fq-modal-file-tab-my';
@@ -1933,7 +1931,7 @@ export default {
               elements.hide =
                 '.modal-action-panel, .fq-modal-file-tab, #fq-modal-file-tab-preselected';
               elements.reveal =
-                '.content-add-panel, .content-add-options-panel, #fq-modal-file-search-block, #fq-modal-file-tab-my, #fq-modal-file-tab-shared';
+                '.content-add-panel, .content-add-options-panel, #fq-modal-file-tab-my, #fq-modal-file-tab-shared';
               if (fqItemListPreselected) {
                 elements.reveal += ', #fq-modal-file-tab-preselected';
               }
@@ -2354,9 +2352,7 @@ export default {
         });
 
         jQuery(document).on('click', '#fq-menu-file-import-local-content', () => {
-          fqModalFileTabMode = 'my';
-          prepareFileModal('importLocalContent');
-          refreshModalContents();
+          callParent('SHOW_UPLOAD_MODAL');
         });
 
         jQuery(document).on('click', '#fq-modal-adjust-btn-adjust', async e => {
@@ -2523,32 +2519,32 @@ export default {
           // jQuery('.modal').removeClass('is-active')
         });
 
-        jQuery(document).on('click', '.fq-modal-file-tab', e => {
-          e.preventDefault();
-          showModalSpinner();
-          jQuery('.fq-modal-file-tab').removeClass('is-active');
-          jQuery('#fq-modal-add-confirm-btn, #col_select').prop('disabled', true);
-          jQuery(e.currentTarget).addClass('is-active');
+        // jQuery(document).on('click', '.fq-modal-file-tab', e => {
+        //   e.preventDefault();
+        //   showModalSpinner();
+        //   jQuery('.fq-modal-file-tab').removeClass('is-active');
+        //   jQuery('#fq-modal-add-confirm-btn, #col_select').prop('disabled', true);
+        //   jQuery(e.currentTarget).addClass('is-active');
 
-          fqModalFileTabMode = jQuery(e.currentTarget).data('mode');
-          if (fqModalFileTabMode === 'shared') {
-            jQuery('#fq-modal-file-search-wrapper').prop('disabled', true);
-          } else if (fqModalFileTabMode === 'my') {
-            jQuery('#fq-modal-file-search-wrapper').prop('disabled', false);
-          } else if (fqModalFileTabMode === 'preselected') {
-            jQuery('#fq-modal-file-search-wrapper').prop('disabled', true);
-            jQuery('#fq-modal-file-panel-breadcrumb').addClass('is-hidden');
-            refreshModalContents(fqItemListPreselected.fids);
-            return;
-          }
+        //   fqModalFileTabMode = jQuery(e.currentTarget).data('mode');
+        //   if (fqModalFileTabMode === 'shared') {
+        //     jQuery('#fq-modal-file-search-wrapper').prop('disabled', true);
+        //   } else if (fqModalFileTabMode === 'my') {
+        //     jQuery('#fq-modal-file-search-wrapper').prop('disabled', false);
+        //   } else if (fqModalFileTabMode === 'preselected') {
+        //     jQuery('#fq-modal-file-search-wrapper').prop('disabled', true);
+        //     jQuery('#fq-modal-file-panel-breadcrumb').addClass('is-hidden');
+        //     refreshModalContents(fqItemListPreselected.fids);
+        //     return;
+        //   }
 
-          fqSelectedFolderId = {
-            my: false,
-            shared: false,
-            preselected: false
-          };
-          refreshModalContents();
-        });
+        //   fqSelectedFolderId = {
+        //     my: false,
+        //     shared: false,
+        //     preselected: false
+        //   };
+        //   refreshModalContents();
+        // });
 
         jQuery(document).on('click', '#fq-modal-refresh-btn', () => {
           showModalSpinner();
@@ -2830,15 +2826,15 @@ export default {
           });
         });
 
-        jQuery(document).on('click', '#fq-modal-file-search-icon.fa-times-circle', () => {
-          jQuery('#fq-modal-file-search-input')
-            .val('')
-            .keyup();
-        });
+        // jQuery(document).on('click', '#fq-modal-file-search-icon.fa-times-circle', () => {
+        //   jQuery('#fq-modal-file-search-input')
+        //     .val('')
+        //     .keyup();
+        // });
 
-        jQuery(document).on('keyup', '#fq-modal-file-search-input', () => {
-          refreshModalContents();
-        });
+        // jQuery(document).on('keyup', '#fq-modal-file-search-input', () => {
+        //   refreshModalContents();
+        // });
 
         jQuery(document).on('keyup', '#fq-modal-save-name-input', e => {
           const val = jQuery(e.target).val();
@@ -3032,10 +3028,6 @@ export default {
 
         jQuery(document).on('click', '.fq-menu-add-content-btn', () => {
           callParent('SHOW_FILES_ADD_MODAL');
-          // setInteractiveOff()
-          // prepareFileModal('addFiglinqContent')
-          // fqModalFileTabMode = 'my'
-          // refreshModalContents()
         });
 
         jQuery(document).on('click', '#fq-menu-file-save-figure', async event => {
