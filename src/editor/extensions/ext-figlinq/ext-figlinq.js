@@ -1199,14 +1199,14 @@ export default {
 
         const updateExportFormState = () => {
           const format = jQuery('#fq-modal-export-format-select').val();
-          jQuery('#fq-doc-setup-transparent-background').hide();
+          jQuery('#fq-doc-setup-transparent-background-container').hide();
           if (format === 'jpeg') {
             jQuery('[id^="fq-modal-export-quality"]').prop('disabled', false);
             jQuery('[id^="fq-modal-export-size"]').prop('disabled', false);
             updateExportFormSizeSelect(fqExportFileFormats);
             jQuery('#fq-modal-export-size-select').val(1);
           } else if (format === 'png') {
-            jQuery('#fq-doc-setup-transparent-background').show();
+            jQuery('#fq-doc-setup-transparent-background-container').show();
             jQuery('[id^="fq-modal-export-quality"]').prop('disabled', true);
             updateExportFormSizeSelect(fqExportFileFormats);
             jQuery('#fq-modal-export-size-select').val(1);
