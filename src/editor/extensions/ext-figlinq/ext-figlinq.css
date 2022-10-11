@@ -460,3 +460,29 @@ se-select {
 #tools_bottom {
   overflow-y: hidden;
 }
+
+/* Bulma overrides */
+.button.is-small:not(.is-rounded) {
+  border-radius: 4px !important;
+}
+
+.button.is-link:not(.is-outlined) {
+  background-color: #08547d !important;
+  color: #fff !important;
+}
+.button.is-link.is-hovered:not(.is-outlined),
+.button.is-link:not(.is-outlined):hover {
+  background-color: rgb(6, 63, 94) !important;
+  color: #fff !important;
+}
+
+.button.is-link.is-outlined {
+  border-color: rgb(8, 84, 125) !important;
+  color: rgb(8, 84, 125) !important;
+  background-color: white !important;
+}
+
+.button.is-link.is-outlined.is-hovered,
+.button.is-link.is-outlined:hover {
+  background-color: #f1f5f9 !important;
+}

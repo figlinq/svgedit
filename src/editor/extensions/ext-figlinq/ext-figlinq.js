@@ -994,8 +994,6 @@ export default {
               showToast('File "' + data.filename + '" loaded', 'is-success');
 
               // Add fid to cookie and remove from URL
-              // eraseCookie('figlinq-fid');
-              // createCookie('figlinq-fid', data.fid, cookieExpiryDays);
               callParent('CREATE_COOKIE', {
                 name: 'figlinq-fid',
                 value: data.fid,
@@ -1757,7 +1755,6 @@ export default {
                   refreshModalContents();
                 }
               }
-              // createCookie('figlinq-fid', response.file.fid, cookieExpiryDays);
               callParent('CREATE_COOKIE', {
                 name: 'figlinq-fid',
                 value: response.file.fid,
@@ -1791,7 +1788,6 @@ export default {
         };
 
         const updateFigure = file => {
-          // createCookie('figlinq-fid', file.fid, cookieExpiryDays);
           callParent('CREATE_COOKIE', {
             name: 'figlinq-fid',
             value: file.fid,
