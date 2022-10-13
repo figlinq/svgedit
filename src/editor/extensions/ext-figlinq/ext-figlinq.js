@@ -368,7 +368,7 @@ export default {
             }
             fqModalFileTabMode = 'preselected';
             showModalSpinner();
-            prepareFileModal('addFiglinqPreselectedContent');
+            prepareFileModal();
             window.parent.history.replaceState({}, document.location, '/figures/');
             const fidArray = add.split(',');
             refreshModalContents(fidArray);
@@ -1711,30 +1711,15 @@ export default {
           const elements = [];
           let heading = '';
           jQuery('.fq-modal-file-tab').removeClass('is-active');
-          switch (mode) {
-            case 'openFigure':
-              elements.hide = '.modal-action-panel, .fq-modal-file-tab';
-              elements.reveal =
-                '.figure-open-panel, #fq-modal-file-tab-my, #fq-modal-file-tab-shared';
-              elements.disable = '#fq-modal-files-open-figure-confirm';
-              elements.activate = '#fq-modal-file-tab-my';
-              heading = 'Open figure';
-              fqModalMode = 'openFigure';
-              break;
 
-            case 'addFiglinqPreselectedContent':
-              elements.hide = '.modal-action-panel, #fq-modal-file-panel-breadcrumb';
-              elements.reveal =
-                '.content-add-panel, .content-add-options-panel, #fq-modal-file-tab-my, #fq-modal-file-tab-shared';
-              elements.disable = '#fq-modal-add-confirm-btn';
-              elements.activate = '#fq-modal-file-tab-preselected';
-              heading = 'Select content to add to this figure';
-              fqModalMode = 'addContent';
-              updateMarginsSpacingInputs();
-              break;
-            default:
-              break;
-          }
+          elements.hide = '.modal-action-panel, #fq-modal-file-panel-breadcrumb';
+          elements.reveal =
+            '.content-add-panel, .content-add-options-panel, #fq-modal-file-tab-my, #fq-modal-file-tab-shared';
+          elements.disable = '#fq-modal-add-confirm-btn';
+          elements.activate = '#fq-modal-file-tab-preselected';
+          heading = 'Select content to add to this figure';
+          fqModalMode = 'addContent';
+          updateMarginsSpacingInputs();
 
           jQuery('#file-panel-heading').html(heading);
           jQuery(elements.hide).addClass('is-hidden');
@@ -1921,18 +1906,6 @@ export default {
             false
           );
         };
-
-        jQuery(document).on('change', '#fq-file-upload-input', () => {
-          const fileName = jQuery('#fq-file-upload-input')[0].files.length
-            ? jQuery('#fq-file-upload-input')[0].files[0].name
-            : false;
-          if (fileName) {
-            jQuery('#fq-modal-upload-confirm-btn').prop('disabled', false);
-            jQuery('#fq-file-upload-input-label').html(fileName);
-          } else {
-            jQuery('#fq-modal-upload-confirm-btn').prop('disabled', true);
-          }
-        });
 
         jQuery(document).on('mouseup', '.draggable-source', () => {
           document.activeElement.blur();
@@ -2253,15 +2226,6 @@ export default {
               return;
             }
 
-            if (fqModalMode === 'openFigure') {
-              jQuery(
-                '.fq-modal-plot-item, .fq-modal-image-item, .fq-modal-figure-item'
-              ).removeClass('is-active');
-              jQuery(e.target).addClass('is-active');
-              jQuery('#fq-modal-files-open-figure-confirm').prop('disabled', false);
-              return;
-            }
-
             if (jQuery(e.target).hasClass('is-active')) {
               jQuery(e.target).removeClass('is-active');
             } else {
@@ -2506,10 +2470,6 @@ export default {
           const thumbBlob = await exportImageFromEditor();
           const thumbFile = new File([thumbBlob], fqExportDocFname + '_thumb.png');
 
-          // const formData = new FormData();
-          // formData.append('files', imageFile);
-          // formData.append('thumb', thumbFile);
-
           // Check if figure contains any linked content
           const fqElements = jQuery('.fq-image, .fq-plot, .fq-figure');
           const hasLinkedContent = fqElements.length > 0;
@@ -2522,7 +2482,6 @@ export default {
           } else {
             metadata.svgedit.haslinkedcontent = false;
           }
-          // formData.append('metadata', JSON.stringify(metadata));
 
           return {
             file: imageFile,
