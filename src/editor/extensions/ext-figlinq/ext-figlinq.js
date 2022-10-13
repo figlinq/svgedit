@@ -1875,6 +1875,18 @@ export default {
           addEventListener(
             'message',
             async event => {
+              if (
+                ![
+                  'https://plotly.local',
+                  'https://create.figlinq.com',
+                  'https://stage-green.figlinq.com',
+                  'https://stage-blue.figlinq.com',
+                  'https://stage-reflect.figlinq.com'
+                ].includes(event.origin)
+              ) {
+                return;
+              }
+
               let result;
               const action = event.data[0];
               const payload = event.data[1];
