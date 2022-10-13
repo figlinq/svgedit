@@ -340,14 +340,15 @@ export default {
           if (fid && preloadFigure) {
             svgCanvas.clear();
             callParent('ERASE_COOKIE', {
-              name: 'figlinq-fid'
+              name: 'figlinq-figure-fid',
+              path: '/figures/'
             });
             openFigure({data: {fid}});
           }
 
           // Load figure from cookie fid
           const cookieFid = await callParent('READ_COOKIE', {
-            name: 'figlinq-fid'
+            name: 'figlinq-figure-fid'
           });
 
           if (!fid && cookieFid && !add && preloadFigure) {
@@ -776,16 +777,6 @@ export default {
           fqItemListFile = '';
           jQuery('#fq-modal-file').addClass('is-active');
 
-          // let q = jQuery('#fq-modal-file-search-input').val();
-          // if (q && fqModalFileTabMode === 'my') {
-          //   jQuery('#fq-modal-file-search-icon').removeClass('fas fa-search');
-          //   jQuery('#fq-modal-file-search-icon').addClass('far fa-times-circle');
-          // } else {
-          //   jQuery('#fq-modal-file-search-icon').removeClass('far fa-times-circle');
-          //   jQuery('#fq-modal-file-search-icon').addClass('fas fa-search');
-          // }
-
-          // q = q.length >= 2 ? q : false;
           const q = false;
 
           if (fidArray) {
@@ -865,7 +856,8 @@ export default {
 
           // Clear fid cookie
           callParent('ERASE_COOKIE', {
-            name: 'figlinq-fid'
+            name: 'figlinq-figure-fid',
+            path: '/figures/'
           });
 
           // Set figure title
@@ -922,6 +914,7 @@ export default {
                 (data.content_type !== 'image/svg' && data.content_type !== 'image/svg+xml')
               ) {
                 showToast('This file type is not supported', 'is-danger');
+                jQuery('#fq-load-indicator').hide();
                 return;
               }
               const dataUrl = data.image_content;
@@ -945,7 +938,7 @@ export default {
 
               // Add fid to cookie and remove from URL
               callParent('CREATE_COOKIE', {
-                name: 'figlinq-fid',
+                name: 'figlinq-figure-fid',
                 value: data.fid,
                 days: cookieExpiryDays,
                 path: '/figures/'
@@ -1633,7 +1626,7 @@ export default {
 
         const updateFigure = file => {
           callParent('CREATE_COOKIE', {
-            name: 'figlinq-fid',
+            name: 'figlinq-figure-fid',
             value: file.fid,
             days: cookieExpiryDays,
             path: '/figures/'
