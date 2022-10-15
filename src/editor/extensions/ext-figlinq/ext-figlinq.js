@@ -110,7 +110,7 @@ export default {
         };
 
         const fqThumbWidth = 1200;
-        const cookieExpiryDays = 365;
+        // const cookieExpiryDays = 365;
         const fqPdfPageSizes = {
           A0: '2383.94x3370.39',
           A1: '1683.78x2383.94',
@@ -339,24 +339,25 @@ export default {
 
           if (fid && preloadFigure) {
             svgCanvas.clear();
-            callParent('ERASE_COOKIE', {
-              name: 'figlinq-figure-fid',
-              path: '/figures/'
-            });
+            // callParent('ERASE_COOKIE', {
+            //   name: 'figlinq-figure-fid',
+            //   path: '/figures/'
+            // });
             openFigure({data: {fid}});
           }
 
-          // Load figure from cookie fid
-          const cookieFid = await callParent('READ_COOKIE', {
-            name: 'figlinq-figure-fid'
-          });
+          // // Load figure from cookie fid
+          // const cookieFid = await callParent('READ_COOKIE', {
+          //   name: 'figlinq-figure-fid'
+          // });
 
-          if (!fid && cookieFid && !add && preloadFigure) {
-            svgCanvas.clear();
-            openFigure({data: {fid: cookieFid}});
-          }
+          // if (!fid && cookieFid && !add && preloadFigure) {
+          //   svgCanvas.clear();
+          //   openFigure({data: {fid: cookieFid}});
+          // }
 
-          if (!fid && !cookieFid && preloadFigure) {
+          // if (!fid && !cookieFid && preloadFigure) {
+          if (!fid && preloadFigure) {
             jQuery('#fq-figure-name .contents').html('Untitled figure');
           }
 
@@ -369,7 +370,15 @@ export default {
             fqModalFileTabMode = 'preselected';
             showModalSpinner();
             prepareFileModal();
-            window.parent.history.replaceState({}, document.location, '/figures/');
+
+            const params = new URLSearchParams(document.location.search);
+            params.delete('add');
+
+            window.parent.history.replaceState(
+              {},
+              document.location,
+              '/figures/' + params.toString()
+            );
             const fidArray = add.split(',');
             refreshModalContents(fidArray);
           }
@@ -853,12 +862,19 @@ export default {
 
         const onConfirmClear = async function() {
           jQuery('#fq-modal-confirm').removeClass('is-active');
+          const params = new URLSearchParams(document.location.search);
+          params.delete('fid');
+          window.parent.history.replaceState(
+            {},
+            document.location,
+            '/figures/' + params.toString()
+          );
 
           // Clear fid cookie
-          callParent('ERASE_COOKIE', {
-            name: 'figlinq-figure-fid',
-            path: '/figures/'
-          });
+          // callParent('ERASE_COOKIE', {
+          //   name: 'figlinq-figure-fid',
+          //   path: '/figures/'
+          // });
 
           // Set figure title
           jQuery('#fq-figure-name .contents').html('Untitled figure');
@@ -937,14 +953,14 @@ export default {
               showToast('File "' + data.filename + '" loaded', 'is-success');
 
               // Add fid to cookie and remove from URL
-              callParent('CREATE_COOKIE', {
-                name: 'figlinq-figure-fid',
-                value: data.fid,
-                days: cookieExpiryDays,
-                path: '/figures/'
-              });
+              // callParent('CREATE_COOKIE', {
+              //   name: 'figlinq-figure-fid',
+              //   value: data.fid,
+              //   days: cookieExpiryDays,
+              //   path: '/figures/'
+              // });
 
-              window.parent.history.replaceState({}, document.location, '/figures/');
+              // window.parent.history.replaceState({}, document.location, '/figures/');
               jQuery('#fq-figure-name .contents').html(data.filename);
               jQuery('#fq-load-indicator').hide();
               callParent('SET_CURRENT_FIGURE', data);
@@ -1625,12 +1641,12 @@ export default {
         };
 
         const updateFigure = file => {
-          callParent('CREATE_COOKIE', {
-            name: 'figlinq-figure-fid',
-            value: file.fid,
-            days: cookieExpiryDays,
-            path: '/figures/'
-          });
+          // callParent('CREATE_COOKIE', {
+          //   name: 'figlinq-figure-fid',
+          //   value: file.fid,
+          //   days: cookieExpiryDays,
+          //   path: '/figures/'
+          // });
 
           jQuery('#fq-figure-name .contents').html(file.filename);
           fqCurrentFigData = file;
