@@ -1844,7 +1844,7 @@ export default {
 
         const getCurrentUser = async () => {
           const currentUser = await callParent('GET_CURRENT_USER');
-          if (currentUser.username) {
+          if (currentUser && currentUser.username) {
             jQuery('#fq-menu-login-btn, #fq-menu-signup-btn').addClass('is-hidden');
             jQuery(
               '.fq-menu-add-content-btn, #fq-menu-interact-switch-item, #fq-menu-file-save-figure, #fq-menu-file-save-figure-as, #fq-menu-file-open-figure, #fq-menu-file-import-local-content'
