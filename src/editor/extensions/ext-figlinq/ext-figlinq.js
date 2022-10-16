@@ -377,7 +377,7 @@ export default {
             window.parent.history.replaceState(
               {},
               document.location,
-              '/figures/' + params.toString()
+              '/figures/?' + params.toString()
             );
             const fidArray = add.split(',');
             refreshModalContents(fidArray);
@@ -867,7 +867,7 @@ export default {
           window.parent.history.replaceState(
             {},
             document.location,
-            '/figures/' + params.toString()
+            '/figures/?' + params.toString()
           );
 
           // Clear fid cookie
