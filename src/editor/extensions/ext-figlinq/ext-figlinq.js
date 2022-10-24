@@ -1,3 +1,9 @@
+/**
+ * @file ext-figlinq.js
+ * @license MIT
+ * @copyright 2021 figlinq.com
+ * @version 2.0.0
+ */
 /* eslint-disable no-loop-func */
 /* eslint-disable no-undef */
 /* eslint-disable consistent-return */
@@ -16,13 +22,6 @@ import {isValidUnit} from '../../../common/units.js';
 import * as hstry from '../../../svgcanvas/history';
 
 const {InsertElementCommand, BatchCommand} = hstry;
-
-/**
- * @file ext-figlinq.js
- * @license MIT
- * @copyright 2021 figlinq.com
- */
-
 const name = 'figlinq';
 const baseUrl = 'https://' + location.hostname + '/';
 
