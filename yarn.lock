@@ -3477,21 +3477,6 @@
   optionalDependencies:
     "fsevents" "~2.3.2"
 
-"chokidar@^3.4.0":
-  "integrity" "sha512-Dr3sfKRP6oTcjf2JmUmFJfeVMvXBdegxB0iVQ5eb2V10uFJUCAS8OByZdVAyVb8xXNz3GjjTgj9kLWsZTqE6kw=="
-  "resolved" "https://registry.npmjs.org/chokidar/-/chokidar-3.5.3.tgz"
-  "version" "3.5.3"
-  dependencies:
-    "anymatch" "~3.1.2"
-    "braces" "~3.0.2"
-    "glob-parent" "~5.1.2"
-    "is-binary-path" "~2.1.0"
-    "is-glob" "~4.0.1"
-    "normalize-path" "~3.0.0"
-    "readdirp" "~3.6.0"
-  optionalDependencies:
-    "fsevents" "~2.3.2"
-
 "chokidar@^3.4.3":
   "integrity" "sha512-Dr3sfKRP6oTcjf2JmUmFJfeVMvXBdegxB0iVQ5eb2V10uFJUCAS8OByZdVAyVb8xXNz3GjjTgj9kLWsZTqE6kw=="
   "resolved" "https://registry.npmjs.org/chokidar/-/chokidar-3.5.3.tgz"
@@ -9903,18 +9888,6 @@
   dependencies:
     "hash-base" "^3.0.0"
     "inherits" "^2.0.1"
-
-"rollup-plugin-copy-watch@^0.0.1":
-  "integrity" "sha512-TjlXZsmsdLWd4Jx1M6qUQqLgRxJlTpmHchPTN6s4d58ubYAa7DlbMrqGz5In1Xg/iN7p19YNpcGGKWu0ImHpVg=="
-  "resolved" "https://registry.npmjs.org/rollup-plugin-copy-watch/-/rollup-plugin-copy-watch-0.0.1.tgz"
-  "version" "0.0.1"
-  dependencies:
-    "@types/fs-extra" "^8.0.1"
-    "chokidar" "^3.4.0"
-    "colorette" "^1.1.0"
-    "fs-extra" "^8.1.0"
-    "globby" "10.0.1"
-    "is-plain-object" "^3.0.0"
 
 "rollup-plugin-copy@3.4.0":
   "integrity" "sha512-rGUmYYsYsceRJRqLVlE9FivJMxJ7X6jDlP79fmFkL8sJs7VVMSVyA2yfyL+PGyO/vJs4A87hwhgVfz61njI+uQ=="
