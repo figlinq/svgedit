@@ -109,7 +109,6 @@ export default {
         };
 
         const fqThumbWidth = 1200;
-        // const cookieExpiryDays = 365;
         const fqPdfPageSizes = {
           A0: '2383.94x3370.39',
           A1: '1683.78x2383.94',
@@ -328,7 +327,7 @@ export default {
         /**
          * Loads figure from url or opens content add modal
          * @returns {void}
-         * @param {boolean} preloadFigure determines whether figure should be loaded from cookie or url param
+         * @param {boolean} preloadFigure determines whether figure should be loaded from url param
          */
 
         const loadFqFigure = async (preloadFigure = true) => {
@@ -338,24 +337,9 @@ export default {
 
           if (fid && preloadFigure) {
             svgCanvas.clear();
-            // callParent('ERASE_COOKIE', {
-            //   name: 'figlinq-figure-fid',
-            //   path: '/figures/'
-            // });
             openFigure({data: {fid}});
           }
 
-          // // Load figure from cookie fid
-          // const cookieFid = await callParent('READ_COOKIE', {
-          //   name: 'figlinq-figure-fid'
-          // });
-
-          // if (!fid && cookieFid && !add && preloadFigure) {
-          //   svgCanvas.clear();
-          //   openFigure({data: {fid: cookieFid}});
-          // }
-
-          // if (!fid && !cookieFid && preloadFigure) {
           if (!fid && preloadFigure) {
             jQuery('#fq-figure-name .contents').html('Untitled figure');
           }
@@ -869,12 +853,6 @@ export default {
             '/figures/?' + params.toString()
           );
 
-          // Clear fid cookie
-          // callParent('ERASE_COOKIE', {
-          //   name: 'figlinq-figure-fid',
-          //   path: '/figures/'
-          // });
-
           // Set figure title
           jQuery('#fq-figure-name .contents').html('Untitled figure');
 
@@ -951,15 +929,6 @@ export default {
               }, delay);
               showToast('File "' + data.filename + '" loaded', 'is-success');
 
-              // Add fid to cookie and remove from URL
-              // callParent('CREATE_COOKIE', {
-              //   name: 'figlinq-figure-fid',
-              //   value: data.fid,
-              //   days: cookieExpiryDays,
-              //   path: '/figures/'
-              // });
-
-              // window.parent.history.replaceState({}, document.location, '/figures/');
               jQuery('#fq-figure-name .contents').html(data.filename);
               jQuery('#fq-load-indicator').hide();
               callParent('SET_CURRENT_FIGURE', data);
@@ -1640,12 +1609,6 @@ export default {
         };
 
         const updateFigure = file => {
-          // callParent('CREATE_COOKIE', {
-          //   name: 'figlinq-figure-fid',
-          //   value: file.fid,
-          //   days: cookieExpiryDays,
-          //   path: '/figures/'
-          // });
 
           jQuery('#fq-figure-name .contents').html(file.filename);
           fqCurrentFigData = file;
