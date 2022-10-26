@@ -331,10 +331,11 @@ export default {
          */
 
         const loadFqFigure = async (preloadFigure = true) => {
-          // First try to load figure from URL fid
-          const fid = getUrlParameter('fid');
-          const add = getUrlParameter('add');
+          const params = new URLSearchParams(window.parent.location.search);
+          const fid = params.get('fid');
+          const add = params.get('add');
 
+          // First try to load figure from URL fid
           if (fid && preloadFigure) {
             svgCanvas.clear();
             openFigure({data: {fid}});
@@ -354,13 +355,12 @@ export default {
             showModalSpinner();
             prepareFileModal();
 
-            const params = new URLSearchParams(document.location.search);
             params.delete('add');
 
             window.parent.history.replaceState(
               {},
               document.location,
-              '/figures/?' + params.toString()
+              '/figures/?' + decodeURIComponent(params.toString())
             );
             const fidArray = add.split(',');
             refreshModalContents(fidArray);
@@ -870,6 +870,7 @@ export default {
           const delay = 300;
           setTimeout(function() {
             svgEditor.zoomChanged(window, 'canvas');
+            callParent('SET_CURRENT_FIGURE', false);
           }, delay);
         };
 
@@ -1609,7 +1610,6 @@ export default {
         };
 
         const updateFigure = file => {
-
           jQuery('#fq-figure-name .contents').html(file.filename);
           fqCurrentFigData = file;
           if (
