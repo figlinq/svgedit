@@ -916,25 +916,6 @@ export default {
               jQuery('#fq-figure-name .contents').html(data.filename);
               jQuery('#fq-load-indicator').hide();
               callParent('SET_CURRENT_FIGURE', data);
-              const plots = jQuery('.fq-plot');
-              jQuery(plots).each((i, plot) => {
-                const fid = jQuery(plot).data('fid');
-                plot.addEventListener('contextmenu', () => {
-                  const el = document
-                    .querySelector('#se-cmenu_canvas')
-                    .shadowRoot.querySelector('.contextMenu');
-                  jQuery(el).append(
-                    `<li class="separator fq-li"><a href="/create/?fid=${fid}" onclick="this.parentNode.remove()" target="_blank" id="fq-edit">Edit<span class="shortcut">G</span></a></li>`
-                  );
-
-                  // setTimeout(() => {
-                  //   console.log(jQuery('#se-cmenu_canvas').shadowRoot);
-                  //   jQuery('#se-cmenu_canvas')[0]
-                  //     .shadowRoot.find('#cmenu_canvas')[0]
-                  //     .append('<li>Hello!</li>');
-                  // }, 200);
-                });
-              });
             })
             .fail(function() {
               jQuery('#fq-figure-name .contents').html('');
@@ -1771,25 +1752,18 @@ export default {
             .shadowRoot.querySelector('.contextMenu');
           cm.setAttribute('style', 'min-width:250px;');
 
+          // Add context menu items for plots
           document.getElementById('workarea').addEventListener('contextmenu', e => {
-            if (!e.target.classList.contains('fq-plot')) {
-              jQuery(cm)
-                .find('.fq-li')
-                .remove();
+            jQuery(cm)
+              .find('.fq-li')
+              .remove();
+            if (e.target.classList.contains('fq-plot')) {
+              const fid = jQuery(e.target).data('fid');
+              jQuery(cm).append(
+                `<li class="separator fq-li" id="fq-li-edit"><a href="/create/?fid=${fid}" onclick="this.parentNode.remove()" target="_blank" id="fq-edit">Edit in new tab</a></li>`
+              );
             }
           });
-
-          // const observer = new MutationObserver(function(mutations) {
-          //   mutations.forEach(function(mutationRecord) {
-          //     const currentStyle = mutationRecord.target.style.display;
-          //     if (currentStyle === 'none') {
-          //       jQuery(cm)
-          //         .find('.fq-li')
-          //         .remove();
-          //     }
-          //   });
-          // });
-          // observer.observe(cm, {attributes: true, attributeFilter: ['style']});
 
           style = document.createElement('style');
           style.innerHTML = 'li a:not(.disabled):hover{background-color: lightgray;}';
