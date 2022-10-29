@@ -18,8 +18,7 @@ TODO
 
 import {folderItem, plotItem, imageItem, figureItem} from './elements';
 import {NS} from './namespaces.js';
-import {isValidUnit} from '../../../common/units.js';
-import * as hstry from '../../../svgcanvas/history';
+import * as hstry from '../../../../packages/svgcanvas/history';
 
 const {InsertElementCommand, BatchCommand} = hstry;
 const name = 'figlinq';
@@ -210,46 +209,46 @@ export default {
           jQuery('#editor_panel').hide();
 
           // Hide image URL input
-          jQuery(
-            jQuery(jQuery('#stroke_linecap')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot
-          )
-            .find('#popupToggle')
-            .hide();
-          jQuery(
-            jQuery(jQuery('#stroke_linejoin')[0].shadowRoot).find('elix-dropdown-list')[0]
-              .shadowRoot
-          )
-            .find('#popupToggle')
-            .hide();
-          jQuery(
-            jQuery(jQuery('#tool_position')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot
-          )
-            .find('#popupToggle')
-            .hide();
-          jQuery(
-            jQuery(jQuery('#tool_text_anchor')[0].shadowRoot).find('elix-dropdown-list')[0]
-              .shadowRoot
-          )
-            .find('#popupToggle')
-            .hide();
-          jQuery(
-            jQuery(jQuery('#start_marker_list_opts')[0].shadowRoot).find('elix-dropdown-list')[0]
-              .shadowRoot
-          )
-            .find('#popupToggle')
-            .hide();
-          jQuery(
-            jQuery(jQuery('#mid_marker_list_opts')[0].shadowRoot).find('elix-dropdown-list')[0]
-              .shadowRoot
-          )
-            .find('#popupToggle')
-            .hide();
-          jQuery(
-            jQuery(jQuery('#end_marker_list_opts')[0].shadowRoot).find('elix-dropdown-list')[0]
-              .shadowRoot
-          )
-            .find('#popupToggle')
-            .hide();
+          // jQuery(
+          //   jQuery(jQuery('#stroke_linecap')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot
+          // )
+          //   .find('#popupToggle')
+          //   .hide();
+          // jQuery(
+          //   jQuery(jQuery('#stroke_linejoin')[0].shadowRoot).find('elix-dropdown-list')[0]
+          //     .shadowRoot
+          // )
+          //   .find('#popupToggle')
+          //   .hide();
+          // jQuery(
+          //   jQuery(jQuery('#tool_position')[0].shadowRoot).find('elix-dropdown-list')[0].shadowRoot
+          // )
+          //   .find('#popupToggle')
+          //   .hide();
+          // jQuery(
+          //   jQuery(jQuery('#tool_text_anchor')[0].shadowRoot).find('elix-dropdown-list')[0]
+          //     .shadowRoot
+          // )
+          //   .find('#popupToggle')
+          //   .hide();
+          // jQuery(
+          //   jQuery(jQuery('#start_marker_list_opts')[0].shadowRoot).find('elix-dropdown-list')[0]
+          //     .shadowRoot
+          // )
+          //   .find('#popupToggle')
+          //   .hide();
+          // jQuery(
+          //   jQuery(jQuery('#mid_marker_list_opts')[0].shadowRoot).find('elix-dropdown-list')[0]
+          //     .shadowRoot
+          // )
+          //   .find('#popupToggle')
+          //   .hide();
+          // jQuery(
+          //   jQuery(jQuery('#end_marker_list_opts')[0].shadowRoot).find('elix-dropdown-list')[0]
+          //     .shadowRoot
+          // )
+          //   .find('#popupToggle')
+          //   .hide();
         };
 
         // Fitting to content does not work
@@ -1897,14 +1896,50 @@ export default {
           document.activeElement.blur();
         });
 
-        // This is a very complicated way to blur inputs when user clicks canvas area
+        // Preselect cylinder shape on first click
+        jQuery(document).on('mouseup', '#tool_shapelib', () => {
+          const pressed = jQuery('#tool_shapelib').attr('pressed');
+          if (!pressed) {
+            const shadow = jQuery('#tool_shapelib')[0].shadowRoot;
+            const img = jQuery(shadow).find(
+              "img[src='./extensions/ext-figlinq/images/shapelib.svg']"
+            );
+            if (img.length) {
+              const btn = jQuery(shadow).find("[data-shape='cylinder']");
+              btn.click();
+            }
+          }
+        });
+
+        jQuery(document).on('mouseup', '.svg_editor', e => {
+          if (e.target.id !== 'tool_shapelib') {
+            const shadow = jQuery('#tool_shapelib')[0].shadowRoot;
+            const imageLib = jQuery(shadow).find('.image-lib')[0];
+            const open = jQuery(imageLib).hasClass('open-lib');
+            if (open) {
+              const menu = jQuery(shadow).find('.menu')[0];
+              jQuery(imageLib).removeClass('open-lib');
+              jQuery(menu).removeClass('open');
+            }
+          }
+        });
+
         jQuery(document).on('mouseup', '#workarea', () => {
+          // This is a very complicated way to blur inputs when user clicks canvas area
           const ae = document.activeElement;
           const input =
             ae?.shadowRoot?.childNodes[3]?.childNodes[4]?.shadowRoot?.children[2]?.shadowRoot
               ?.children[1];
           if (typeof input !== 'undefined') {
             jQuery(input).trigger('blur');
+          }
+
+          // Reset tool_shapelib
+          if (svgCanvas.getMode() === 'shapelib') {
+            const timeout = 200;
+            setTimeout(() => {
+              svgCanvas.setCurrentMode('select');
+            }, timeout); 
           }
         });
 
@@ -2164,11 +2199,11 @@ export default {
           const baseunit = jQuery('#fq-doc-baseunit').val();
           jQuery('#fq-modal-doc-setup').removeClass('is-active');
 
-          if (w !== 'fit' && !isValidUnit('width', w)) {
+          if (w !== 'fit' && !svgCanvas.isValidUnit('width', w)) {
             showToast('Invalid width unit!', 'is-danger');
             return;
           }
-          if (h !== 'fit' && !isValidUnit('height', h)) {
+          if (h !== 'fit' && !svgCanvas.isValidUnit('height', h)) {
             showToast('Invalid height unit!', 'is-danger');
             return;
           }
