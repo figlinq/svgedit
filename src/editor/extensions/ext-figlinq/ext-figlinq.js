@@ -18,7 +18,7 @@ TODO
 
 import {folderItem, plotItem, imageItem, figureItem} from './elements';
 import {NS} from './namespaces.js';
-import * as hstry from '../../../../packages/svgcanvas/history';
+import * as hstry from '@svgedit/svgcanvas/history';
 
 const {InsertElementCommand, BatchCommand} = hstry;
 const name = 'figlinq';
